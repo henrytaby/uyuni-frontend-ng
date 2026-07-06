@@ -17,17 +17,17 @@ import { routes } from './app.routes';
 const MyPreset = definePreset(Aura, {
     semantic: {
         primary: {
-            50: '#eef2ff',
-            100: '#dbe4ff',
-            200: '#bfcfff',
-            300: '#97b0ff',
-            400: '#6b8cfc',
-            500: '#4464e8',
-            600: '#334dc0',
-            700: '#293d99',
-            800: '#1f2e72',
-            900: '#16204d',
-            950: '#0e1433'
+            50: '#e6f6f5',
+            100: '#cceae7',
+            200: '#9ad9d3',
+            300: '#6ac8bf',
+            400: '#46c0b7',
+            500: '#36bfb7',
+            600: '#2ea8a1',
+            700: '#248c86',
+            800: '#1b706b',
+            900: '#135450',
+            950: '#0b3835'
         }
     },
     components: {
