@@ -1,0 +1,24 @@
+<div class="flex items-center justify-center min-h-screen min-w-screen overflow-hidden bg-gray-50 dark:bg-gray-900">
+  <div class="flex flex-col items-center justify-center">
+    <div
+      style="border-radius: 56px; padding: 0.1rem; background: linear-gradient(180deg, rgba(206, 206, 206, 0.4) 10%, rgba(33, 150, 243, 0) 30%)">
+      <div class="w-full bg-white dark:bg-gray-900 py-4 px-8 sm:px-20 flex flex-col items-center "
+        style="border-radius: 53px">
+        <div class="gap-4 flex flex-col items-center">
+          <div class="flex justify-center items-center border-2 border-pink-500 rounded-full"
+            style="height: 3.2rem; width: 3.2rem">
+            <svg lucideCircleAlert size="24" class="text-pink-500 dark:text-pink-400"></svg>
+          </div>
+          <h1 class="text-gray-900 dark:text-gray-100 font-bold text-3xl mb-2">Página no encontrada</h1>
+          <span class="text-gray-500 dark:text-gray-400 mb-8 text-center text-sm">El recurso solicitado no está
+            disponible.</span>
+          <img src="images/page/error.svg" alt="Error" class="mb-8" width="50%" />
+          <div class="col-span-12 mt-8 text-center flex gap-3">
+            <p-button label="Ir al Dashboard" routerLink="/" severity="danger" />
+            <p-button label="Regresar" (onClick)="goBack()" severity="secondary" variant="text" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,7 @@
+<p-button (onClick)="toggleTheme()" [rounded]="true" [text]="true"
+  styleClass="w-14! h-14! bg-brand-500! hover:bg-brand-600! border-0! rounded-full! transition-colors text-white! p-0! flex items-center justify-center">
+  <ng-template pTemplate="icon">
+    <svg lucideSun size="22" class="dark:hidden text-white!"></svg>
+    <svg lucideMoon size="22" class="hidden dark:block text-white!"></svg>
+  </ng-template>
+</p-button>

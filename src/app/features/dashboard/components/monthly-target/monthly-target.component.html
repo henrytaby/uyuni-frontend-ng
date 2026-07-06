@@ -1,0 +1,64 @@
+<div class="rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-800 dark:bg-white/3">
+  <div class="p-3 bg-white shadow-sm rounded-lg pb-6 dark:bg-gray-900">
+    <div class="flex justify-between mb-3">
+      <div>
+        <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">
+          Objetivo Mensual
+        </h3>
+        <p class="mt-0.5 text-gray-500 text-[11px] dark:text-gray-400">
+          Meta establecida para cada mes
+        </p>
+      </div>
+    </div>
+    <div class="relative h-[180px] w-full flex items-center justify-center">
+      <p-chart type="doughnut" [data]="data" [options]="options" height="180px" width="100%"></p-chart>
+
+      <!-- Centered Text (Value) -->
+      <div class="absolute inset-0 flex flex-col items-center justify-center pt-6 pointer-events-none">
+        <span class="text-xl font-bold text-gray-800 dark:text-white">{{ percentage }}%</span>
+        <span
+          class="mt-1 rounded-full bg-success-50 px-2 py-0.5 text-[10px] font-medium text-success-600 dark:bg-success-500/15 dark:text-success-500">
+          +10%
+        </span>
+      </div>
+    </div>
+    <p class="mx-auto mt-3 w-full max-w-[300px] text-center text-xs text-gray-500">
+      Ganaste $3287 hoy, es más alto que el mes pasado.
+    </p>
+  </div>
+
+  <div class="flex items-center justify-center gap-3 px-3 py-2">
+    <div>
+      <p class="mb-0.5 text-center text-gray-500 text-[10px] dark:text-gray-400">
+        Objetivo
+      </p>
+      <p
+        class="flex items-center justify-center gap-1 text-sm font-semibold text-gray-800 dark:text-white/90">
+        $20K
+        <svg lucideArrowDown size="12" class="text-red-600 dark:text-red-400"></svg>
+       </p>
+     </div>
+     <div class="w-px bg-gray-200 h-5 dark:bg-gray-800"></div>
+     <div>
+       <p class="mb-0.5 text-center text-gray-500 text-[10px] dark:text-gray-400">
+         Ingresos
+       </p>
+       <p
+         class="flex items-center justify-center gap-1 text-sm font-semibold text-gray-800 dark:text-white/90">
+         $20K
+        <svg lucideArrowUp size="12" class="text-green-600 dark:text-green-400"></svg>
+       </p>
+     </div>
+     <div class="w-px bg-gray-200 h-5 dark:bg-gray-800"></div>
+     <div>
+       <p class="mb-0.5 text-center text-gray-500 text-[10px] dark:text-gray-400">
+         Hoy
+       </p>
+       <p
+         class="flex items-center justify-center gap-1 text-sm font-semibold text-gray-800 dark:text-white/90">
+         $20K
+        <svg lucideArrowUp size="12" class="text-green-600 dark:text-green-400"></svg>
+      </p>
+    </div>
+  </div>
+</div>

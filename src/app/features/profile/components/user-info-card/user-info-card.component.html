@@ -1,0 +1,122 @@
+<div class="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+  <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+    <div>
+      <h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+        Información Personal
+      </h4>
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+        <div>
+          <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+            Nombre
+          </p>
+          <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+            {{ user.firstName }}
+          </p>
+        </div>
+        <div>
+          <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+            Apellidos
+          </p>
+          <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+            {{ user.lastName }}
+          </p>
+        </div>
+        <div>
+          <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+            Correo Electronico
+          </p>
+          <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+            {{ user.email }}
+          </p>
+        </div>
+        <div>
+          <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+            Telefono
+          </p>
+          <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+            {{ user.phone }}
+          </p>
+        </div>
+        <div>
+          <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+            Bio
+          </p>
+          <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+            {{ user.bio }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <p-button label="Edit" icon="pi pi-pencil" (onClick)="openModal()" size="small" variant="outlined"
+      severity="primary"></p-button>
+  </div>
+
+  <!-- PrimeNG Dialog -->
+  <p-dialog header="Editar Información Personal" [(visible)]="isOpen" [modal]="true" [style]="{ width: '700px' }"
+    [draggable]="false" [resizable]="false" styleClass="p-fluid">
+
+    <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+      Actualice sus datos para mantener su perfil actualizado.
+    </p>
+
+    <div class="flex flex-col gap-6">
+      <!-- Social Links Section -->
+      <div>
+        <h5 class="mb-4 text-base font-medium text-gray-800 dark:text-white/90">Redes Sociales</h5>
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div class="flex flex-col gap-2">
+            <label for="facebook" class="text-xs font-medium text-gray-600 dark:text-gray-400">Facebook</label>
+            <input pInputText id="facebook" [(ngModel)]="user.social.facebook" class="w-full" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="x" class="text-xs font-medium text-gray-600 dark:text-gray-400">X.com</label>
+            <input pInputText id="x" [(ngModel)]="user.social.x" class="w-full" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="linkedin" class="text-xs font-medium text-gray-600 dark:text-gray-400">Linkedin</label>
+            <input pInputText id="linkedin" [(ngModel)]="user.social.linkedin" class="w-full" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="instagram" class="text-xs font-medium text-gray-600 dark:text-gray-400">Instagram</label>
+            <input pInputText id="instagram" [(ngModel)]="user.social.instagram" class="w-full" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Personal Info Section -->
+      <div>
+        <h5 class="mb-4 text-base font-medium text-gray-800 dark:text-white/90">Información Personal</h5>
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div class="flex flex-col gap-2">
+            <label for="firstName" class="text-xs font-medium text-gray-600 dark:text-gray-400">Nombres</label>
+            <input pInputText id="firstName" [(ngModel)]="user.firstName" class="w-full" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="lastName" class="text-xs font-medium text-gray-600 dark:text-gray-400">Apellidos</label>
+            <input pInputText id="lastName" [(ngModel)]="user.lastName" class="w-full" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="email" class="text-xs font-medium text-gray-600 dark:text-gray-400">Correo Electronico</label>
+            <input pInputText id="email" [(ngModel)]="user.email" class="w-full" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="phone" class="text-xs font-medium text-gray-600 dark:text-gray-400">Telefono</label>
+            <input pInputText id="phone" [(ngModel)]="user.phone" class="w-full" />
+          </div>
+          <div class="flex flex-col gap-2 col-span-2">
+            <label for="bio" class="text-xs font-medium text-gray-600 dark:text-gray-400">Biografia</label>
+            <input pInputText id="bio" [(ngModel)]="user.bio" class="w-full" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <p-button label="Cerrar" (click)="closeModal()" severity="secondary" [text]="true"></p-button>
+        <p-button label="Guardar Cambios" (click)="handleSave()" severity="primary"></p-button>
+      </div>
+    </ng-template>
+
+  </p-dialog>
+</div>

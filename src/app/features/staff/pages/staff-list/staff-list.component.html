@@ -1,0 +1,149 @@
+<div class="p-4  border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900">
+  <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-4 gap-3">
+    <h1 class="text-lg font-bold m-0 text-color">Personal</h1>
+
+    <p-iconfield iconPosition="left" class="w-full md:w-20rem">
+      <p-inputicon class="pi pi-search"></p-inputicon>
+      <input type="text" pInputText placeholder="Buscar personal..." class="w-full" (input)="onSearch($event)" />
+    </p-iconfield>
+  </div>
+
+  <!-- Barra de Filtros de Alta Densidad Responsiva -->
+  <div
+    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 p-3 bg-gray-50 dark:bg-gray-900 border-round border border-gray-200 dark:border-gray-700 text-sm items-center w-full">
+
+    <!-- Gerencia -->
+    <div class="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 w-full min-w-0">
+      <span class="font-medium text-color whitespace-nowrap">Gerencia:</span>
+      <p-select [options]="gerencias()" [ngModel]="selectedGerencia()" (ngModelChange)="onGerenciaChange($event)"
+        optionLabel="label" optionValue="value" placeholder="Todas" [showClear]="true" [filter]="true"
+        filterPlaceholder="Buscar gerencia..." filterBy="label" appendTo="body" class="w-full min-w-0">
+      </p-select>
+    </div>
+
+    <!-- Departamento -->
+    <div class="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 w-full min-w-0">
+      <span class="font-medium text-color whitespace-nowrap">Departamento:</span>
+      <p-select [options]="departamentos()" [ngModel]="selectedDepartamento()"
+        (ngModelChange)="onDepartamentoChange($event)" optionLabel="label" optionValue="value" placeholder="Todos"
+        [showClear]="true" [disabled]="!selectedGerencia()" [filter]="true" filterPlaceholder="Buscar departamento..."
+        filterBy="label" appendTo="body" class="w-full min-w-0">
+      </p-select>
+    </div>
+
+    <!-- Estado -->
+    <div class="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 w-full min-w-0">
+      <span class="font-medium text-color whitespace-nowrap">Estado:</span>
+      <p-select [options]="activoOptions" [ngModel]="selectedActivo()" (ngModelChange)="onActivoChange($event)"
+        optionLabel="label" optionValue="value" placeholder="Todos" [showClear]="true" appendTo="body"
+        class="w-full min-w-0">
+      </p-select>
+    </div>
+
+    <!-- Botón Limpiar -->
+    <div class="flex w-full min-w-0">
+      <p-button type="button" icon="pi pi-filter-slash" label="Limpiar Filtros" severity="secondary" [outlined]="true"
+        size="small" class="w-full min-w-0 justify-content-center" (click)="clearFilters()"
+        [disabled]="!selectedGerencia() && !selectedDepartamento() && selectedActivo() === null">
+      </p-button>
+    </div>
+  </div>
+
+  <p-table [value]="staffList()" [lazy]="true" (onLazyLoad)="loadData($event)" [paginator]="true" [rows]="rows()"
+    [rowHover]="true" [first]="first()" [totalRecords]="totalRecords()" [loading]="isLoading()"
+    [showCurrentPageReport]="true" [rowsPerPageOptions]="[15, 20, 30, 50]" paginatorStyleClass="justify-content-end"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros" class="text-sm dense-table">
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="full_name" style="min-width: 12rem">
+          <div class="flex align-items-center gap-2 whitespace-nowrap">
+            <span>Nombre</span>
+            <p-sortIcon field="full_name"></p-sortIcon>
+          </div>
+        </th>
+        <th pSortableColumn="email">
+          <div class="flex align-items-center gap-2 whitespace-nowrap">
+            <span>Email</span>
+            <p-sortIcon field="email"></p-sortIcon>
+          </div>
+        </th>
+        <th pSortableColumn="cellphone">
+          <div class="flex align-items-center gap-2 whitespace-nowrap">
+            <span>Celular</span>
+            <p-sortIcon field="cellphone"></p-sortIcon>
+          </div>
+        </th>
+        <th class="whitespace-nowrap">Gerencia / Departamento</th>
+        <th class="whitespace-nowrap">Cargo</th>
+        <th pSortableColumn="birth_date" style="width: 6rem">
+          <div class="flex align-items-center gap-2 whitespace-nowrap">
+            <span>Nacimiento</span>
+            <p-sortIcon field="birth_date"></p-sortIcon>
+          </div>
+        </th>
+        <th pSortableColumn="is_active" class="text-center" style="width: 5rem">
+          <div class="flex align-items-center justify-content-center gap-2 whitespace-nowrap">
+            <span>Estado</span>
+            <p-sortIcon field="is_active"></p-sortIcon>
+          </div>
+        </th>
+        <th style="width: 4rem"></th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-staff>
+      <tr>
+        <td class="vertical-align-middle">
+          <p-avatar [label]="getInitials(staff)" shape="circle"
+            class="shrink-0 align-middle bg-gray-100 text-brand-700"></p-avatar>
+          <span class=" text-900 ml-2 align-middle leading-tight inline-block" style="max-width: calc(100% - 3rem);">
+            {{ staff.full_name }}
+          </span>
+        </td>
+        <td class="vertical-align-middle">
+          <span class="inline-flex gap-1.5">
+            <svg lucideMail size="15" class="text-gray-400 dark:text-gray-600"></svg>
+            <a [href]="'mailto:' + staff.email" class="text-brand-600 no-underline hover:underline">{{ staff.email
+              }}</a>
+          </span>
+        </td>
+        <td class="vertical-align-middle whitespace-nowrap">
+          <span class="inline-flex gap-1.5">
+            <svg lucidePhone size="15" class="text-gray-400 dark:text-gray-600"></svg>
+            {{ staff.cellphone }}
+          </span>
+        </td>
+        <td class="vertical-align-middle">
+          <div class="flex flex-col gap-0.5">
+            <span class="text-gray-900 dark:text-gray-100 font-medium">{{ staff.management_name }}</span>
+            <span class="text-gray-500 dark:text-gray-400 text-xs">{{ staff.department_name }}</span>
+          </div>
+        </td>
+        <td class="vertical-align-middle">
+          {{ staff.position_name }}
+        </td>
+        <td class="vertical-align-middle">
+          <span class="inline-flex gap-1.5">
+            <svg lucideCalendar size="15" class="text-gray-400 dark:text-gray-600"></svg>
+            <span class="text-xs">{{ staff.birth_date | date:'dd/MM/yyyy' }}</span>
+          </span>
+
+        </td>
+        <td class="vertical-align-middle text-center">
+          <p-tag [value]="staff.is_active ? 'Activo' : 'Inactivo'" [severity]="staff.is_active ? 'success' : 'danger'"
+            [rounded]="true" class="text-xs"></p-tag>
+        </td>
+        <td class="text-center vertical-align-middle">
+          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="secondary" pTooltip="Editar"
+            tooltipPosition="left"></p-button>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="8" class="text-center p-4">No se encontró personal con los criterios buscados.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

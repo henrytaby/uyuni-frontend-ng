@@ -1,0 +1,10 @@
+<!-- Global HTTP Loader (Blocking) -->
+@if (isLoading()) {
+<p-blockUI [blocked]="true">
+    <div class="fixed inset-0 flex flex-col items-center justify-center z-999991">
+        <p-progressSpinner class="w-16 h-16" strokeWidth="4" fill="transparent" animationDuration=".5s" />
+    </div>
+</p-blockUI>
+}
+
+<router-outlet></router-outlet>

@@ -1,0 +1,5 @@
+<app-auth-page-layout>
+  <app-signin-form [isLoading]="isLoading()" [errorMessage]="errorMessage()" (signIn)="handleSignIn($event)"
+    (errorCleared)="clearErrorMessage()">
+  </app-signin-form>
+</app-auth-page-layout>

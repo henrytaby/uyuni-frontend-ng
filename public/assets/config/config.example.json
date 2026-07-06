@@ -1,0 +1,15 @@
+{
+    "apiUrl": "http://localhost:8000/api/v1",
+    "authConfig": {
+        "loginUrl": "/auth/login",
+        "tokenKey": "access_token",
+        "refreshKey": "refresh_token"
+    },
+    "appVersion": "1.0.0",
+    "loggingLevel": "debug",
+    "featureFlags": {
+        "enableSignup": true,
+        "maintenanceMode": false,
+        "mockAuth": true
+    }
+}

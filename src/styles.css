@@ -1,0 +1,530 @@
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url('/fonts/roboto/roboto-v30-latin-100.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/roboto/roboto-v30-latin-300.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/roboto/roboto-v30-latin-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/roboto/roboto-v30-latin-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/roboto/roboto-v30-latin-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('/fonts/roboto/roboto-v30-latin-900.woff2') format('woff2');
+}
+
+@import "tailwindcss";
+@plugin "tailwindcss-primeui";
+@import "primeicons/primeicons.css";
+
+
+
+
+@layer base, primeng, components, utilities;
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --font-size-base: 14px;
+  --font-*: initial;
+  --font-roboto: Roboto, sans-serif;
+
+  --breakpoint-*: initial;
+  --breakpoint-2xsm: 375px;
+  --breakpoint-xsm: 425px;
+  --breakpoint-3xl: 2000px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  --text-title-2xl: 72px;
+  --text-title-2xl--line-height: 90px;
+  --text-title-xl: 60px;
+  --text-title-xl--line-height: 72px;
+  --text-title-lg: 48px;
+  --text-title-lg--line-height: 60px;
+  --text-title-md: 36px;
+  --text-title-md--line-height: 44px;
+  --text-title-sm: 30px;
+  --text-title-sm--line-height: 38px;
+  --text-theme-xl: 20px;
+  --text-theme-xl--line-height: 30px;
+  --text-theme-sm: 14px;
+  --text-theme-sm--line-height: 20px;
+  --text-theme-xs: 12px;
+  --text-theme-xs--line-height: 18px;
+
+  --color-current: currentColor;
+  --color-transparent: transparent;
+  --color-white: #ffffff;
+  --color-black: #101828;
+
+  --color-brand-25:  #f5f7ff;
+  --color-brand-50:  #eef2ff;
+  --color-brand-100: #dbe4ff;
+  --color-brand-200: #bfcfff;
+  --color-brand-300: #97b0ff;
+  --color-brand-400: #6b8cfc;
+  --color-brand-500: #4464e8;
+  --color-brand-600: #334dc0;
+  --color-brand-700: #293d99;
+  --color-brand-800: #1f2e72;
+  --color-brand-900: #16204d;
+  --color-brand-950: #0e1433;
+
+  --color-blue-light-25: #f5fbff;
+  --color-blue-light-50: #f0f9ff;
+  --color-blue-light-100: #e0f2fe;
+  --color-blue-light-200: #b9e6fe;
+  --color-blue-light-300: #7cd4fd;
+  --color-blue-light-400: #36bffa;
+  --color-blue-light-500: #0ba5ec;
+  --color-blue-light-600: #0086c9;
+  --color-blue-light-700: #026aa2;
+  --color-blue-light-800: #065986;
+  --color-blue-light-900: #0b4a6f;
+  --color-blue-light-950: #062c41;
+
+  --color-gray-25: #fcfcfd;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f2f4f7;
+  --color-gray-200: #e4e7ec;
+  --color-gray-300: #d0d5dd;
+  --color-gray-400: #98a2b3;
+  --color-gray-500: #667085;
+  --color-gray-600: #475467;
+  --color-gray-700: #344054;
+  --color-gray-800: #1d2939;
+  --color-gray-900: #101828;
+  --color-gray-950: #0c111d;
+  --color-gray-dark: #1a2231;
+
+  --animate-dropdown-in: dropdown-in 0.2s ease-out;
+
+  @keyframes dropdown-in {
+    from {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  --color-orange-25: #fffaf5;
+  --color-orange-50: #fff6ed;
+  --color-orange-100: #ffead5;
+  --color-orange-200: #fddcab;
+  --color-orange-300: #feb273;
+  --color-orange-400: #fd853a;
+  --color-orange-500: #fb6514;
+  --color-orange-600: #ec4a0a;
+  --color-orange-700: #c4320a;
+  --color-orange-800: #9c2a10;
+  --color-orange-900: #7e2410;
+  --color-orange-950: #511c10;
+
+  --color-success-25: #f6fef9;
+  --color-success-50: #ecfdf3;
+  --color-success-100: #d1fadf;
+  --color-success-200: #a6f4c5;
+  --color-success-300: #6ce9a6;
+  --color-success-400: #32d583;
+  --color-success-500: #12b76a;
+  --color-success-600: #039855;
+  --color-success-700: #027a48;
+  --color-success-800: #05603a;
+  --color-success-900: #054f31;
+  --color-success-950: #053321;
+
+  --color-error-25: #fffbfa;
+  --color-error-50: #fef3f2;
+  --color-error-100: #fee4e2;
+  --color-error-200: #fecdca;
+  --color-error-300: #fda29b;
+  --color-error-400: #f97066;
+  --color-error-500: #f04438;
+  --color-error-600: #d92d20;
+  --color-error-700: #b42318;
+  --color-error-800: #912018;
+  --color-error-900: #7a271a;
+  --color-error-950: #55160c;
+
+  --color-warning-25: #fffcf5;
+  --color-warning-50: #fffaeb;
+  --color-warning-100: #fef0c7;
+  --color-warning-200: #fedf89;
+  --color-warning-300: #fec84b;
+  --color-warning-400: #fdb022;
+  --color-warning-500: #f79009;
+  --color-warning-600: #dc6803;
+  --color-warning-700: #b54708;
+  --color-warning-800: #93370d;
+  --color-warning-900: #7a2e0e;
+  --color-warning-950: #4e1d09;
+
+  --shadow-theme-md: 0px 4px 8px -2px rgba(16, 24, 40, 0.1),
+    0px 2px 4px -2px rgba(16, 24, 40, 0.06);
+  --shadow-theme-lg: 0px 12px 16px -4px rgba(16, 24, 40, 0.08),
+    0px 4px 6px -2px rgba(16, 24, 40, 0.03);
+  --shadow-theme-sm: 0px 1px 3px 0px rgba(16, 24, 40, 0.1),
+    0px 1px 2px 0px rgba(16, 24, 40, 0.06);
+  --shadow-theme-xs: 0px 1px 2px 0px rgba(16, 24, 40, 0.05);
+  --shadow-theme-xl: 0px 20px 24px -4px rgba(16, 24, 40, 0.08),
+    0px 8px 8px -4px rgba(16, 24, 40, 0.03);
+  --shadow-datepicker: -5px 0 0 #262d3c, 5px 0 0 #262d3c;
+  --shadow-focus-ring: 0px 0px 0px 4px rgba(70, 95, 255, 0.12);
+
+  --shadow-tooltip: 0px 4px 6px -2px rgba(16, 24, 40, 0.05),
+    -8px 0px 20px 8px rgba(16, 24, 40, 0.05);
+
+  --drop-shadow-4xl: 0 35px 35px rgba(0, 0, 0, 0.25),
+    0 45px 65px rgba(0, 0, 0, 0.15);
+
+  --z-index-1: 1;
+  --z-index-9: 9;
+  --z-index-99: 99;
+  --z-index-999: 999;
+  --z-index-9999: 9999;
+  --z-index-99999: 99999;
+  --z-index-999999: 999999;
+
+  --header-height: 64px;
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 80px;
+  --main-padding: 1rem;
+}
+
+@utility glass-header {
+  @apply sticky top-0 z-40 w-full backdrop-blur-md bg-white/80 border-b border-gray-200/50 transition-all duration-300;
+  
+  @variant dark {
+    @apply bg-gray-900/80 border-gray-800/50;
+  }
+}
+
+@layer base {
+  .p-blockui-mask {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+    z-index: 999990 !important;
+  }
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  body {
+    @apply relative font-normal font-roboto z-1 bg-gray-50 text-sm;
+    color: #1f2937;
+  }
+}
+
+@utility menu-item {
+  @apply relative flex items-center w-full gap-3 px-3 py-2.5 font-medium rounded-lg text-theme-sm transition-all duration-200;
+}
+
+@utility menu-item-active {
+  @apply bg-brand-50 text-brand-800 shadow-xs;
+
+  @variant dark {
+    @apply bg-brand-500/25 text-brand-200 font-medium shadow-none;
+  }
+}
+
+@utility menu-item-inactive {
+  @apply text-gray-700 hover:bg-gray-100/80 hover:text-gray-900;
+
+  @variant dark {
+    @apply text-gray-300 hover:bg-white/5 hover:text-white/90;
+  }
+}
+
+@utility menu-item-icon {
+  @apply text-gray-500 group-hover:text-gray-700;
+
+  @variant dark {
+    @apply text-gray-400;
+  }
+}
+
+@utility menu-item-icon-active {
+  @apply text-brand-500;
+
+  @variant dark {
+    @apply text-brand-200;
+  }
+}
+
+@utility menu-item-icon-size {
+  & svg {
+    @apply size-6!;
+  }
+}
+
+@utility role-item {
+  @apply flex items-center gap-3 p-3 rounded-xl border border-transparent cursor-pointer transition-all duration-200 hover:bg-gray-50 dark:hover:bg-white/5;
+}
+
+@utility role-item-active {
+  @apply bg-brand-50 border-brand-100 dark:bg-brand-500/25 dark:border-brand-500/40 shadow-sm;
+}
+
+@utility role-icon-container {
+  @apply flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 text-gray-500 text-lg transition-colors group-hover:bg-white dark:bg-gray-800 dark:text-gray-400 dark:group-hover:bg-gray-700;
+  
+  &.active {
+    @apply bg-brand-500 text-white shadow-md;
+
+    @variant dark {
+      @apply bg-brand-400 text-white;
+    }
+  }
+}
+
+@utility role-label {
+  @apply text-sm font-bold text-gray-800 dark:text-gray-100 block;
+}
+
+@utility role-description {
+  @apply text-xs leading-tight;
+}
+
+@utility custom-scrollbar {
+  &::-webkit-scrollbar {
+    @apply size-1.5;
+  }
+  &::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    @apply bg-gray-200 rounded-full transition-colors;
+
+    @variant dark {
+      @apply bg-gray-700;
+    }
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-300;
+
+    @variant dark {
+      @apply bg-gray-600;
+    }
+  }
+}
+
+@utility dense-table {
+  & .p-datatable-thead > tr > th,
+  & .p-datatable-tbody > tr > td {
+    padding: 0.1rem 0.25rem !important;
+  }
+
+  & .p-datatable-tbody > tr {
+    height: 32px !important;
+  }
+}
+
+@utility dense-layout {
+  --main-padding: 0.5rem;
+  line-height: 1.3;
+}
+
+@utility dense-card {
+  padding: 0.75rem;
+  border-radius: 8px;
+}
+
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility menu-item-arrow {
+  @apply relative;
+}
+
+@utility menu-item-arrow-active {
+  @apply rotate-180 text-brand-500;
+
+  @variant dark {
+    @apply text-brand-400;
+  }
+}
+
+@utility menu-item-arrow-inactive {
+  @apply text-gray-500 group-hover:text-gray-700;
+
+  @variant dark {
+    @apply text-gray-400 group-hover:text-gray-300;
+  }
+}
+
+@utility menu-dropdown-item {
+  @apply relative flex items-center gap-3 rounded-lg px-3 py-2 text-theme-sm font-medium;
+}
+
+@utility menu-dropdown-item-active {
+  @apply bg-brand-50 text-brand-500;
+
+  @variant dark {
+    @apply bg-brand-500/25 text-brand-200;
+  }
+}
+
+@utility menu-dropdown-item-inactive {
+  @apply text-gray-700 hover:bg-gray-100;
+
+  @variant dark {
+    @apply text-gray-300 hover:bg-white/5;
+  }
+}
+
+@utility menu-dropdown-badge {
+  @apply text-success-600 block rounded-full px-2.5 py-0.5 text-xs font-medium uppercase;
+
+  @variant dark {
+    @apply text-success-500;
+  }
+}
+
+@utility menu-dropdown-badge-active {
+  @apply bg-success-100;
+
+  @variant dark {
+    @apply bg-success-500/20;
+  }
+}
+
+@utility menu-dropdown-badge-inactive {
+  @apply bg-success-50 group-hover:bg-success-100;
+
+  @variant dark {
+    @apply bg-success-500/15 group-hover:bg-success-500/20;
+  }
+}
+
+@utility menu-dropdown-badge-pro {
+  @apply text-brand-600 block rounded-full px-2.5 py-0.5 text-xs font-medium uppercase;
+
+  @variant dark {
+    @apply text-brand-500;
+  }
+}
+
+@utility menu-dropdown-badge-pro-active {
+  @apply bg-brand-100;
+
+  @variant dark {
+    @apply bg-brand-500/20;
+  }
+}
+
+@utility menu-dropdown-badge-pro-inactive {
+  @apply bg-brand-50 group-hover:bg-brand-100;
+
+  @variant dark {
+    @apply bg-brand-500/15 group-hover:bg-brand-500/20;
+  }
+}
+
+
+@layer utilities {
+
+  /* For Remove Date Icon */
+  input[type="date"]::-webkit-inner-spin-button,
+  input[type="time"]::-webkit-inner-spin-button,
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+  }
+}
+
+/* ==========================================================================
+   High Density PrimeNG Paginator Select Adjustments
+   ========================================================================== */
+.p-paginator .p-select,
+.p-paginator .p-dropdown {
+  min-width: auto !important;
+  width: auto !important;
+  height: 32px !important;
+}
+
+.p-paginator .p-select-label,
+.p-paginator .p-dropdown-label {
+  padding-top: 0px !important;
+  padding-bottom: 0px !important;
+  padding-left: 8px !important;
+  padding-right: 4px !important;
+  font-size: 0.8125rem !important; /* ~13px */
+  line-height: 26px !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.p-paginator .p-select-dropdown,
+.p-paginator .p-dropdown-trigger {
+  width: 20px !important;
+  padding: 0 !important;
+}
+
+/* ==========================================================================
+   Global High Density Inputs, Selects, and Buttons Font Size Override (text-sm)
+   ========================================================================== */
+.p-select-label,
+.p-inputtext,
+.p-select,
+.p-dropdown,
+.p-multiselect,
+.p-button {
+  font-size: 0.875rem !important; /* text-sm ~14px */
+}
+
+

@@ -1,0 +1,14 @@
+{
+    "[css]": {
+        "editor.formatOnSave": false,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.stylelint": "never"
+        },
+        "editor.defaultFormatter": null
+    },
+    "css.validate": false,
+    "postcss.validate": false,
+    "tailwindCSS.includeLanguages": {
+        "plaintext": "css"
+    }
+}

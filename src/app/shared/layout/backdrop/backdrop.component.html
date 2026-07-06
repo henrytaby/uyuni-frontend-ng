@@ -1,0 +1,5 @@
+@if (isMobileOpen()) {
+<div role="button" tabindex="0" (keydown.enter)="closeSidebar()"
+  [ngClass]="isMobileOpen() ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-0 z-40 bg-gray-900/50 lg:hidden"
+  (click)="closeSidebar()"></div>
+}

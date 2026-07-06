@@ -1,0 +1,5 @@
+<div [class]="combinedClasses" (click)="handleClick()" (keydown)="handleKeydown($event)"
+  style="display: flex !important; width: 100%; cursor: pointer;" [attr.role]="to ? 'link' : 'button'"
+  [attr.tabindex]="0">
+  <ng-content></ng-content>
+</div>

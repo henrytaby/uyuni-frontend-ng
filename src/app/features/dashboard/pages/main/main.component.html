@@ -1,0 +1,21 @@
+<div class="animate-in fade-in duration-300">
+  <!-- {{activeRole()?.slug}} -->
+  @switch (activeRole()?.slug) {
+
+  @case ('admin') {
+  <app-admin-view />
+  }
+
+  @case ('operador-aduana') {
+  <app-admin-view />
+  }
+
+  @case ('cliente') {
+  <app-client-view />
+  }
+
+  @default {
+  <app-default-view />
+  }
+  }
+</div>

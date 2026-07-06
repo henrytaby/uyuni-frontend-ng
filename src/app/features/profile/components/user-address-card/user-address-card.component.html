@@ -1,0 +1,81 @@
+<div class="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+  <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+    <div>
+      <h4 class="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
+        Dirección
+      </h4>
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+        <div>
+          <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+            Pais
+          </p>
+          <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+            {{ address.country }}
+          </p>
+        </div>
+        <div>
+          <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+            Ciudad/Estado
+          </p>
+          <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+            {{ address.cityState }}
+          </p>
+        </div>
+        <div>
+          <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+            Codigo postal
+          </p>
+          <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+            {{ address.postalCode }}
+          </p>
+        </div>
+        <div>
+          <p class="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
+            Codigo fiscal
+          </p>
+          <p class="text-sm font-medium text-gray-800 dark:text-white/90">
+            {{ address.taxId }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <p-button label="Edit" icon="pi pi-pencil" (onClick)="openModal()" size="small" variant="outlined"
+      severity="primary"></p-button>
+  </div>
+
+  <!-- PrimeNG Dialog -->
+  <p-dialog header="Editar dirección" [(visible)]="isOpen" [modal]="true" [style]="{ width: '700px' }"
+    [draggable]="false" [resizable]="false" styleClass="p-fluid">
+
+    <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+      Actualice sus datos para mantener su perfil actualizado.
+    </p>
+
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div class="flex flex-col gap-2">
+        <label for="country" class="text-xs font-medium text-gray-600 dark:text-gray-400">Pais</label>
+        <input pInputText id="country" [(ngModel)]="address.country" class="w-full" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label for="cityState" class="text-xs font-medium text-gray-600 dark:text-gray-400">Ciudad/Estado</label>
+        <input pInputText id="cityState" [(ngModel)]="address.cityState" class="w-full" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label for="postalCode" class="text-xs font-medium text-gray-600 dark:text-gray-400">Código postal</label>
+        <input pInputText id="postalCode" [(ngModel)]="address.postalCode" class="w-full" />
+      </div>
+      <div class="flex flex-col gap-2">
+        <label for="taxId" class="text-xs font-medium text-gray-600 dark:text-gray-400">Código fiscal</label>
+        <input pInputText id="taxId" [(ngModel)]="address.taxId" class="w-full" />
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <p-button label="Cerrar" (click)="closeModal()" severity="secondary" [text]="true"></p-button>
+        <p-button label="Guardar cambios" (click)="handleSave()" severity="primary"></p-button>
+      </div>
+    </ng-template>
+
+  </p-dialog>
+</div>

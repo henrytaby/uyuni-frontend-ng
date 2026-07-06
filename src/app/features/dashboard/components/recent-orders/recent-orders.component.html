@@ -1,0 +1,36 @@
+<div class="overflow-hidden rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/3">
+  <div class="px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+    <h3 class="text-sm font-semibold text-gray-800 dark:text-white/90">Pedidos Recientes</h3>
+  </div>
+
+  <p-table [value]="tableData" [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-sm dense-table">
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="name" class="text-xs! font-medium! text-gray-500! dark:text-gray-400!">Producto <p-sortIcon
+            field="name" /></th>
+        <th pSortableColumn="category" class="text-xs! font-medium! text-gray-500! dark:text-gray-400!">Categoría
+          <p-sortIcon field="category" /></th>
+        <th pSortableColumn="price" class="text-xs! font-medium! text-gray-500! dark:text-gray-400!">Precio <p-sortIcon
+            field="price" /></th>
+        <th pSortableColumn="status" class="text-xs! font-medium! text-gray-500! dark:text-gray-400!">Estado <p-sortIcon
+            field="status" /></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-product>
+      <tr class="text-gray-700! dark:text-gray-300!">
+        <td class="flex items-center gap-2">
+          <img [src]="product.image" [alt]="product.name" class="w-8 h-8 rounded-full" />
+          <div>
+            <span class="block font-medium text-gray-800 dark:text-white/90 text-xs">{{ product.name }}</span>
+            <span class="text-[10px] text-gray-500 dark:text-gray-400 leading-none">{{ product.variants }}</span>
+          </div>
+        </td>
+        <td class="text-xs">{{ product.category }}</td>
+        <td class="font-medium text-xs">{{ product.price }}</td>
+        <td>
+          <p-tag [value]="product.status" [severity]="getBadgeColor(product.status)" [rounded]="true" class="text-[10px]"></p-tag>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>

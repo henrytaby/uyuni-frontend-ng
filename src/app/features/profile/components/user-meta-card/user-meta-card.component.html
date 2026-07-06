@@ -1,0 +1,114 @@
+<div class="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
+  <div class="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+    <div class="flex flex-col items-center w-full gap-6 xl:flex-row">
+      <div class="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
+        <img [src]="user.avatar" alt="user" />
+      </div>
+      <div class="order-3 xl:order-2">
+        <h4 class="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
+          {{ user.firstName }} {{ user.lastName }}
+        </h4>
+        <div class="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            {{ user.role }}
+          </p>
+          <div class="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            {{ user.location }}
+          </p>
+        </div>
+      </div>
+      <!-- Edit Button (Existing trigger) -->
+      <div class="flex items-center gap-2 grow xl:order-3 xl:justify-end">
+        <!-- Social Links (kept as is) -->
+        <a [href]="user.social.facebook" target="_blank" rel="noopener"
+          class="flex h-10 w-10 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
+          <i class="pi pi-facebook text-lg"></i>
+        </a>
+        <a [href]="user.social.x" target="_blank" rel="noopener"
+          class="flex h-10 w-10 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
+          <i class="pi pi-twitter text-lg"></i>
+        </a>
+        <a [href]="user.social.linkedin" target="_blank" rel="noopener"
+          class="flex h-10 w-10 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
+          <i class="pi pi-linkedin text-lg"></i>
+        </a>
+        <a [href]="user.social.instagram" target="_blank" rel="noopener"
+          class="flex h-10 w-10 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/3 dark:hover:text-gray-200">
+          <i class="pi pi-instagram text-lg"></i>
+        </a>
+
+        <p-button label="Edit" icon="pi pi-pencil" (onClick)="openModal()" size="small" variant="outlined"
+          severity="secondary"></p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PrimeNG Dialog -->
+  <p-dialog header="Editar información personal" [(visible)]="isOpen" [modal]="true" [style]="{ width: '700px' }"
+    [draggable]="false" [resizable]="false" styleClass="p-fluid">
+
+    <p class="mb-6 text-sm text-gray-500 dark:text-gray-400">
+      Actualice sus datos para mantener su perfil actualizado.
+    </p>
+
+    <div class="flex flex-col gap-6">
+      <!-- Social Links -->
+      <div>
+        <h5 class="mb-4 text-base font-medium text-gray-800 dark:text-white/90">Social Links</h5>
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div class="flex flex-col gap-2">
+            <label for="facebook" class="text-xs font-medium text-gray-600 dark:text-gray-400">Facebook</label>
+            <input pInputText id="facebook" [(ngModel)]="user.social.facebook" class="w-full" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="x" class="text-xs font-medium text-gray-600 dark:text-gray-400">X.com</label>
+            <input pInputText id="x" [(ngModel)]="user.social.x" class="w-full" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="linkedin" class="text-xs font-medium text-gray-600 dark:text-gray-400">Linkedin</label>
+            <input pInputText id="linkedin" [(ngModel)]="user.social.linkedin" class="w-full" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="instagram" class="text-xs font-medium text-gray-600 dark:text-gray-400">Instagram</label>
+            <input pInputText id="instagram" [(ngModel)]="user.social.instagram" class="w-full" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Personal Info -->
+      <div>
+        <h5 class="mb-4 text-base font-medium text-gray-800 dark:text-white/90">Información personal</h5>
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <div class="flex flex-col gap-2">
+            <label for="firstName" class="text-xs font-medium text-gray-600 dark:text-gray-400">Nombres</label>
+            <input pInputText id="firstName" [(ngModel)]="user.firstName" class="w-full" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="lastName" class="text-xs font-medium text-gray-600 dark:text-gray-400">Apellidos</label>
+            <input pInputText id="lastName" [(ngModel)]="user.lastName" class="w-full" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="email" class="text-xs font-medium text-gray-600 dark:text-gray-400">Correo electrónico</label>
+            <input pInputText id="email" [(ngModel)]="user.email" class="w-full" />
+          </div>
+          <div class="flex flex-col gap-2">
+            <label for="phone" class="text-xs font-medium text-gray-600 dark:text-gray-400">Telefono</label>
+            <input pInputText id="phone" [(ngModel)]="user.phone" class="w-full" />
+          </div>
+          <div class="flex flex-col gap-2 col-span-2">
+            <label for="bio" class="text-xs font-medium text-gray-600 dark:text-gray-400">Biografia</label>
+            <input pInputText id="bio" [(ngModel)]="user.bio" class="w-full" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <p-button label="Cerrar" (click)="closeModal()" severity="secondary" [text]="true"></p-button>
+        <p-button label="Guardar cambios" (click)="handleSave()" severity="primary"></p-button>
+      </div>
+    </ng-template>
+
+  </p-dialog>
