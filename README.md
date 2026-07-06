@@ -43,13 +43,75 @@ Asegúrate de tener instalado:
 
 ---
 
-### 🔧 Configuración (Runtime)
-El proyecto utiliza una configuración externa (`config.json`) que **no se sube al repositorio**.
-Para iniciar en local, debes crearla a partir del ejemplo:
+### 🔧 Configuración de la Aplicación (Runtime)
+
+El proyecto utiliza un archivo de configuración externo (`config.json`) que **no se sube al repositorio** (está en `.gitignore`). Permite cambiar URLs de API, claves y banderas de features sin reconstruir la aplicación.
+
+#### 1. Crear el archivo de configuración
+
+Copia el archivo de ejemplo y edita los valores según tu entorno:
 
 ```bash
 cp public/assets/config/config.example.json public/assets/config/config.json
+nano public/assets/config/config.json
+# Edita las URLs y banderas de tu entorno (local o producción) aquí
 ```
+
+#### 2. Estructura del archivo `config.json`
+
+| Campo | Tipo | Descripción |
+|-------|------|-------------|
+| `apiUrl` | `string` | URL base del backend (incluye `/api/v1` u otra versión). Ej: `http://localhost:8000/api/v1` |
+| `authConfig.loginUrl` | `string` | Endpoint de login relativo a `apiUrl`. Ej: `/auth/login` |
+| `authConfig.tokenKey` | `string` | Clave de localStorage para el access token. Ej: `access_token` |
+| `authConfig.refreshKey` | `string` | Clave de localStorage para el refresh token. Ej: `refresh_token` |
+| `appVersion` | `string` | Versión de la aplicación mostrada en la UI. Ej: `1.0.0` |
+| `loggingLevel` | `string` | Nivel de logging: `debug`, `info`, `warn`, `error` |
+| `featureFlags.enableSignup` | `boolean` | Habilita la pantalla de registro `/signup` |
+| `featureFlags.maintenanceMode` | `boolean` | Activa el modo mantenimiento |
+| `featureFlags.mockAuth` | `boolean` | Si es `true`, omite la autenticación real y usa datos mock (ideal para desarrollo local sin backend) |
+
+#### 3. Ejemplo para desarrollo local (sin backend real)
+
+```json
+{
+    "apiUrl": "http://localhost:8000/api/v1",
+    "authConfig": {
+        "loginUrl": "/auth/login",
+        "tokenKey": "access_token",
+        "refreshKey": "refresh_token"
+    },
+    "appVersion": "1.0.0",
+    "loggingLevel": "debug",
+    "featureFlags": {
+        "enableSignup": true,
+        "maintenanceMode": false,
+        "mockAuth": true
+    }
+}
+```
+
+#### 4. Ejemplo para producción
+
+```json
+{
+    "apiUrl": "https://api.tu-dominio.com/api/v1",
+    "authConfig": {
+        "loginUrl": "/auth/login",
+        "tokenKey": "access_token",
+        "refreshKey": "refresh_token"
+    },
+    "appVersion": "1.0.0",
+    "loggingLevel": "error",
+    "featureFlags": {
+        "enableSignup": false,
+        "maintenanceMode": false,
+        "mockAuth": false
+    }
+}
+```
+
+> ⚠️ **Importante**: Este archivo se carga en runtime desde `public/assets/config/config.json`. En producción debe servirse con cabeceras `no-cache` para que los cambios surtan efecto inmediatamente (ver [DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md)).
 
 ---
 
