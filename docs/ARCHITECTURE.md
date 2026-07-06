@@ -31,7 +31,7 @@ graph TD
 
     subgraph "Features (💼 Domain Logic)"
         FeatureA[Dashboard Feature]
-        FeatureB[Invoice Feature]
+        FeatureB[Staff Feature]
         FeatureC[User Profile]
     end
 
@@ -39,7 +39,7 @@ graph TD
     FeatureA --> UIComponents
     FeatureB --> ConfigService
     FeatureB --> UIComponents
-    FeatureB --> UIComponents
+    FeatureC --> AuthService
 ```
 
 ### 🧠 Pragmatic DDD vs. Clean Architecture
@@ -131,19 +131,19 @@ Contiene componentes, directivas y pipes reutilizables que **no tienen lógica d
 ### 📂 `src/app/features` (El Negocio 💼)
 Aquí reside la funcionalidad real de la aplicación, dividida por **Dominios**. Cada carpeta aquí representa una "Feature" completa y aislada.
 
-Ejemplos: `dashboard`, `invoice`, `users`, `auth` (páginas de login).
+Ejemplos: `dashboard`, `staff`, `users`, `auth` (páginas de login).
 
 Estructura interna OBLIGATORIA de una Feature:
 -   **`pages/`**: Vistas principales (Smart Components) que se cargan por ruta.
-    -   Ej: `pages/overview/invoice-overview.component.ts`.
+    -   Ej: `pages/staff-list/staff-list.component.ts`.
 -   **`components/`**: Componentes privados específicos de esa feature.
-    -   Ej: `components/invoice-list/`.
+    -   Ej: `components/ecommerce-metrics/`.
 -   **`models/`**: Interfaces y tipos de datos del dominio.
     -   *Objetivo*: Centralizar las definiciones de tipos para asegurar consistencia en todo el feature. Evitar `any`.
-    -   *Ejemplo*: `Invoice.ts`, `InvoiceStatus.enum.ts`.
+    -   *Ejemplo*: `Staff.ts`, `StaffParams.ts`.
 -   **`services/`**: Servicios HTTP específicos del dominio.
     -   *Objetivo*: Manejar la comunicación con la API para ese dominio específico. Contienen la lógica de negocio y transformación de datos.
-    -   *Ejemplo*: `InvoiceService.ts` (métodos `getInvoices`, `createInvoice`).
+    -   *Ejemplo*: `StaffService.ts` (métodos `getStaff`, `filterStaff`).
 -   **`*.routes.ts`**: Definición de rutas internas (Micro-routing).
     -   *Objetivo*: Encapsular el ruteo de la feature para permitir el Lazy Loading desde el router principal. Esto asegura que cada módulo sea autónomo y fácil de mover o conectar.
 
@@ -153,7 +153,7 @@ Estructura interna OBLIGATORIA de una Feature:
 
 ### A. Smart vs. Dumb Components
 -   **Smart (Pages)**: Ubicados en `features/<name>/pages`.
-    -   Inyectan servicios (`InvoiceService`).
+    -   Inyectan servicios (`StaffService`).
     -   Manejan `Observables` o `Signals`.
     -   Pasan datos a los componentes hijos vía `[input]`.
 -   **Dumb (Shared/Components)**: Ubicados en `shared/components` o `features/<name>/components`.
@@ -182,8 +182,8 @@ readonly currentUser = this.userSignal.asReadonly();
 
 ### C. Feature Isolation (Aislamiento)
 Una feature **NO debe importar** componentes privados de otra feature.
--   ❌ `import { InvoiceTable } from '../invoice/components/...'` (En Dashboard).
--   ✅ Si Dashboard necesita una tabla de facturas, el componente debe ser movido a `Shared` o duplicado si la lógica diverge.
+-   ❌ `import { UserTable } from '../users/components/...'` (En Dashboard).
+-   ✅ Si Dashboard necesita una tabla de usuarios, el componente debe ser movido a `Shared` o duplicado si la lógica diverge.
 
 ---
 
@@ -224,7 +224,7 @@ Una feature **NO debe importar** componentes privados de otra feature.
 
 ### 6.1 ChangeDetectionStrategy.OnPush
 
-El proyecto utiliza `ChangeDetectionStrategy.OnPush` en **todos los componentes** (52 componentes) para optimizar el rendimiento de la aplicación.
+El proyecto utiliza `ChangeDetectionStrategy.OnPush` en **todos los componentes** (36 componentes) para optimizar el rendimiento de la aplicación.
 
 **Beneficios:**
 - Reduce las verificaciones de change detection hasta en un 90%

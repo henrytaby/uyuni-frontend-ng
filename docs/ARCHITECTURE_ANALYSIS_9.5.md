@@ -18,7 +18,7 @@
 | Lazy loading | 1.0/1.0 | Todas las features implementadas correctamente |
 | Standalone components | 1.0/1.0 | Sin NgModules, Angular 21 moderno |
 | Smart vs Dumb | 1.0/1.0 | Correctamente implementado en todas las features |
-| Signals + OnPush | 1.0/1.0 | 52/52 componentes con OnPush |
+| Signals + OnPush | 1.0/1.0 | 36/36 componentes con OnPush |
 | Feature isolation | 1.0/1.0 | Sin dependencias cruzadas entre features |
 | Dependency rules | 1.0/1.0 | Reglas respetadas: Features→Core, Shared→Core |
 | Micro-routing | 1.0/1.0 | Cada feature tiene su *.routes.ts |
@@ -91,7 +91,7 @@ Contratos OpenAPI/Swagger que definen la API, con generación automática de Typ
 ```yaml
 # openapi.yaml (no existe en el proyecto)
 paths:
-  /api/invoices:
+  /api/staff:
     get:
       responses:
         200:
@@ -182,7 +182,8 @@ src/app/
 ├── core/           # Singletons
 ├── shared/         # UI reutilizable
 └── features/       # Dominios de negocio
-    ├── invoice/
+    ├── staff/
+    ├── users/
     ├── dashboard/
     └── profile/
 ```
@@ -302,7 +303,7 @@ uyuni-workspace/
 ├── libs/
 │   ├── core/             # Shared core
 │   ├── ui-components/      # Design system
-│   ├── invoice/feature/    # Invoice como librería
+│   ├── staff/feature/      # Staff como librería
 │   └── dashboard/feature/  # Dashboard como librería
 └── tools/
 ```
@@ -329,7 +330,7 @@ uyuni-workspace/
 
 Uyuni tiene **9.5/10** con DDD Lite, que es la **arquitectura correcta** para su escala:
 
-- ~52 componentes
+- ~36 componentes
 - ~10 features
 - 1-3 desarrolladores
 - Single deploy

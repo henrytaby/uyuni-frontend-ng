@@ -79,12 +79,12 @@ src/app/shared/
 
 ### 1. `app-layout/` (El Contenedor Maestro)
 Es el orquestador. Define la estructura de alto nivel y los márgenes que dejan espacio al Sidebar.
-- **[app-layout.component.html](file:///opt/uyuni/an-uyuni-frontend/src/app/shared/layout/app-layout/app-layout.component.html)**: Define el grid principal y las animaciones de transición.
+- **[app-layout.component.html](file:///opt/uyuni/uyuni-frontend-ng/src/app/shared/layout/app-layout/app-layout.component.html)**: Define el grid principal y las animaciones de transición.
 - **Lógica**: Reacciona a los cambios en `SidebarService` para mover el contenido a la derecha o izquierda.
 
 ### 2. `app-sidebar/` (Navegación Lateral)
 Contiene la lista de enlaces y categorías.
-- **[app-sidebar.component.ts](file:///opt/uyuni/an-uyuni-frontend/src/app/shared/layout/app-sidebar/app-sidebar.component.ts)**: Aquí es donde se añaden o quitan ítems del menú principal.
+- **[app-sidebar.component.ts](file:///opt/uyuni/uyuni-frontend-ng/src/app/shared/layout/app-sidebar/app-sidebar.component.ts)**: Aquí es donde se añaden o quitan ítems del menú principal.
 - **Estado**: Se colapsa automáticamente en pantallas pequeñas.
 
 ### 3. `app-header/` (Barra Superior)

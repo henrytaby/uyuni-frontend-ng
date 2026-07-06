@@ -66,8 +66,8 @@ sequenceDiagram
     participant Service as NetworkErrorService
     participant Layout as AppLayout (UI)
 
-    User->>Router: Navega a "/calendar" (Lazy Loaded)
-    Router->>Browser: Pide "chunk-calendar.js"
+    User->>Router: Navega a "/staff" (Lazy Loaded)
+    Router->>Browser: Pide "chunk-staff.js"
     
     alt Sin Conexión a Internet
         Browser--xRouter: Fallo de Red (Network Error)

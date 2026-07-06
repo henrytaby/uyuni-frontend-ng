@@ -441,7 +441,7 @@ Order: Angular → PrimeNG/RxJS → Third-party → @core → @shared → @featu
 - Description: Stateless, batchable HTTP service to fetch multiple organizational catalogs in a single POST request to `/api/catalogs/bulk`.
 - Methods: `getBulkCatalogs(request)`
 - Models: `CatalogItem`, `CatalogBulkRequest`, `CatalogBulkResponse`
-- Reference Guide: Detailed guide and diagram at [docs/developer_guide/catalogs_bulk_guide.md](file:///opt/uyuni/an-uyuni-frontend/docs/developer_guide/catalogs_bulk_guide.md)
+- Reference Guide: Detailed guide and diagram at [docs/developer_guide/catalogs_bulk_guide.md](file:///opt/uyuni/uyuni-frontend-ng/docs/developer_guide/catalogs_bulk_guide.md)
 
 ### Interceptors
 - `authInterceptor`: Token injection, 401/403 handling, silent refresh, `X-Active-Role` header

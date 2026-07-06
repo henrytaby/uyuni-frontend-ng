@@ -58,15 +58,17 @@ src/app/
 ├── features/       # CAPA DE NEGOCIO (Dominios)
 │   ├── dashboard/  # Dominio: Panel de Control
 │   ├── auth/       # Dominio: Autenticación (Login, Register)
-│   ├── invoice/    # Dominio: Facturación
-│   └── ui/         # Dominio: Catálogo de UI interna
+│   ├── staff/      # Dominio: Gestión de Personal
+│   ├── users/      # Dominio: Gestión de Usuarios
+│   ├── profile/    # Dominio: Perfil de Usuario
+│   └── system/     # Dominio: Páginas del Sistema (404, blank)
 ├── shared/         # CAPA DE PRESENTACIÓN (UI Kit)
 │   ├── components/ # "Dumb Components" reutilizables (Botones, Inputs)
 │   └── layout/     # Estructuras base (Header, Sidebar)
 ```
 
 **¿Por qué this structure?**
-*   **Aislamiento**: Si falla el módulo de "Facturación", el "Dashboard" sigue funcionando.
+*   **Aislamiento**: Si falla el módulo de "Staff", el "Dashboard" sigue funcionando.
 *   **Escalabilidad**: Nuevos desarrolladores pueden trabajar en una `feature` sin tocar el resto del sistema.
 
 ```mermaid

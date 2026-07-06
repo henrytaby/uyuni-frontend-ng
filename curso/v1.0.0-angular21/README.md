@@ -211,7 +211,7 @@ Cada clase sigue la estructura:
 
 Este curso está basado en el proyecto **UyuniAdmin Frontend**:
 
-- **Repositorio**: `/opt/uyuni/an-uyuni-frontend`
+- **Repositorio**: `/opt/uyuni/uyuni-frontend-ng`
 - **Documentación**: [`docs/`](../../docs/)
 - **Memory Bank**: [`.kilocode/rules/memory-bank/`](../../.kilocode/rules/memory-bank/)
 

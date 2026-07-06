@@ -15,7 +15,7 @@
 
 | Técnica | Estado en UyuniAdmin | Impacto | Complejidad |
 |---------|---------------------|---------|-------------|
-| **OnPush** | ✅ Implementado (52 componentes) | Alto | Media |
+| **OnPush** | ✅ Implementado (36 componentes) | Alto | Media |
 | **Virtual Scrolling** | ⬜ No implementado | Alto | Baja |
 | **Preloading Strategy** | ⬜ No implementado | Medio | Baja |
 
@@ -132,7 +132,7 @@ Menos verificaciones = Mejor performance
 
 ### 2.3 Estado Actual en UyuniAdmin
 
-**✅ IMPLEMENTADO** - 52 componentes ya usan `OnPush`:
+**✅ IMPLEMENTADO** - 36 componentes ya usan `OnPush`:
 
 ```typescript
 // Ejemplo de componente con OnPush en UyuniAdmin
@@ -592,7 +592,7 @@ export const appConfig: ApplicationConfig = {
 
 | Técnica | ¿Implementar? | Prioridad | Justificación |
 |---------|---------------|-----------|---------------|
-| **OnPush** | ✅ Ya implementado | - | 52 componentes actualizados |
+| **OnPush** | ✅ Ya implementado | - | 36 componentes actualizados |
 | **Virtual Scrolling** | ✅ Sí | Alta | Tablas con muchos registros |
 | **Preloading** | ✅ Sí | Media | Mejora UX de navegación |
 
@@ -660,8 +660,8 @@ export const appConfig: ApplicationConfig = {
 5. Probar con datos reales
 
 **Componentes candidatos:**
-- `src/app/features/tables/` - Tablas de datos
-- `src/app/features/invoice/pages/list/` - Lista de facturas
+- `src/app/features/staff/` - Lista de personal
+- `src/app/features/users/` - Lista de usuarios
 - Cualquier componente con `*ngFor` sobre arrays grandes
 
 **Ejemplo de implementación:**

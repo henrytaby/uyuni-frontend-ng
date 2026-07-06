@@ -13,8 +13,8 @@ Se han actualizado **6 documentos** para reflejar la implementación de Husky + 
 
 ## ✅ **DOCUMENTOS ACTUALIZADOS**
 
-### **1. `GEMINI.md`** ✅
-**Ubicación:** `/opt/uyuni/an-uyuni-frontend/GEMINI.md`
+### **1. `AGENTS.md`** ✅
+**Ubicación:** `/opt/uyuni/uyuni-frontend-ng/AGENTS.md`
 
 **Cambios realizados:**
 - ✅ Agregado en sección `Quality Tools`: "Git Hooks: Husky v9 + Lint-Staged for pre-commit auto-fix (Mar 2026)"
@@ -23,8 +23,8 @@ Se han actualizado **6 documentos** para reflejar la implementación de Husky + 
 
 ---
 
-### **2. `.kilocode/rules/memory-bank/decisions-history.md`** ✅
-**Ubicación:** `/opt/uyuni/an-uyuni-frontend/.kilocode/rules/memory-bank/decisions-history.md`
+### **2. `.kilo/rules/memory-bank/decisions-history.md`** ✅
+**Ubicación:** `/opt/uyuni/uyuni-frontend-ng/.kilo/rules/memory-bank/decisions-history.md`
 
 **Cambios realizados:**
 - ✅ Agregada nueva decisión #9: "Husky + Lint-Staged for Code Quality (March 2026)"
@@ -60,8 +60,8 @@ Se han actualizado **6 documentos** para reflejar la implementación de Husky + 
 
 ---
 
-### **3. `.kilocode/rules/memory-bank/coding-standards.md`** ✅
-**Ubicación:** `/opt/uyuni/an-uyuni-frontend/.kilocode/rules/memory-bank/coding-standards.md`
+### **3. `.kilo/rules/memory-bank/coding-standards.md`** ✅
+**Ubicación:** `/opt/uyuni/uyuni-frontend-ng/.kilo/rules/memory-bank/coding-standards.md`
 
 **Cambios realizados:**
 - ✅ Agregada sección `Husky + Lint-Staged (Pre-commit Hooks)` en "Code Quality Tools"
@@ -88,7 +88,7 @@ git commit --no-verify -m "WIP"
 ---
 
 ### **4. `docs/ENTERPRISE_ANALYSIS_REPORT.md`** ✅
-**Ubicación:** `/opt/uyuni/an-uyuni-frontend/docs/ENTERPRISE_ANALYSIS_REPORT.md`
+**Ubicación:** `/opt/uyuni/uyuni-frontend-ng/docs/ENTERPRISE_ANALYSIS_REPORT.md`
 
 **Cambios realizados:**
 - ✅ Actualizado CI/CD score: 7.0/10 → 8.5/10
@@ -101,7 +101,7 @@ git commit --no-verify -m "WIP"
 ---
 
 ### **5. `README.md`** ✅
-**Ubicación:** `/opt/uyuni/an-uyuni-frontend/README.md`
+**Ubicación:** `/opt/uyuni/uyuni-frontend-ng/README.md`
 
 **Cambios realizados:**
 - ✅ Agregado en "Características Principales": "Husky + Lint-Staged: Pre-commit hooks para código limpio automáticamente"
@@ -112,7 +112,7 @@ git commit --no-verify -m "WIP"
 ---
 
 ### **6. `docs/HUSKY_IMPLEMENTATION_SUMMARY.md`** ✨ NUEVO
-**Ubicación:** `/opt/uyuni/an-uyuni-frontend/docs/HUSKY_IMPLEMENTATION_SUMMARY.md`
+**Ubicación:** `/opt/uyuni/uyuni-frontend-ng/docs/HUSKY_IMPLEMENTATION_SUMMARY.md`
 
 **Contenido:**
 - Resumen completo de implementación
@@ -127,7 +127,7 @@ git commit --no-verify -m "WIP"
 ---
 
 ### **7. `docs/HUSKY_LINT_STAGED_GUIDE.md`** ✨ NUEVO
-**Ubicación:** `/opt/uyuni/an-uyuni-frontend/docs/HUSKY_LINT_STAGED_GUIDE.md`
+**Ubicación:** `/opt/uyuni/uyuni-frontend-ng/docs/HUSKY_LINT_STAGED_GUIDE.md`
 
 **Contenido:**
 - Guía completa para desarrolladores
@@ -158,7 +158,7 @@ git commit --no-verify -m "WIP"
 
 Los siguientes documentos **NO** requieren actualización porque no mencionan herramientas de calidad de código o CI/CD:
 
-### **En `.kilocode/rules/memory-bank/`:**
+### **En `.kilo/rules/memory-bank/`:**
 - ✅ `project-overview.md` - No menciona herramientas específicas
 - ✅ `tech-stack.md` - Ya incluye ESLint, no necesita Husky (es tooling, no dependency)
 - ✅ `architecture-patterns.md` - Arquitectura, no tooling
@@ -206,14 +206,14 @@ Los siguientes documentos **NO** requieren actualización porque no mencionan he
 ### **Comandos para verificar:**
 
 ```bash
-# Verificar GEMINI.md
-grep -n "Husky" GEMINI.md
+# Verificar AGENTS.md
+grep -n "Husky" AGENTS.md
 
 # Verificar decisions-history.md
-grep -n "Husky" .kilocode/rules/memory-bank/decisions-history.md
+grep -n "Husky" .kilo/rules/memory-bank/decisions-history.md
 
 # Verificar coding-standards.md
-grep -n "Husky" .kilocode/rules/memory-bank/coding-standards.md
+grep -n "Husky" .kilo/rules/memory-bank/coding-standards.md
 
 # Verificar README.md
 grep -n "Husky" README.md
@@ -226,7 +226,7 @@ ls -la docs/HUSKY*.md
 
 ## ✅ **CHECKLIST DE VERIFICACIÓN**
 
-- [x] `GEMINI.md` actualizado
+- [x] `AGENTS.md` actualizado
 - [x] `decisions-history.md` actualizado
 - [x] `coding-standards.md` actualizado
 - [x] `ENTERPRISE_ANALYSIS_REPORT.md` actualizado

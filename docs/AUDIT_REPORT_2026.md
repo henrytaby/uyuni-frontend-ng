@@ -2,8 +2,8 @@
 
 **Fecha de Auditoría:** 17 de Marzo, 2026
 **Auditor:** Claude Code (Anthropic)
-**Versión del Proyecto:** 1.0.2
-**Angular Version:** 21.1.0
+**Versión del Proyecto:** 1.0.3
+**Angular Version:** 21.2.17
 
 ---
 
@@ -48,16 +48,12 @@ src/app/
 │   ├── components/ # UI components, Dropdowns
 │   └── pipes/      # SafeHtmlPipe
 │
-└── features/       # 💼 Dominios de Negocio (10 features)
+└── features/       # 💼 Dominios de Negocio (6 features)
     ├── auth/       # Autenticación
     ├── dashboard/  # Panel principal
-    ├── invoice/    # Facturación
+    ├── staff/      # Gestión de personal
+    ├── users/      # Gestión de usuarios
     ├── profile/    # Perfil de usuario
-    ├── calendar/   # Calendario
-    ├── charts/     # Gráficos
-    ├── tables/     # Tablas de datos
-    ├── forms/      # Formularios
-    ├── ui/         # Componentes UI demo
     └── system/     # 404, blank pages
 ```
 
@@ -70,7 +66,7 @@ src/app/
 | **Path Aliases** | `@core`, `@shared`, `@features`, `@env` | ✅ |
 | **Smart vs Dumb** | Correctamente separado | ✅ |
 | **Signals** | Estado reactivo moderno | ✅ |
-| **OnPush CD** | 52/52 componentes | ✅ |
+| **OnPush CD** | 36/36 componentes | ✅ |
 | **inject() DI** | Patrón moderno Angular | ✅ |
 
 ### 1.3 Reglas de Dependencias Respetadas
@@ -92,7 +88,7 @@ src/app/
 | Patrón | Calidad | Evidencia |
 |--------|---------|-----------|
 | **Signal-Based State** | ⭐⭐⭐⭐⭐ | AuthService con signals privados + computed públicos |
-| **Facade Pattern** | ⭐⭐⭐⭐⭐ | Servicios por feature (InvoiceService, etc.) |
+| **Facade Pattern** | ⭐⭐⭐⭐⭐ | Servicios por feature (StaffService, UserService, etc.) |
 | **Interceptor Pattern** | ⭐⭐⭐⭐⭐ | authInterceptor, loadingInterceptor |
 | **Guard Pattern** | ⭐⭐⭐⭐⭐ | authGuard funcional moderno |
 | **SRP** | ⭐⭐⭐⭐⭐ | TokenRefreshService, AuthErrorHandlerService |
@@ -175,15 +171,15 @@ module.exports = {
 | `AuthService` | 30 | 95.79% | ✅ |
 | `authGuard` | 8 | 100% | ✅ |
 | `authInterceptor` | 20 | 100% | ✅ |
-| **TOTAL** | **216** | **95-100%** | ✅ |
+| **TOTAL** | **221** | **95-100%** | ✅ |
 
 ### 3.3 Estado de Tests
 
 ```bash
 $ npm test
 
-Test Suites: 10 passed, 10 total
-Tests:       216 passed, 216 total
+Test Suites: 11 passed, 11 total
+Tests:       221 passed, 221 total
 Snapshots:   0 total
 Time:        7.746 s
 ```
@@ -198,8 +194,7 @@ Time:        7.746 s
 
 | Documento | Propósito | Calidad |
 |-----------|-----------|---------|
-| `CLAUDE.md` | Guía para Claude Code | ⭐⭐⭐⭐⭐ |
-| `GEMINI.md` | Contexto para AI agents | ⭐⭐⭐⭐⭐ |
+| `AGENTS.md` | Contexto para AI agents | ⭐⭐⭐⭐⭐ |
 | `README.md` | Quick start | ⭐⭐⭐⭐⭐ |
 | `ARCHITECTURE.md` | Guía arquitectónica completa | ⭐⭐⭐⭐⭐ |
 | `ENTERPRISE_ARCHITECTURE.md` | Estándares enterprise | ⭐⭐⭐⭐⭐ |
@@ -212,7 +207,7 @@ Time:        7.746 s
 | `AUTHENTICATION.md` | Sistema de auth | ⭐⭐⭐⭐⭐ |
 | `DEPLOYMENT_GUIDE.md` | Guía de despliegue | ⭐⭐⭐⭐⭐ |
 | `LAYOUT_GUIDE.md` | Sistema de layouts | ⭐⭐⭐⭐⭐ |
-| `.kilocode/rules/memory-bank/` | 9 archivos especializados | ⭐⭐⭐⭐⭐ |
+| `.kilo/rules/memory-bank/` | 9 archivos especializados | ⭐⭐⭐⭐⭐ |
 
 ### 4.2 Características de la Documentación
 
@@ -254,7 +249,7 @@ Time:        7.746 s
 
 | Técnica | Estado | Impacto |
 |---------|--------|---------|
-| ChangeDetectionStrategy.OnPush | ✅ 52/52 componentes | 🔥 90% menos verificaciones |
+| ChangeDetectionStrategy.OnPush | ✅ 36/36 componentes | 🔥 90% menos verificaciones |
 | Angular Signals | ✅ Estado reactivo | 🔥 CD granular |
 | Lazy Loading | ✅ Todas las features | 🔥 Bundle inicial ~70KB |
 | Standalone Components | ✅ Sin NgModules | 🔥 Tree-shaking óptimo |
@@ -283,8 +278,8 @@ Build time: ~4.6 segundos
 |-------------|---------|-----------|
 | **Husky** | v9.1.7 | Pre-commit hooks |
 | **lint-staged** | v16.4.0 | Linting en archivos staged |
-| **ESLint** | v9.39.1 | Análisis estático |
-| **Jest** | v30.2.0 | Testing unitario |
+| **ESLint** | v9.39.4 | Análisis estático |
+| **Jest** | v30.4.2 | Testing unitario |
 
 ### 7.2 Pre-commit Hook
 
@@ -314,8 +309,8 @@ npx lint-staged
 
 | Tecnología | Versión | Uso |
 |------------|---------|-----|
-| PrimeNG | v21.0.3 | Componentes UI |
-| Tailwind CSS | v4.1.11 | Estilos utilitarios |
+| PrimeNG | v21.1.9 | Componentes UI |
+| Tailwind CSS | v4.3.2 | Estilos utilitarios |
 | PrimeIcons | v7.0.0 | Iconografía |
 | Aura Theme | @primeuix/themes | Tema corporativo |
 
@@ -337,12 +332,12 @@ npx lint-staged
 
 | Métrica | Valor |
 |---------|-------|
-| Componentes | 52 |
-| Servicios Core | 7 |
+| Componentes | 36 |
+| Servicios Core | 9 |
 | Guards | 1 |
 | Interceptors | 2 |
-| Features | 10 |
-| Tests | 216 |
+| Features | 6 |
+| Tests | 221 |
 | Test Suites | 10 |
 | Cobertura Core | 95-100% |
 
@@ -354,14 +349,14 @@ npx lint-staged
 | TypeScript errors | 0 |
 | Build errors | 0 |
 | Test failures | 0 |
-| OnPush components | 52/52 (100%) |
+| OnPush components | 36/36 (100%) |
 
 ---
 
 ## 10. ✅ FORTALEZAS DESTACADAS
 
 1. **🏆 Arquitectura DDD Lite impecable** - Separación clara de responsabilidades
-2. **🏆 216 tests unitarios** con cobertura 95-100% en servicios core
+2. **🏆 221 tests unitarios** con cobertura 95-100% en servicios core
 3. **🏆 Documentación exhaustiva** - 15+ archivos .md especializados
 4. **🏆 Angular 21 moderno** - Signals, Standalone, OnPush, inject()
 5. **🏆 Zero linting errors** - Código limpio y consistente
@@ -417,7 +412,7 @@ El proyecto **Uyuni Frontend** es un **ejemplo excepcional** de aplicación Angu
 | Aspecto | Uyuni | Estándar Enterprise | Estado |
 |---------|-------|---------------------|--------|
 | Arquitectura | DDD Lite + Modular | ✅ Requerido | ✅ Cumple |
-| Testing | 216 tests, 95%+ cov | >80% coverage | ✅ Excede |
+| Testing | 221 tests, 95%+ cov | >80% coverage | ✅ Excede |
 | Documentación | 15+ archivos md | Básica | ✅ Excede |
 | Code Quality | Zero lint errors | <10 errores | ✅ Excede |
 | Performance | OnPush + Signals | Optimizado | ✅ Excede |
@@ -428,8 +423,7 @@ El proyecto **Uyuni Frontend** es un **ejemplo excepcional** de aplicación Angu
 ## 13. 📚 REFERENCIAS
 
 ### Documentación del Proyecto
-- [CLAUDE.md](../CLAUDE.md) - Guía para Claude Code
-- [GEMINI.md](../GEMINI.md) - Contexto para AI agents
+- [AGENTS.md](../AGENTS.md) - Contexto para AI agents
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Arquitectura DDD Lite
 - [ENTERPRISE_ANALYSIS_REPORT.md](ENTERPRISE_ANALYSIS_REPORT.md) - Análisis detallado
 - [UNIT_TESTING_GUIDE.md](UNIT_TESTING_GUIDE.md) - Guía de testing

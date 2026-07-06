@@ -238,7 +238,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist/an-uyuni-frontend/browser
+          publish_dir: ./dist/uyuni-frontend-ng/browser
 ```
 
 #### Paso 2: Configurar GitHub Pages
@@ -252,12 +252,12 @@ jobs:
 ```json
 {
   "projects": {
-    "an-uyuni-frontend": {
+    "uyuni-frontend-ng": {
       "architect": {
         "build": {
           "configurations": {
             "production": {
-              "baseHref": "/an-uyuni-frontend/"
+              "baseHref": "/uyuni-frontend-ng/"
             }
           }
         }
@@ -293,7 +293,7 @@ commitlint.config.js
 
 ```json
 {
-  "name": "an-uyuni-frontend",
+  "name": "uyuni-frontend-ng",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -390,7 +390,7 @@ jobs:
       - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist/an-uyuni-frontend/browser
+          publish_dir: ./dist/uyuni-frontend-ng/browser
 ```
 
 ---

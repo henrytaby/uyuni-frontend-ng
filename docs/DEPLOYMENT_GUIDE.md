@@ -34,8 +34,8 @@ Para generar la versión optimizada de producción, necesitamos las herramientas
 
 1.  **Clonar el repositorio**:
     ```bash
-    git clone https://github.com/tu-usuario/an-uyuni-frontend.git
-    cd an-uyuni-frontend
+    git clone git@github.com:henrytaby/uyuni-frontend-ng.git
+    cd uyuni-frontend-ng
     ```
 
 2.  **Instalar dependencias completas**:
@@ -81,7 +81,7 @@ Nginx servirá los archivos estáticos y manejará la compresión Gzip para máx
         listen 80;
         server_name tu-dominio.com www.tu-dominio.com; # 👈 Cambiar esto
         
-        root /var/www/an-uyuni-frontend/dist/ng-uyuniadmin/browser; # 👈 Ruta a tu carpeta dist
+        root /var/www/uyuni-frontend-ng/dist/ng-uyuniadmin/browser; # 👈 Ruta a tu carpeta dist
         index index.html;
 
         # 🚀 Compresión Gzip (Optimización)

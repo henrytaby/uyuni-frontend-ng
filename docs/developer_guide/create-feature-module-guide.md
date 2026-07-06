@@ -19,7 +19,7 @@ graph TD
     subgraph Features["features/ (Módulos Lazy-Loaded)"]
         F1[staff/]
         F2[dashboard/]
-        F3[calendar/]
+        F3[users/]
         F4[profile/]
         F5[...]
     end
@@ -70,7 +70,7 @@ Para agilizar la creación de módulos, hemos creado un script en Node.js que **
 
 ### Uso del Comando
 
-Desde la raíz del proyecto (`/opt/uyuni/an-uyuni-frontend`), ejecuta el siguiente comando:
+Desde la raíz del proyecto (`/opt/uyuni/uyuni-frontend-ng`), ejecuta el siguiente comando:
 
 ```bash
 node scripts/create-feature.js <feature-origen> <feature-destino> <entidad-destino>
