@@ -7,15 +7,11 @@ All features are located in `src/app/features/` and follow lazy loading.
 | Feature | Route | Description |
 |---------|-------|-------------|
 | **auth** | `/signin`, `/signup` | Authentication pages |
-| **dashboard** | `/` | Main dashboard with metrics |
-| **calendar** | `/calendar` | Calendar and events |
-| **charts** | `/charts` | Data visualization |
-| **forms** | `/forms` | Form components |
-| **tables** | `/tables` | Data tables |
-| **invoice** | `/invoice` | Invoice management |
-| **profile** | `/profile` | User profile |
-| **system** | `/blank`, `**` | System pages (404, blank) |
-| **ui** | `/ui` | UI components demo |
+| **dashboard** | `/` | Main dashboard with metrics and role-based views |
+| **profile** | `/profile` | User profile page |
+| **staff** | `/staff` | Staff management (list, filtering) |
+| **users** | `/users` | User management (list, filtering) |
+| **system** | `/blank`, `**` | System pages (404, blank template) |
 
 ---
 
@@ -57,140 +53,31 @@ auth/
 **Location**: `src/app/features/dashboard/`
 
 ### Route
-- `/` - Default route (dashboard overview)
+- `/` - Default route (dashboard main page)
 
 ### Structure
 ```
 dashboard/
 ├── pages/
-│   └── overview/          # Main dashboard page
+│   └── main/              # Main dashboard page (role-based view switching)
 ├── components/
+│   ├── admin-view/        # Administrator dashboard view
+│   ├── client-view/       # Client dashboard view
+│   ├── default-view/      # Default dashboard view
 │   ├── ecommerce-metrics/ # KPI cards
-│   ├── monthly-sales-chart/  # Sales chart
-│   └── monthly-target/    # Target progress
+│   ├── monthly-sales-chart/  # Sales chart (Chart.js)
+│   ├── monthly-target/    # Target progress
+│   └── statics-chart/     # Statistics chart
 └── dashboard.routes.ts
 ```
 
 ### Key Components
+- `MainComponent` - Dashboard entry, selects view by active role
+- `AdminViewComponent` / `ClientViewComponent` / `DefaultViewComponent` - Role-based views
 - `EcommerceMetricsComponent` - Displays KPIs (revenue, orders, etc.)
-- `MonthlySalesChartComponent` - Chart.js line/bar chart
+- `MonthlySalesChartComponent` - Chart.js line/bar chart (via PrimeNG `ChartModule`)
 - `MonthlyTargetComponent` - Progress indicators
-
----
-
-## Calendar Feature
-
-**Location**: `src/app/features/calendar/`
-
-### Route
-- `/calendar` - Calendar overview
-
-### Structure
-```
-calendar/
-├── pages/
-│   └── overview/          # Calendar page
-├── components/            # Calendar-specific components
-├── models/                # Event types
-├── services/              # Event services
-└── calendar.routes.ts
-```
-
-### Dependencies
-- `@fullcalendar/angular` - Calendar component
-- `@fullcalendar/daygrid` - Month view
-- `@fullcalendar/timegrid` - Week/day view
-- `@fullcalendar/interaction` - Drag & drop
-
----
-
-## Charts Feature
-
-**Location**: `src/app/features/charts/`
-
-### Routes
-- `/charts/bar` - Bar charts
-- `/charts/line` - Line charts
-
-### Structure
-```
-charts/
-├── pages/
-│   ├── bar-chart/         # Bar chart page
-│   └── line-chart/        # Line chart page
-├── components/
-│   ├── bar/
-│   │   └── bar-chart-one/ # Bar chart component
-│   └── line/
-│       └── line-chart-one/ # Line chart component
-└── charts.routes.ts
-```
-
-### Dependencies
-- `chart.js` - Charting library
-
----
-
-## Forms Feature
-
-**Location**: `src/app/features/forms/`
-
-### Routes
-- `/forms/form-elements` - Basic form elements
-- `/forms/form-layout` - Form layouts
-
-### Structure
-```
-forms/
-├── pages/
-│   ├── form-elements/     # Input components demo
-│   └── form-layout/       # Layout variations
-├── components/            # Form-specific components
-└── forms.routes.ts
-```
-
----
-
-## Tables Feature
-
-**Location**: `src/app/features/tables/`
-
-### Routes
-- `/tables/basic` - Basic tables
-- `/tables/data` - Data tables with sorting/filtering
-
-### Structure
-```
-tables/
-├── pages/
-│   ├── basic/             # Basic table page
-│   └── data/              # Data table page
-├── components/            # Table components
-└── tables.routes.ts
-```
-
-### Dependencies
-- PrimeNG Table component
-
----
-
-## Invoice Feature
-
-**Location**: `src/app/features/invoice/`
-
-### Routes
-- `/invoice/list` - Invoice list
-- `/invoice/detail` - Invoice detail
-
-### Structure
-```
-invoice/
-├── pages/
-│   ├── list/              # Invoice list page
-│   └── detail/            # Invoice detail page
-├── components/            # Invoice-specific components
-└── invoice.routes.ts
-```
+- `StaticsChartComponent` - Statistics chart
 
 ---
 
@@ -205,15 +92,70 @@ invoice/
 ```
 profile/
 ├── pages/
-│   └── overview/          # Profile page
-├── components/            # Profile components
+│   └── overview/          # Profile page (ProfileComponent)
+├── components/
+│   ├── user-info-card/    # User basic info card
+│   ├── user-meta-card/    # User metadata card
+│   └── user-address-card/ # User address card
 └── profile.routes.ts
 ```
 
 ### Features
 - User information display
-- Role switching
-- Profile editing
+- Role switching (via shared header role-selector)
+- Profile cards layout
+
+---
+
+## Staff Feature
+
+**Location**: `src/app/features/staff/`
+
+### Route
+- `/staff` - Staff list
+
+### Structure
+```
+staff/
+├── pages/
+│   └── staff-list/        # Staff list page (StaffListComponent)
+├── services/
+│   ├── staff.service.ts          # StaffService (HTTP API: /core/staff/)
+│   └── staff-filter.service.ts  # StaffFilterService (filtering state)
+├── models/
+│   └── staff.model.ts     # Staff, StaffParams interfaces
+└── staff.routes.ts
+```
+
+### Models
+- `Staff` - Staff entity (id, full_name, email, cellphone, management_name, department_name, birth_date, is_active, staff_type, position_id, org_unit_id)
+- `StaffParams` - Query/filter params (offset, limit, search, sort_by, sort_order, is_active, org_unit_id)
+
+---
+
+## Users Feature
+
+**Location**: `src/app/features/users/`
+
+### Route
+- `/users` - User list
+
+### Structure
+```
+users/
+├── pages/
+│   └── user-list/         # User list page (UserListComponent)
+├── services/
+│   ├── user.service.ts          # UserService (HTTP API: /core/users/)
+│   └── user-filter.service.ts   # UserFilterService (filtering state)
+├── models/
+│   └── user.model.ts      # User, UserParams interfaces
+└── user.routes.ts
+```
+
+### Models
+- `User` - User entity (id, username, email, first_name, last_name, is_verified, is_active, is_superuser, created_at, updated_at, created_by_id, updated_by_id)
+- `UserParams` - Query/filter params (offset, limit, search, sort_by, sort_order, is_active, is_verified, is_superuser)
 
 ---
 
@@ -228,26 +170,10 @@ profile/
 ### Structure
 ```
 system/
-├── pages/
-│   ├── blank/             # Blank template
-│   └── not-found/         # 404 page
-└── prime-demo/            # PrimeNG demo page
+└── pages/
+    ├── blank/             # Blank template (BlankComponent)
+    └── not-found/         # 404 page (NotFoundComponent)
 ```
-
----
-
-## UI Feature
-
-**Location**: `src/app/features/ui/`
-
-### Routes
-- `/ui/alerts` - Alert components
-- `/ui/buttons` - Button styles
-- `/ui/cards` - Card components
-- etc.
-
-### Purpose
-Demo page for UI components. Not for production use.
 
 ---
 
@@ -259,13 +185,28 @@ Demo page for UI components. Not for production use.
 ```
 shared/
 ├── layout/
-│   └── app-layout/        # Main application layout
+│   ├── app-layout/        # Main application layout
+│   ├── app-header/        # Top navigation bar
+│   ├── app-sidebar/       # Side navigation
+│   ├── backdrop/          # Mobile sidebar backdrop
+│   └── skeleton-page/     # UI skeleton page (loading)
 ├── components/
-│   ├── header/            # App header
-│   │   └── user-dropdown/ # User menu
-│   └── sidebar/           # Navigation sidebar
-├── pipes/                 # Custom pipes
-└── directives/            # Custom directives
+│   ├── header/
+│   │   ├── theme-toggle/  # Dark mode toggle
+│   │   ├── user-dropdown/ # User menu (logout)
+│   │   └── role-selector/ # Active role switching
+│   ├── ui/
+│   │   └── dropdown/      # Reusable dropdown (dropdown, dropdown-item)
+│   └── common/
+│       └── page-breadcrumb/ # Page breadcrumb
+├── services/
+│   ├── icon-registry.service.ts  # Slug → Lucide icon mapping
+│   ├── sidebar.service.ts        # Sidebar state (toggle, collapse)
+│   └── theme.service.ts          # Theme (light/dark) persistence
+├── models/
+│   └── user-role.model.ts        # Shared user/role types
+└── pipe/
+    └── safe-html.pipe.ts         # Safe HTML pipe
 ```
 
 ### Key Components
@@ -273,6 +214,8 @@ shared/
 - `AppHeaderComponent` - Top navigation bar
 - `AppSidebarComponent` - Side navigation
 - `UserDropdownComponent` - User menu with logout
+- `RoleSelectorComponent` - Active role switching
+- `DropdownComponent` / `DropdownItemComponent` - Reusable dropdown UI
 
 ---
 
@@ -291,6 +234,8 @@ shared/
 | `TokenRefreshService` | Token renewal |
 | `AuthErrorHandlerService` | Auth error handling |
 | `NetworkErrorService` | Network error recovery |
+| `BreakpointService` | Responsive breakpoint state (uses `@angular/cdk`) |
+| `CatalogService` | Stateless bulk catalog fetch (`/api/catalogs/bulk`) |
 
 ### Interceptors
 
@@ -305,6 +250,19 @@ shared/
 |-------|---------|
 | `authGuard` | Route protection |
 
+### Handlers
+
+| Handler | Purpose |
+|---------|---------|
+| `GlobalErrorHandler` | Catches unhandled errors at app level |
+
+### Models
+
+| Model | Purpose |
+|-------|---------|
+| `menu.models.ts` | Global menu/navigation types |
+| `catalog.model.ts` | Catalog bulk request/response types |
+
 ---
 
-*Last updated: May 2026*
+*Last updated: July 2026*

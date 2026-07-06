@@ -431,9 +431,9 @@ mockHandler.mockImplementation(() => {
 
 ### Code Quality Issues Found
 
-1. **console.log in Production Code**: 12+ occurrences across features (profile, tables, forms, auth) that should use `LoggerService`.
+1. **console.log in Production Code**: 10 occurrences across features (profile, auth) and shared services that should use `LoggerService`.
 2. **Legacy @Input/@Output Decorators**: `DropdownComponent`, `DropdownItemComponent`, `SignInFormComponent` still use `@Input()`/`@Output()` instead of `input()`/`output()` signal functions.
-3. **`any` Type Usage**: 2 occurrences in production code (`calendar.component.ts:181`, `forms-overview.component.ts:75`).
+3. **`any` Type Usage**: 0 occurrences in production code (resolved).
 4. **Feature Test Coverage**: 0 spec files in `features/` — all 11 spec files are in `core/` only.
 5. **Constructor Injection Remnants**: 4 files still use `constructor()` pattern (`loading.service.ts`, `auth.service.ts`, `theme.service.ts`, `app-layout.component.ts`) — these are acceptable when constructor logic is needed (e.g., effect(), signal initialization).
 
@@ -442,16 +442,16 @@ mockHandler.mockImplementation(() => {
 | Standard | Status | Notes |
 |----------|--------|-------|
 | Standalone Components | PASS | 0 NgModules found |
-| OnPush Change Detection | PASS | All 56 components use OnPush |
+| OnPush Change Detection | PASS | All 36 components use OnPush |
 | Path Aliases | PASS | No deep relative imports across modules |
-| inject() Pattern | MOSTLY PASS | 55 inject() usages, 4 constructor() (acceptable) |
+| inject() Pattern | MOSTLY PASS | 88 inject() usages, 4 constructor() (acceptable) |
 | Lazy Loading | PASS | All features lazy-loaded |
 | Signals for State | PARTIAL | 18 signal(), 10 computed(), but 0 input()/output() signal functions |
-| LoggerService Usage | FAIL | 12+ console.log in feature components |
-| Core Services providedIn: 'root' | PASS | All 8 core services use singleton pattern |
+| LoggerService Usage | FAIL | 10 console.log in feature/shared components |
+| Core Services providedIn: 'root' | PASS | All 9 core services use singleton pattern |
 | ESLint | PASS | All files pass linting |
-| Tests | PASS | 222 tests, 11 suites, all passing |
-| Build | PASS | Production build succeeds (4.1MB, within 5MB budget) |
+| Tests | PASS | 221 tests, 11 suites, all passing |
+| Build | PASS | Production build succeeds (within 5MB budget) |
 
 ---
-*Last updated: May 2026*
+*Last updated: July 2026*

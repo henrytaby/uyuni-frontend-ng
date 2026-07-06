@@ -412,4 +412,4 @@ Backend-driven icons use `IconRegistryService` to map slug strings to Lucide ico
 
 ---
 
-*Last updated: May 2026*
+*Last updated: July 2026*

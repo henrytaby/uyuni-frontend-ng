@@ -334,6 +334,79 @@ this.networkService.retryWithBackoff(
 
 ---
 
+## BreakpointService
+
+**Location**: `src/app/core/services/breakpoint.service.ts`
+
+**Purpose**: Reactive responsive breakpoint state using `@angular/cdk` BreakpointObserver.
+
+### Public API
+
+```typescript
+class BreakpointService {
+  // Computed Signals
+  readonly isDesktop: Signal<boolean>  // ≥1280px
+  readonly isMobile: Signal<boolean>   // <1280px
+  readonly isMedium: Signal<boolean>   // ≥768px
+}
+```
+
+### Usage
+
+```typescript
+private readonly breakpointService = inject(BreakpointService);
+
+// In template
+@if (breakpointService.isMobile()) {
+  <app-mobile-nav />
+}
+```
+
+---
+
+## CatalogService
+
+**Location**: `src/app/core/services/catalog.service.ts`
+
+**Purpose**: Stateless, batchable HTTP service to fetch multiple organizational catalogs in a single POST request to `/api/catalogs/bulk`.
+
+### Public API
+
+```typescript
+class CatalogService {
+  getBulkCatalogs(request: CatalogBulkRequest): Observable<CatalogBulkResponse>
+}
+```
+
+### Models
+
+```typescript
+interface CatalogItem {
+  value: string | number;
+  label: string;
+  extra?: unknown | null;
+}
+
+type CatalogBulkRequest = Record<string, Record<string, unknown>>;
+type CatalogBulkResponse = Record<string, CatalogItem[]>;
+```
+
+### Usage
+
+```typescript
+private readonly catalogService = inject(CatalogService);
+
+this.catalogService.getBulkCatalogs({
+  roles: {},
+  departments: { is_active: true }
+}).subscribe(response => {
+  this.roles.set(response.roles);
+  this.departments.set(response.departments);
+});
+```
+
+---
+
 ## Interceptors
 
 ### authInterceptor
@@ -480,8 +553,16 @@ NetworkErrorService
 
 LoadingService
     └── Router (for navigation events)
+
+BreakpointService
+    └── @angular/cdk BreakpointObserver
+
+CatalogService
+    ├── HttpClient
+    ├── ConfigService
+    └── LoggerService
 ```
 
 ---
 
-*Last updated: May 2026*
+*Last updated: July 2026*

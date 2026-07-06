@@ -185,19 +185,31 @@ When `mockAuth` is `true`, the system bypasses real authentication for developme
 src/app/
 ├── core/
 │   ├── auth/
-│   │   └── auth.service.ts           # Main auth service
+│   │   ├── auth.service.ts           # Main auth service
+│   │   └── auth.service.spec.ts      # Auth service tests
 │   ├── interceptors/
-│   │   └── auth.interceptor.ts       # HTTP middleware
+│   │   ├── auth.interceptor.ts       # HTTP middleware
+│   │   └── auth.interceptor.spec.ts  # Interceptor tests
 │   ├── guards/
-│   │   └── auth.guard.ts             # Route protection
+│   │   ├── auth.guard.ts             # Route protection
+│   │   └── auth.guard.spec.ts        # Guard tests
 │   └── services/
 │       ├── token-refresh.service.ts  # Token renewal
-│       └── auth-error-handler.service.ts  # Error handling
+│       ├── token-refresh.service.spec.ts
+│       ├── auth-error-handler.service.ts  # Error handling
+│       └── auth-error-handler.service.spec.ts
 ├── features/
 │   └── auth/
 │       ├── pages/
 │       │   ├── sign-in/              # Login page
 │       │   └── sign-up/              # Registration page
+│       ├── components/
+│       │   ├── signin-form/          # Login form
+│       │   ├── signup-form/          # Registration form
+│       │   ├── grid-shape/           # Decorative grid
+│       │   ├── theme-toggle-two/     # Dark mode toggle
+│       │   └── layout/
+│       │       └── auth-page-layout/ # Auth pages layout
 │       └── models/
 │           └── auth.models.ts        # Auth types
 └── shared/
@@ -208,4 +220,4 @@ src/app/
 
 ---
 
-*Last updated: May 2026*
+*Last updated: July 2026*

@@ -43,11 +43,6 @@ npx eslint --fix src/                 # Lint and fix
 | RxJS | 7.8.2 | Async operations and HTTP |
 | Zone.js | 0.16.2 | Change detection |
 | Chart.js | 4.5.1 | Data visualization |
-| FullCalendar | 6.1.20 | Calendar component |
-| Swiper | 12.1.4 | Touch slider |
-| Flatpickr | 4.6.13 | Date picker |
-| PrismJS | 1.30.0 | Syntax highlighting |
-| ng-otp-input | 2.0.9 | OTP input component |
 | Jest | 30.4.2 | Testing framework |
 | ESLint | 9.39.4 | Code linting |
 | angular-eslint | 21.4.0 | Angular lint rules |
@@ -292,14 +287,10 @@ src/app/
 ├── features/               # Domain modules (lazy-loaded)
 │   ├── auth/               # /signin, /signup
 │   ├── dashboard/          # / (main dashboard)
-│   ├── calendar/           # /calendar
-│   ├── charts/             # /charts/bar, /charts/line
-│   ├── forms/              # /forms/form-elements, /forms/form-layout
-│   ├── tables/             # /tables/basic, /tables/data
-│   ├── invoice/            # /invoice/list, /invoice/detail
 │   ├── profile/            # /profile
-│   ├── system/             # /blank, /prime-demo, /** (404)
-│   └── ui/                 # /ui (UI components demo)
+│   ├── staff/              # /staff
+│   ├── users/              # /users
+│   └── system/             # /blank, /** (404)
 ├── app.component.ts         # Root component + global loader
 ├── app.config.ts            # App configuration (PrimeNG Aura, interceptors)
 └── app.routes.ts            # Root routing (lazy-loaded)
@@ -379,7 +370,7 @@ readonly onSave = output<User>();
 
 ### 4. ChangeDetectionStrategy.OnPush
 
-ALL components MUST use `ChangeDetectionStrategy.OnPush`. Currently 56/56 components comply.
+ALL components MUST use `ChangeDetectionStrategy.OnPush`. Currently 36/36 components comply.
 
 ### 5. Logging - LoggerService
 
@@ -716,7 +707,7 @@ In Tailwind CSS v4, the important modifier is strictly a **suffix** (postfix). Y
 
 - **Framework**: Jest 30 + jest-preset-angular 16
 - **Setup**: `src/setup-jest.ts`
-- **Current**: 222 tests, 11 suites (core only), all passing
+- **Current**: 221 tests, 11 suites (core only), all passing
 - **Coverage thresholds**: 80% statements, 70% branches, 75% functions
 - **Note**: Feature components have 0 test coverage (improvement needed)
 - **Pattern**: Use `TestBed.runInInjectionContext()` for functional guards/interceptors
@@ -743,9 +734,8 @@ Husky v9 + lint-staged:
 
 | Issue | Severity | Location |
 |-------|----------|----------|
-| console.log in feature components | Medium | profile/ (3), tables/ (5), forms/ (1), auth/ (1) |
+| console.log in feature components | Medium | profile/ (3), auth/ (1), shared/ (2) |
 | Legacy @Input/@Output decorators | Low | dropdown.component.ts, signin-form.component.ts |
-| `any` type usage | Low | calendar.component.ts:181, forms-overview.component.ts:75 |
 | Zero feature test coverage | High | All features/ have 0 spec files |
 
 ## Reference Documentation

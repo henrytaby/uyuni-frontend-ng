@@ -26,7 +26,7 @@
 - Avoid god objects and monolithic services
 
 ### 5. ChangeDetectionStrategy.OnPush
-- All components use `ChangeDetectionStrategy.OnPush` (52 components)
+- All components use `ChangeDetectionStrategy.OnPush` (36 components)
 - Optimizes performance by reducing unnecessary change detection cycles
 - Works seamlessly with Angular Signals
 - Requires immutable patterns for objects and arrays
@@ -37,46 +37,48 @@
 src/app/
 ├── core/                    # 🧠 Singletons (Global Services)
 │   ├── auth/               # Authentication logic
-│   │   └── auth.service.ts
+│   │   ├── auth.service.ts
+│   │   └── auth.service.spec.ts
 │   ├── config/             # Configuration
 │   │   ├── config.service.ts
-│   │   └── config.model.ts
+│   │   ├── config.model.ts
+│   │   └── config.service.spec.ts
 │   ├── guards/             # Route guards
-│   │   └── auth.guard.ts
+│   │   └── auth.guard.ts (+ spec)
 │   ├── handlers/           # Error handlers
 │   │   └── global-error-handler.ts
 │   ├── interceptors/       # HTTP interceptors
-│   │   ├── auth.interceptor.ts
+│   │   ├── auth.interceptor.ts (+ spec)
 │   │   └── loading.interceptor.ts
 │   ├── models/             # Global models
-│   │   └── menu.models.ts
-│   └── services/           # Global utility services
+│   │   ├── menu.models.ts
+│   │   └── catalog.model.ts
+│   └── services/           # Global utility services (+ specs)
 │       ├── loading.service.ts
 │       ├── logger.service.ts
 │       ├── token-refresh.service.ts
 │       ├── auth-error-handler.service.ts
-│       └── network-error.service.ts
+│       ├── network-error.service.ts
+│       ├── breakpoint.service.ts        # @angular/cdk based
+│       └── catalog.service.ts           # Bulk catalog fetch
 │
 ├── shared/                  # 🛠️ Reusable UI
-│   ├── components/         # Shared components
-│   │   └── header/
-│   │   └── sidebar/
-│   ├── layout/             # Layout components
-│   │   └── app-layout/
-│   ├── pipes/              # Custom pipes
-│   └── directives/         # Custom directives
+│   ├── components/
+│   │   ├── header/         # theme-toggle, user-dropdown, role-selector
+│   │   ├── ui/             # dropdown, dropdown-item
+│   │   └── common/         # page-breadcrumb
+│   ├── layout/             # app-layout, app-header, app-sidebar, backdrop, skeleton-page
+│   ├── services/           # icon-registry, sidebar, theme
+│   ├── models/             # user-role.model.ts
+│   └── pipe/               # safe-html.pipe.ts
 │
 ├── features/               # 💼 Domain Modules
-│   ├── auth/               # Authentication feature
-│   ├── dashboard/          # Dashboard feature
-│   ├── calendar/           # Calendar feature
-│   ├── charts/             # Charts feature
-│   ├── forms/              # Forms feature
-│   ├── tables/             # Tables feature
-│   ├── invoice/            # Invoice feature
-│   ├── profile/            # Profile feature
-│   ├── system/             # System pages (404, blank)
-│   └── ui/                 # UI components demo
+│   ├── auth/               # Authentication feature (/signin, /signup)
+│   ├── dashboard/          # Dashboard feature (/)
+│   ├── profile/            # Profile feature (/profile)
+│   ├── staff/              # Staff management (/staff)
+│   ├── users/              # User management (/users)
+│   └── system/             # System pages (/blank, **)
 │
 ├── app.component.ts        # Root component
 ├── app.config.ts           # Application config
@@ -109,7 +111,7 @@ feature/
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      FEATURES                                │
-│  (Dashboard, Calendar, Charts, Forms, Tables, etc.)         │
+│  (Dashboard, Profile, Staff, Users, Auth, System)           │
 └─────────────────────┬───────────────────────────────────────┘
                       │
           ┌───────────┴───────────┐
@@ -259,4 +261,4 @@ This pattern is the industry standard for ERPs (SAP Fiori, Odoo, ERPNext) and en
 
 ---
 
-*Last updated: May 2026*
+*Last updated: July 2026*

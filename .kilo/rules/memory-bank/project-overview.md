@@ -19,11 +19,9 @@ UyuniAdmin is an enterprise-grade administrative dashboard designed for managing
 
 - **Authentication System**: OAuth2 Password Grant with JWT tokens
 - **Role-Based Access Control**: Multi-role user management with context switching
-- **Dashboard Analytics**: E-commerce metrics, sales charts, and data visualization
-- **Calendar Integration**: FullCalendar-based event management
-- **Data Tables**: Advanced data tables with sorting, filtering, and pagination
-- **Form Management**: Dynamic form components with validation
-- **Invoice Generation**: Invoice creation and management
+- **Dashboard Analytics**: E-commerce metrics, sales charts, and role-based views
+- **Staff Management**: Staff list with filtering and search (/staff)
+- **User Management**: User list with filtering and search (/users)
 - **User Profile**: Profile management with role selection
 
 ## Target Users
@@ -79,4 +77,4 @@ npm run lint
 
 ---
 
-*Last updated: May 2026*
+*Last updated: July 2026*
