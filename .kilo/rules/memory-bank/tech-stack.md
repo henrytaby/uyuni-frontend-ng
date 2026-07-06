@@ -5,8 +5,10 @@
 | Technology | Version | Purpose |
 |------------|---------|---------|
 | **Angular** | v21.2.17 | Core framework |
+| **@angular/cdk** | v21.2.14 | Component Dev Kit (BreakpointService, a11y utilities) |
 | **TypeScript** | v5.9.3 | Primary language |
 | **Zone.js** | v0.16.2 | Change detection |
+| **tslib** | v2.8.1 | Runtime helpers for TS decorators |
 
 ## UI Framework
 
@@ -14,9 +16,11 @@
 |------------|---------|---------|
 | **PrimeNG** | v21.1.9 | UI component library (MIT - last open source version) |
 | **@primeuix/themes** | v2.0.3 | Theme system (Aura) |
-| **PrimeIcons** | v7.0.0 | Icon library |
+| **PrimeIcons** | v7.0.0 | Icon library (PrimeNG component props + social/brand icons only) |
 | **Tailwind CSS** | v4.3.2 | Utility-first CSS |
+| **@tailwindcss/postcss** | v4.3.2 | Tailwind v4 PostCSS plugin |
 | **tailwindcss-primeui** | v0.6.1 | PrimeNG + Tailwind integration |
+| **postcss** | v8.5.16 | CSS processing pipeline |
 
 ## State Management
 
@@ -37,12 +41,7 @@
 
 | Library | Version | Purpose |
 |---------|---------|---------|
-| **Chart.js** | v4.5.1 | Data visualization |
-| **FullCalendar** | v6.1.20 | Calendar component |
-| **Swiper** | v12.1.4 | Touch slider |
-| **Flatpickr** | v4.6.13 | Date picker |
-| **PrismJS** | v1.30.0 | Syntax highlighting |
-| **ng-otp-input** | v2.0.9 | OTP input component |
+| **Chart.js** | v4.5.1 | Data visualization (used via PrimeNG `ChartModule`) |
 | **@lucide/angular** | v1.23.0 | Primary icon library (tree-shakable) |
 
 ### Icon Libraries
@@ -77,8 +76,14 @@ readonly iconRegistry = inject(IconRegistryService);
 | **Angular Build** | v21.2.18 | Vite/Esbuild bundler |
 | **ESLint** | v9.39.4 | Code linting |
 | **angular-eslint** | v21.4.0 | Angular lint rules |
+| **typescript-eslint** | v8.62.1 | TypeScript ESLint rules |
+| **eslint-plugin-simple-import-sort** | v13.0.0 | Import sorting (enforces order: Angular → PrimeNG/RxJS → @core → @shared → @features) |
 | **Jest** | v30.4.2 | Testing framework |
 | **jest-preset-angular** | v16.2.0 | Angular + Jest integration |
+| **jest-environment-jsdom** | v30.4.1 | DOM environment for Jest |
+| **@types/jest** | v30.0.0 | TypeScript definitions for Jest |
+| **Husky** | v9.1.7 | Git hooks |
+| **lint-staged** | v16.4.0 | Pre-commit linting |
 
 ## Build & Bundling
 
@@ -86,7 +91,13 @@ readonly iconRegistry = inject(IconRegistryService);
 |------|---------|
 | **Vite** | Development server |
 | **Esbuild** | Production bundler |
-| **PostCSS** | CSS processing |
+| **PostCSS** | CSS processing via `@tailwindcss/postcss` |
+
+## Dependency Overrides
+
+| Package | Version | Reason |
+|---------|---------|--------|
+| **undici** | ^7.18.2 | Security/compatibility override |
 
 ## Path Aliases
 

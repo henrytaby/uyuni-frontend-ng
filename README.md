@@ -12,15 +12,17 @@ Bienvenido a **Uyuni Frontend**, una aplicación empresarial moderna construida 
 
 ## 🚀 Características Principales
 
--   **Arquitectura Enterprise**: Estructura sólida dividida en `Core`, `Shared` y `Features`.
--   **Lazy Loading**: Carga perezosa implementada en todos los módulos de funcionalidad.
--   **Angular Signals**: Gestión de estado reactivo moderna y performante.
--   **PrimeNG v21**: Biblioteca de componentes premium para aplicaciones empresariales.
--   **TailwindCSS v4**: Estilizado utilitario de próxima generación para un desarrollo UI ultra rápido.
--   **Standalone Components**: Adopción total del paradigma moderno de Angular (sin `NgModules` innecesarios).
--   **Path Aliases**: Configuración limpia (`@core`, `@features`) eliminando imports relativos.
--   **Rendimiento**: Optimizado para Core Web Vitals.
--   **Husky + Lint-Staged**: Pre-commit hooks para código limpio automáticamente.
+-   **Arquitectura Enterprise**: Estructura sólida basada en DDD Lite y Modular Monolith dividida en `Core`, `Shared` y `Features`.
+-   **Lazy Loading**: Carga perezosa implementada en el 100% de los módulos de funcionalidad y rutas.
+-   **Angular Signals**: Gestión de estado reactivo moderna con inputs, outputs y estado interno basado en Signals.
+-   **PrimeNG v21**: Biblioteca de componentes premium completamente integrada con la arquitectura standalone.
+-   **TailwindCSS v4**: Estilizado moderno y eficiente utilizando la sintaxis canónica de Tailwind v4.
+-   **Iconos Lucide**: Integración completa de `@lucide/angular` como sistema de iconos principal basado en slugs semánticos.
+-   **Detección OnPush**: Estrategia `ChangeDetectionStrategy.OnPush` en el 100% de los componentes para un rendimiento óptimo.
+-   **Escudo de Resiliencia**: Robustez ante fallas de red con reconexión y reintentos automatizados (`NetworkErrorService`).
+-   **Carga Híbrida y Skeletons**: Visualizaciones con skeletons y loaders con debounce de 300ms y fail-safe de 6 segundos.
+-   **Path Aliases**: Importaciones limpias mediante alias (`@core`, `@shared`, `@features`, `@env`) eliminando imports relativos complejos.
+-   **Husky + Lint-Staged**: Pre-commit hooks para asegurar la consistencia y calidad del código en cada commit.
 
 ---
 
@@ -29,8 +31,8 @@ Bienvenido a **Uyuni Frontend**, una aplicación empresarial moderna construida 
 Asegúrate de tener instalado:
 
 -   **Node.js**: v20.11.0 o superior (Recomendado v22+).
--   **NPM**: v9+ o **Yarn** / **PNPM**.
--   **Angular CLI**: v21 (`npm install -g @angular/cli`).
+-   **NPM**: v10+ o **Yarn** / **PNPM** como gestor de paquetes.
+-   **Angular CLI**: v21+ (`npm install -g @angular/cli`).
 -   **Git**: v2.0+ (para Husky hooks).
 
 ---
@@ -49,8 +51,8 @@ cp public/assets/config/config.example.json public/assets/config/config.json
 
 1.  **Clonar el repositorio**:
     ```bash
-    git clone https://gitlab.com/tu-empresa/uyuni-frontend.git
-    cd uyuni-frontend
+    git clone https://github.com/henrytaby/uyuni-frontend-ng.git
+    cd uyuni-frontend-ng
     ```
 
 2.  **Instalar dependencias**:
@@ -114,10 +116,14 @@ src/app/
 
 ## 📚 Documentación Adicional
 
--   **[ARCHITECTURE.md](docs/ARCHITECTURE.md)**: Guía completa para desarrolladores.
+-   **[ARCHITECTURE.md](docs/ARCHITECTURE.md)**: Guía completa de arquitectura empresarial para desarrolladores.
 -   **[NETWORK_RESILIENCE.md](docs/NETWORK_RESILIENCE.md)**: Documentación del Escudo de Resiliencia (Manejo de errores de conexión).
 -   **[LOADING_SKELETON_SYSTEM.md](docs/LOADING_SKELETON_SYSTEM.md)**: Documentación del Sistema Híbrido de Carga y Skeletons (Gold Standard).
 -   **[LAYOUT_GUIDE.md](docs/LAYOUT_GUIDE.md)**: Detalle del sistema de plantillas y layouts.
+-   **[UNIT_TESTING_GUIDE.md](docs/UNIT_TESTING_GUIDE.md)**: Guía de pruebas unitarias configuradas con Jest.
+-   **[CHANGE_DETECTION_ONPUSH_GUIDE.md](docs/CHANGE_DETECTION_ONPUSH_GUIDE.md)**: Guía detallada sobre la estrategia de detección de cambios OnPush.
+-   **[docs/developer_guide/create-feature-module-guide.md](docs/developer_guide/create-feature-module-guide.md)**: Guía completa para crear nuevos módulos feature paso a paso.
+-   **[docs/developer_guide/catalogs_bulk_guide.md](docs/developer_guide/catalogs_bulk_guide.md)**: Guía detallada sobre el uso de catálogos masivos.
 -   **[Tailwind CSS v4 Docs](https://tailwindcss.com/docs)**: Documentación oficial de la versión instalada.
 -   **Angular Style Guide**: Seguimos estrictamente las recomendaciones oficiales.
 
