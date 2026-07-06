@@ -1,10 +1,16 @@
-# Uyuni Frontend (Angular Enterprise)
+<p align="center">
+  <img src="public/images/logo/logo-01.png" alt="Uyuni Logo" width="320" />
+</p>
 
-![Angular Version](https://img.shields.io/badge/Angular-v21+-dd0031.svg)
-![TailwindCSS Version](https://img.shields.io/badge/TailwindCSS-v4-38bdf8.svg)
-![PrimeNG Version](https://img.shields.io/badge/PrimeNG-v21-06b6d4.svg)
-![Architecture](https://img.shields.io/badge/Architecture-DDD%20Lite-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
+<h1 align="center">Uyuni Frontend (Angular Enterprise)</h1>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Angular-v21+-dd0031.svg" alt="Angular Version" />
+  <img src="https://img.shields.io/badge/TailwindCSS-v4-38bdf8.svg" alt="TailwindCSS Version" />
+  <img src="https://img.shields.io/badge/PrimeNG-v21-06b6d4.svg" alt="PrimeNG Version" />
+  <img src="https://img.shields.io/badge/Architecture-DDD%20Lite-blue" alt="Architecture" />
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="License" />
+</p>
 
 Bienvenido a **Uyuni Frontend**, una aplicación empresarial moderna construida con **Angular v21** y **TailwindCSS**, siguiendo una arquitectura escalable basada en **Domain-Driven Design (DDD)** y **Modular Monolith**.
 
