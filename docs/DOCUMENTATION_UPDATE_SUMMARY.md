@@ -23,8 +23,8 @@ Se han actualizado **6 documentos** para reflejar la implementación de Husky + 
 
 ---
 
-### **2. `.kilo/rules/memory-bank/decisions-history.md`** ✅
-**Ubicación:** `/opt/uyuni/uyuni-frontend-ng/.kilo/rules/memory-bank/decisions-history.md`
+### **2. `.agents/memory/decisions-history.md`** ✅
+**Ubicación:** `/opt/uyuni/uyuni-frontend-ng/.agents/memory/decisions-history.md`
 
 **Cambios realizados:**
 - ✅ Agregada nueva decisión #9: "Husky + Lint-Staged for Code Quality (March 2026)"
@@ -60,8 +60,8 @@ Se han actualizado **6 documentos** para reflejar la implementación de Husky + 
 
 ---
 
-### **3. `.kilo/rules/memory-bank/coding-standards.md`** ✅
-**Ubicación:** `/opt/uyuni/uyuni-frontend-ng/.kilo/rules/memory-bank/coding-standards.md`
+### **3. `.agents/memory/coding-standards.md`** ✅
+**Ubicación:** `/opt/uyuni/uyuni-frontend-ng/.agents/memory/coding-standards.md`
 
 **Cambios realizados:**
 - ✅ Agregada sección `Husky + Lint-Staged (Pre-commit Hooks)` en "Code Quality Tools"
@@ -158,7 +158,7 @@ git commit --no-verify -m "WIP"
 
 Los siguientes documentos **NO** requieren actualización porque no mencionan herramientas de calidad de código o CI/CD:
 
-### **En `.kilo/rules/memory-bank/`:**
+### **En `.agents/memory/`:**
 - ✅ `project-overview.md` - No menciona herramientas específicas
 - ✅ `tech-stack.md` - Ya incluye ESLint, no necesita Husky (es tooling, no dependency)
 - ✅ `architecture-patterns.md` - Arquitectura, no tooling
@@ -210,10 +210,10 @@ Los siguientes documentos **NO** requieren actualización porque no mencionan he
 grep -n "Husky" AGENTS.md
 
 # Verificar decisions-history.md
-grep -n "Husky" .kilo/rules/memory-bank/decisions-history.md
+grep -n "Husky" .agents/memory/decisions-history.md
 
 # Verificar coding-standards.md
-grep -n "Husky" .kilo/rules/memory-bank/coding-standards.md
+grep -n "Husky" .agents/memory/coding-standards.md
 
 # Verificar README.md
 grep -n "Husky" README.md

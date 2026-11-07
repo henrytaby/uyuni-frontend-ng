@@ -200,7 +200,7 @@
 
 - [`docs/ARCHITECTURE.md`](../../../docs/ARCHITECTURE.md)
 - [`docs/AUTHENTICATION.md`](../../../docs/AUTHENTICATION.md)
-- [`.kilocode/rules/memory-bank/architecture-patterns.md`](../../../.kilocode/rules/memory-bank/architecture-patterns.md)
+- [`.agents/memory/architecture-patterns.md`](../../../.agents/memory/architecture-patterns.md)
 
 ---
 

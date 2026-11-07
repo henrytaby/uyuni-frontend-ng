@@ -220,8 +220,8 @@
 
 | Documento | Ruta | Descripción |
 |-----------|------|-------------|
-| **UI/UX Guidelines** | `.kilocode/rules/memory-bank/ui-ux-guidelines.md` | Guías de diseño |
-| **Tech Stack** | `.kilocode/rules/memory-bank/tech-stack.md` | Tecnologías usadas |
+| **UI/UX Guidelines** | `.agents/memory/ui-ux-guidelines.md` | Guías de diseño |
+| **Tech Stack** | `.agents/memory/tech-stack.md` | Tecnologías usadas |
 
 ---
 

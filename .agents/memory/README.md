@@ -2,9 +2,9 @@
 
 ## Overview
 
-This memory bank contains comprehensive documentation about the UyuniAdmin Frontend project. It serves as a knowledge base for Kilo Code (and other AI assistants) to understand the project's architecture, patterns, and conventions.
+This memory bank contains comprehensive documentation about the UyuniAdmin Frontend project. It serves as a shared knowledge base for AI coding agents (Antigravity, Claude Code, Cursor, Copilot, etc.) to understand the project's architecture, patterns, conventions, and design decisions.
 
-> **Note**: This memory-bank is located in `.kilo/rules/memory-bank/` which is the standard location for Kilo memory-bank files.
+> **Note**: This memory bank is located in `.agents/memory/`, the centralized directory for agent context and project memory.
 
 ## File Structure
 
@@ -68,19 +68,17 @@ npm run lint   # Lint code
 ## Related Documentation
 
 ### Project Docs (`/docs`)
-- [`ARCHITECTURE.md`](../../../docs/ARCHITECTURE.md) - Detailed architecture guide
-- [`AUTHENTICATION.md`](../../../docs/AUTHENTICATION.md) - Auth system documentation
-- [`ENTERPRISE_ARCHITECTURE.md`](../../../docs/ENTERPRISE_ARCHITECTURE.md) - Enterprise patterns
-- [`DEPLOYMENT_GUIDE.md`](../../../docs/DEPLOYMENT_GUIDE.md) - Deployment instructions
-- [`LAYOUT_GUIDE.md`](../../../docs/LAYOUT_GUIDE.md) - Layout system guide
-- [`LOADING_SKELETON_SYSTEM.md`](../../../docs/LOADING_SKELETON_SYSTEM.md) - Loading patterns
-- [`NETWORK_RESILIENCE.md`](../../../docs/NETWORK_RESILIENCE.md) - Network error handling
+- [`ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) - Detailed architecture guide
+- [`AUTHENTICATION.md`](../../docs/AUTHENTICATION.md) - Auth system documentation
+- [`ENTERPRISE_ARCHITECTURE.md`](../../docs/ENTERPRISE_ARCHITECTURE.md) - Enterprise patterns
+- [`DEPLOYMENT_GUIDE.md`](../../docs/DEPLOYMENT_GUIDE.md) - Deployment instructions
+- [`LAYOUT_GUIDE.md`](../../docs/LAYOUT_GUIDE.md) - Layout system guide
+- [`LOADING_SKELETON_SYSTEM.md`](../../docs/LOADING_SKELETON_SYSTEM.md) - Loading patterns
+- [`NETWORK_RESILIENCE.md`](../../docs/NETWORK_RESILIENCE.md) - Network error handling
 
-### AI Context
-- [`AGENTS.md`](../../../AGENTS.md) - AI agents unified context
-
-### Project Rules
-- [`project-rules.md`](../project-rules.md) - Quick reference rules for Kilo
+### AI Context & Rules
+- [`AGENTS.md`](../../AGENTS.md) - AI agents unified root context
+- [`project-rules.md`](../rules/project-rules.md) - Quick reference rules for agents
 
 ## Recent Changes (July 2026)
 

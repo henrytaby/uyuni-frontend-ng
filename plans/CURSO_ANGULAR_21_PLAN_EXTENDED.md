@@ -332,7 +332,7 @@ Para grabar videos tutoriales:
 - [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md)
 - [`docs/AUTHENTICATION.md`](../docs/AUTHENTICATION.md)
 - [`docs/UNIT_TESTING_GUIDE.md`](../docs/UNIT_TESTING_GUIDE.md)
-- [`.kilocode/rules/memory-bank/`](../.kilocode/rules/memory-bank/)
+- [`.agents/memory/`](../.agents/memory/)
 
 ### Código Fuente
 - Core Services: [`src/app/core/`](../src/app/core/)

@@ -49,12 +49,11 @@ src/app/
 
 ## Documentation
 
-- [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) - Architecture guide
-- [`docs/AUTHENTICATION.md`](../docs/AUTHENTICATION.md) - Authentication system
-- [`docs/ENTERPRISE_ARCHITECTURE.md`](../docs/ENTERPRISE_ARCHITECTURE.md) - Enterprise patterns
-- [`docs/DEPLOYMENT_GUIDE.md`](../docs/DEPLOYMENT_GUIDE.md) - Deployment instructions
-- [`GEMINI.md`](../GEMINI.md) - AI context file
-- [`AGENTS.md`](../AGENTS.md) - AI agents unified context
+- [`docs/ARCHITECTURE.md`](../../docs/ARCHITECTURE.md) - Architecture guide
+- [`docs/AUTHENTICATION.md`](../../docs/AUTHENTICATION.md) - Authentication system
+- [`docs/ENTERPRISE_ARCHITECTURE.md`](../../docs/ENTERPRISE_ARCHITECTURE.md) - Enterprise patterns
+- [`docs/DEPLOYMENT_GUIDE.md`](../../docs/DEPLOYMENT_GUIDE.md) - Deployment instructions
+- [`AGENTS.md`](../../AGENTS.md) - AI agents unified context
 
 ## Quick Start
 

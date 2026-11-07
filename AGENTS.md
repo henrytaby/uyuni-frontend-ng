@@ -1,6 +1,6 @@
 # AGENTS.md - UyuniAdmin Frontend
 
-Unified context file for AI agents (Kilo, Claude, Gemini, etc.). This is the single source of truth for project conventions, architecture, and standards.
+Unified context file for AI agents (Antigravity, Claude, Gemini, Cursor, Copilot, etc.). This is the single source of truth for project conventions, architecture, and standards. Modular rules, memory bank, skills, and workflows are maintained in `.agents/`.
 
 ## Project Identity
 
@@ -740,15 +740,19 @@ Husky v9 + lint-staged:
 
 ## Reference Documentation
 
-- [Architecture Patterns](.kilo/rules/memory-bank/architecture-patterns.md)
-- [Authentication System](.kilo/rules/memory-bank/authentication.md)
-- [Coding Standards](.kilo/rules/memory-bank/coding-standards.md)
-- [Features & Modules](.kilo/rules/memory-bank/features-modules.md)
-- [Services Reference](.kilo/rules/memory-bank/services-reference.md)
-- [UI/UX Guidelines](.kilo/rules/memory-bank/ui-ux-guidelines.md)
-- [Tech Stack](.kilo/rules/memory-bank/tech-stack.md)
-- [Decisions History](.kilo/rules/memory-bank/decisions-history.md)
-- [Project Overview](.kilo/rules/memory-bank/project-overview.md)
+- [Agent Ecosystem Overview](.agents/README.md)
+- [Modular Rules](.agents/rules/README.md)
+- [Agent Skills](.agents/skills/README.md)
+- [Workflows](.agents/workflows/README.md)
+- [Architecture Patterns](.agents/memory/architecture-patterns.md)
+- [Authentication System](.agents/memory/authentication.md)
+- [Coding Standards](.agents/memory/coding-standards.md)
+- [Features & Modules](.agents/memory/features-modules.md)
+- [Services Reference](.agents/memory/services-reference.md)
+- [UI/UX Guidelines](.agents/memory/ui-ux-guidelines.md)
+- [Tech Stack](.agents/memory/tech-stack.md)
+- [Decisions History](.agents/memory/decisions-history.md)
+- [Project Overview](.agents/memory/project-overview.md)
 
 ---
 *Last updated: May 2026 | Audit v1.5*

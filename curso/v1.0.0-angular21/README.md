@@ -213,7 +213,7 @@ Este curso está basado en el proyecto **UyuniAdmin Frontend**:
 
 - **Repositorio**: `/opt/uyuni/uyuni-frontend-ng`
 - **Documentación**: [`docs/`](../../docs/)
-- **Memory Bank**: [`.kilocode/rules/memory-bank/`](../../.kilocode/rules/memory-bank/)
+- **Memory Bank**: [`.agents/memory/`](../../.agents/memory/)
 
 ### Arquitectura del Proyecto Base
 

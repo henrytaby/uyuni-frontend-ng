@@ -64,19 +64,19 @@ console.log('User logged in:', user);
 
 ## 📚 Memory Bank
 
-Detailed documentation is available in the memory-bank:
+Detailed documentation is available in `.agents/memory/`:
 
 | File | Description |
 |------|-------------|
-| [`memory-bank/project-overview.md`](memory-bank/project-overview.md) | Project identity and purpose |
-| [`memory-bank/tech-stack.md`](memory-bank/tech-stack.md) | Technologies and dependencies |
-| [`memory-bank/architecture-patterns.md`](memory-bank/architecture-patterns.md) | Architectural decisions |
-| [`memory-bank/authentication.md`](memory-bank/authentication.md) | Auth system documentation |
-| [`memory-bank/features-modules.md`](memory-bank/features-modules.md) | Feature modules reference |
-| [`memory-bank/coding-standards.md`](memory-bank/coding-standards.md) | Code style conventions |
-| [`memory-bank/ui-ux-guidelines.md`](memory-bank/ui-ux-guidelines.md) | Design system |
-| [`memory-bank/services-reference.md`](memory-bank/services-reference.md) | Core services API |
-| [`memory-bank/decisions-history.md`](memory-bank/decisions-history.md) | Technical decisions log |
+| [`project-overview.md`](../memory/project-overview.md) | Project identity and purpose |
+| [`tech-stack.md`](../memory/tech-stack.md) | Technologies and dependencies |
+| [`architecture-patterns.md`](../memory/architecture-patterns.md) | Architectural decisions |
+| [`authentication.md`](../memory/authentication.md) | Auth system documentation |
+| [`features-modules.md`](../memory/features-modules.md) | Feature modules reference |
+| [`coding-standards.md`](../memory/coding-standards.md) | Code style conventions |
+| [`ui-ux-guidelines.md`](../memory/ui-ux-guidelines.md) | Design system |
+| [`services-reference.md`](../memory/services-reference.md) | Core services API |
+| [`decisions-history.md`](../memory/decisions-history.md) | Technical decisions log |
 
 ## 🚀 Quick Commands
 

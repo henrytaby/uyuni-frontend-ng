@@ -969,7 +969,7 @@ describe('AuthService', () => {
 - [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) - Arquitectura completa
 - [`docs/AUTHENTICATION.md`](../docs/AUTHENTICATION.md) - Sistema de autenticación
 - [`docs/UNIT_TESTING_GUIDE.md`](../docs/UNIT_TESTING_GUIDE.md) - Guía de testing
-- [`.kilocode/rules/memory-bank/`](../.kilocode/rules/memory-bank/) - Memory bank completo
+- [`.agents/memory/`](../.agents/memory/) - Memory bank completo
 
 ### Herramientas Necesarias
 - Node.js 20+

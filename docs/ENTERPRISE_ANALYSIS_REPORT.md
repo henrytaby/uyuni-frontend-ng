@@ -502,7 +502,7 @@ angular.configs.templateAccessibility
 | **LAYOUT_GUIDE.md** | Sistema de layouts | ✅ Excelente |
 | **CHANGE_DETECTION_ONPUSH_GUIDE.md** | Guía OnPush | ✅ Excelente |
 | **UNIT_TESTING_GUIDE.md** | Testing patterns | ✅ Excelente |
-| **.kilo/rules/memory-bank/** | 9 archivos especializados | ✅ Excelente |
+| **.agents/memory/** | 9 archivos especializados | ✅ Excelente |
 
 ### 7.2 Calidad de Documentación
 

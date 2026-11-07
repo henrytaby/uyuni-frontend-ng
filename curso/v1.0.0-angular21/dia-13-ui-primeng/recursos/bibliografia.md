@@ -231,7 +231,7 @@
 ### Documentación Interna
 
 - [`docs/ARCHITECTURE.md`](../../../docs/ARCHITECTURE.md)
-- [`.kilocode/rules/memory-bank/ui-ux-guidelines.md`](../../../.kilocode/rules/memory-bank/ui-ux-guidelines.md)
+- [`.agents/memory/ui-ux-guidelines.md`](../../../.agents/memory/ui-ux-guidelines.md)
 
 ---
 

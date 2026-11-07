@@ -207,7 +207,7 @@ Time:        7.746 s
 | `AUTHENTICATION.md` | Sistema de auth | ⭐⭐⭐⭐⭐ |
 | `DEPLOYMENT_GUIDE.md` | Guía de despliegue | ⭐⭐⭐⭐⭐ |
 | `LAYOUT_GUIDE.md` | Sistema de layouts | ⭐⭐⭐⭐⭐ |
-| `.kilo/rules/memory-bank/` | 9 archivos especializados | ⭐⭐⭐⭐⭐ |
+| `.agents/memory/` | 9 archivos especializados | ⭐⭐⭐⭐⭐ |
 
 ### 4.2 Características de la Documentación
 
