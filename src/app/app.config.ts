@@ -71,7 +71,6 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }), 
     provideRouter(routes, withInMemoryScrolling({ scrollPositionRestoration: 'top' })),
     provideHttpClient(withInterceptors([authInterceptor, loadingInterceptor])),
-    //provideAnimations(),
     providePrimeNG({
         ripple: true,
         theme: {
