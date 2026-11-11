@@ -756,3 +756,18 @@ Husky v9 + lint-staged:
 
 ---
 *Last updated: May 2026 | Audit v1.5*
+
+---
+
+## 🌐 Feature Integrada: Módulo Commerce (Nova Box Bolivia)
+
+Este frontend contiene el panel administrativo de ventas e inventario para **Nova Box Bolivia**:
+- **Documento Maestro de Arquitectura**: Consultar `/opt/nova/nova-home-tech/docs/arquitectura/RFC-001-integracion-uyuni-novabox.md`.
+- **Backend API**: `/opt/uyuni/uyuni-backend-py` (`/api/commerce/`).
+- **Repositorio de Origen de Negocio**: `/opt/nova/nova-home-tech`.
+- **Módulo Angular (`src/app/features/commerce/`)**:
+  - `products`: Vista de inventario en tiempo real con PrimeNG DataTable (búsqueda por SKU, filtro por estado/lote/categoría, edición ágil de precios).
+  - `sales`: Pantalla/Drawer de Registro Rápido de Ventas (Punto de Venta para Liz y Henry). Selección de SKU, precio pactado respetando `minimum_price`, medio de cobro (QR/Efectivo) y cliente.
+  - `dashboard`: Tarjetas de KPIs con Signals (ventas del día, utilidad neta real, avance de recuperación de inversión por caja).
+- **Navegación Dinámica**: Los ítems de menú de Commerce se asignan vía RBAC desde la base de datos (se mapean dinámicamente en `app-sidebar.component.ts`).
+

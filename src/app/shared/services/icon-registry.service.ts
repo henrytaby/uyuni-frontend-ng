@@ -2,12 +2,18 @@ import { inject, Injectable } from '@angular/core';
 
 import { LucideIconData } from '@lucide/angular';
 import {
+  LucideBoxes,
   LucideBuilding,
   LucideCircleDot,
+  LucideDatabase,
   LucideHouse,
   LucidePackage,
   LucideSettings,
   LucideShield,
+  LucideShoppingBag,
+  LucideShoppingBasket,
+  LucideShoppingCart,
+  LucideTag,
   LucideUser,
   LucideUsers,
 } from '@lucide/angular';
@@ -37,6 +43,12 @@ export class IconRegistryService {
     ['user', LucideUser.icon],
     ['manager', LucideSettings.icon],
     ['viewer', LucideUsers.icon],
+    ['commerce', LucideShoppingBag.icon],
+    ['products', LucideTag.icon],
+    ['batches', LucideBoxes.icon],
+    ['sales', LucideShoppingCart.icon],
+    ['live-baskets', LucideShoppingBasket.icon],
+    ['product-masters', LucideDatabase.icon],
   ]);
 
   private readonly FALLBACK = LucideCircleDot.icon;
