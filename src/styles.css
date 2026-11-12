@@ -265,7 +265,7 @@
 }
 
 @utility menu-item {
-  @apply relative flex items-center w-full gap-2.5 px-2.5 py-1.5 font-medium rounded-[2px] text-sm transition-all duration-150 h-[36px];
+  @apply relative flex items-center w-full gap-2.5 px-2.5 py-1.5 font-medium rounded-xs text-sm transition-all duration-150 h-9;
 }
 
 @utility menu-item-open {
@@ -293,7 +293,7 @@
 }
 
 @utility menu-active-bar {
-  @apply absolute left-0 top-0 bottom-0 w-[3.5px] bg-brand-600 rounded-l-[2px];
+  @apply absolute left-0 top-0 bottom-0 w-0.75 bg-brand-600 rounded-l-xs;
 
   @variant dark {
     @apply bg-brand-500;
@@ -318,7 +318,7 @@
 
 @utility menu-item-icon-size {
   & svg {
-    @apply size-[19px]!;
+    @apply size-4.75!;
   }
 }
 
@@ -423,7 +423,7 @@
 }
 
 @utility menu-dropdown-item {
-  @apply relative flex items-center w-full rounded-[2px] py-1 text-sm font-normal transition-all duration-150 h-[34px];
+  @apply relative flex items-center w-full rounded-xs py-1 text-sm font-normal transition-all duration-150 h-8.5;
 }
 
 @utility menu-dropdown-item-active {

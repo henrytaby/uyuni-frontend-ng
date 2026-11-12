@@ -6,8 +6,8 @@
   class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer shadow-2xs"
   [attr.aria-label]="((theme$ | async) === 'dark') ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'">
   @if ((theme$ | async) === 'dark') {
-    <svg lucideSun size="22" class="w-[22px] h-[22px] text-amber-400 shrink-0"></svg>
+    <svg lucideSun size="24" strokeWidth="2" class="size-6 text-amber-400 shrink-0"></svg>
   } @else {
-    <svg lucideMoon size="22" class="w-[22px] h-[22px] text-gray-600 dark:text-gray-300 shrink-0"></svg>
+    <svg lucideMoon size="24" strokeWidth="2" class="size-6 text-gray-600 dark:text-gray-300 shrink-0"></svg>
   }
 </button>
