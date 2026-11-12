@@ -8,7 +8,7 @@ Este directorio centraliza toda la documentación operativa, guías de infraestr
 
 | Guía | Propósito | Entorno / Servicios | Costo Estimado |
 | :--- | :--- | :--- | :---: |
-| 🖥️ **[Guía de Despliegue en VPS Linux (Ubuntu + Nginx)](./UBUNTU_VPS_DEPLOYMENT_GUIDE.md)** | Instalación tradicional en servidor propio con Nginx de alto rendimiento, compresión Gzip/Brotli, políticas de caché inmutable, certificados SSL automáticos con Certbot y script de actualización continua. | Ubuntu 22.04/24.04 + Nginx + Certbot | ~$5.00 / mes (o **$0.00** en Oracle Cloud Free) |
+| 🖥️ **[Guía de Despliegue en VPS Linux (Ubuntu + Nginx)](./UBUNTU_VPS_DEPLOYMENT_GUIDE.md)** | Instalación tradicional en servidor propio con Nginx de alto rendimiento, compresión Gzip/Brotli, políticas de caché inmutable, certificados SSL automáticos con Certbot y script de actualización continua. | Ubuntu 22.04/24.04 + Nginx + Certbot | Según proveedor VPS (~$3 - $10 / mes) |
 | 🟣 **[Guía de Despliegue en Render.com](./RENDER_DEPLOYMENT_GUIDE.md)** | Despliegue continuo en Render como Static Site global. Construcción automática en cada `git push`, manejo nativo de SPA con `_redirects` y SSL automático. | Render Static Site + Global CDN | **$0.00 / mes** |
 | ▲ **[Guía de Despliegue en Vercel](./VERCEL_DEPLOYMENT_GUIDE.md)** | Despliegue serverless optimizado en Vercel Edge Network. Integración nativa con GitHub, configuración de `vercel.json`, vistas previas por rama (PRs) y CDN perimetral ultra rápida. | Vercel Edge Network + Git Integration | **$0.00 / mes** |
 | 🏢 **[Manual de Replicación Marca Blanca para Clientes](./CLIENT_REPLICATION_PLAYBOOK.md)** | Procedimiento paso a paso para desplegar un frontend personalizado para un nuevo cliente o empresa: configuración de logo, títulos, colores corporativos y enlace a la API dedicada vía `config.json`. | Multi-tenant / Marca Blanca | **$0.00 / mes** |
@@ -107,7 +107,7 @@ Un problema habitual en proyectos Angular clásicos es definir la URL del backen
 
 Elige la opción que mejor se adapte a tu infraestructura:
 
-1. **¿Tienes un servidor VPS propio con Linux Ubuntu (Oracle Cloud, DigitalOcean, Hetzner, etc.)?**  
+1. **¿Tienes un servidor VPS propio con Linux Ubuntu (DigitalOcean, Hetzner, AWS, Linode, Contabo, etc.)?**  
    👉 Sigue la [**Guía de VPS Linux Ubuntu + Nginx (`UBUNTU_VPS_DEPLOYMENT_GUIDE.md`)**](./UBUNTU_VPS_DEPLOYMENT_GUIDE.md).
 2. **¿Deseas desplegar gratis y en minutos en Render.com?**  
    👉 Sigue la [**Guía de Render.com (`RENDER_DEPLOYMENT_GUIDE.md`)**](./RENDER_DEPLOYMENT_GUIDE.md).

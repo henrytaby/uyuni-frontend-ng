@@ -49,7 +49,7 @@ flowchart TD
 
 ## 📋 Requisitos Previos
 
-1. **Servidor VPS:** Mínimo 1 vCPU y 1 GB de RAM (recomendado 2 GB de RAM o activar 2 GB de Swap). Compatible con **Oracle Cloud Always Free Tier** (instancias ARM Ampere de hasta 4 OCPU / 24 GB RAM o AMD Micro), DigitalOcean, Hetzner, AWS EC2, Linode o Contabo.
+1. **Servidor VPS:** Mínimo 1 vCPU y 1 GB de RAM (recomendado 2 GB de RAM o activar 2 GB de Swap). Compatible con cualquier proveedor de VPS o servidor dedicado (DigitalOcean, Hetzner, AWS EC2, Linode, Contabo, Vultr, OVH o infraestructura privada/on-premise).
 2. **Sistema Operativo:** Ubuntu 22.04 LTS o 24.04 LTS con acceso `sudo` o `root`.
 3. **Dominio o Subdominio:** Un registro DNS tipo `A` que apunte a la IP pública de tu VPS (ejemplo: `admin.tudominio.com` o `app.tuempresa.com`).
 4. **Backend Operativo:** La API de Uyuni (`uyuni-backend-py`) debe estar funcionando y accesible por HTTPS (ejemplo: `https://api.tudominio.com`).

@@ -35,7 +35,6 @@ import {
   LucideCopy,
   LucideGlobe,
   LucideHistory,
-  LucideImage,
   LucideLaptop,
   LucideMapPin,
   LucidePhone,
@@ -100,7 +99,6 @@ export interface RoleOption {
     LucideBuilding,
     LucideGlobe,
     LucideClock,
-    LucideImage,
     LucideStickyNote
   ],
   templateUrl: './user-drawer.component.html',
