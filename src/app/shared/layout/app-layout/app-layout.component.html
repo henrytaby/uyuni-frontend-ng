@@ -29,7 +29,7 @@
 
       <!-- Network Resilience Dialog -->
       <p-dialog header="Conexión Interrumpida" [visible]="showConnectionError()" [modal]="true" [closable]="false"
-        [closeOnEscape]="false" [style]="{ width: '25rem' }">
+        [closeOnEscape]="false" [draggable]="false" [resizable]="false" [style]="{ width: '25rem' }">
         <div class="flex flex-col items-center gap-4 text-center">
           <svg lucideWifi size="48" class="text-gray-400 dark:text-gray-300"></svg>
           <p class="m-0 text-gray-600 dark:text-gray-300">
@@ -40,7 +40,7 @@
         <ng-template pTemplate="footer">
           <p-button [label]="isCheckingConnection() ? 'Verificando...' : 'Recargar Página'"
             [icon]="isCheckingConnection() ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" (onClick)="reloadPage()"
-            severity="primary" class="w-full" styleClass="w-full" [disabled]="isCheckingConnection()" />
+            severity="primary" class="w-full" [disabled]="isCheckingConnection()" />
         </ng-template>
       </p-dialog>
     </div>

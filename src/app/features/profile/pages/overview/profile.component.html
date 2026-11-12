@@ -1,11 +1,472 @@
-<app-page-breadcrumb pageTitle="Mi Perfil" [items]="[{ label: 'Usuario', url: '/profile' }, { label: 'Perfil' }]" />
-<div class="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/3 lg:p-6">
-  <h3 class="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-    Perfil
-  </h3>
-  <div class="space-y-6">
-    <div><app-user-meta-card /></div>
-    <div><app-user-info-card /></div>
-    <div><app-user-address-card /></div>
+<!-- Miga de Pan (Breadcrumb corregido sin duplicar 'Inicio') -->
+<app-page-breadcrumb pageTitle="Mi Perfil" [items]="[{ label: 'Usuario' }, { label: 'Mi Perfil' }]" />
+
+<div class="space-y-5 pb-10">
+
+  <!-- Tarjeta de Identidad Superior (Banner Estilo Facebook Corporativo: Desktop horizontal, Mobile centrado vertical) -->
+  <div class="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 sm:p-6 shadow-xs">
+    <div class="flex flex-col items-center text-center md:flex-row md:items-center md:justify-between md:text-left gap-5">
+
+      <!-- Sección Identidad (Avatar Circular Grande + Datos de Usuario) -->
+      <div class="flex flex-col items-center md:flex-row md:items-center gap-5">
+
+        <!-- Contenedor del Avatar con Badge Circular de Cámara Estilo Facebook -->
+        <div class="relative shrink-0">
+          <!-- Círculo de Avatar Grande (128px en móvil, 144px en tablet, 160px en desktop) -->
+          <button type="button"
+            (click)="(avatarUrl() || profile()?.avatar_url) ? toggleAvatarMenu($event) : avatarFileInput.click()"
+            [title]="(avatarUrl() || profile()?.avatar_url) ? 'Opciones de foto de perfil' : 'Subir foto de perfil'"
+            class="w-32 h-32 sm:w-36 sm:h-36 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg ring-1 ring-gray-200/60 dark:ring-gray-700/60 bg-brand-50 dark:bg-brand-950 flex items-center justify-center cursor-pointer select-none p-0 focus:outline-none focus:ring-2 focus:ring-brand-500">
+            @if (avatarUrl() || profile()?.avatar_url) {
+              <img [src]="avatarUrl() || profile()?.avatar_url" alt="Avatar de usuario" class="w-full h-full object-cover" />
+            } @else {
+              <div class="w-full h-full rounded-full bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-center justify-center text-3xl sm:text-4xl md:text-5xl font-bold tracking-wider">
+                {{ userInitials() }}
+              </div>
+            }
+          </button>
+
+          <!-- Indicador de cuenta activa (punto verde en esquina inferior izquierda) -->
+          @if (profile()?.is_active) {
+            <span class="absolute bottom-1.5 left-2 sm:bottom-2 sm:left-3 h-4.5 w-4.5 sm:h-5 sm:w-5 rounded-full bg-emerald-500 ring-2 sm:ring-3 ring-white dark:ring-gray-900 pointer-events-none" title="Cuenta Activa"></span>
+          }
+
+          <!-- Botón Badge de Cámara Estilo Facebook (esquina inferior derecha) -->
+          <button type="button"
+            (click)="(avatarUrl() || profile()?.avatar_url) ? toggleAvatarMenu($event) : avatarFileInput.click()"
+            class="absolute bottom-0.5 right-0.5 sm:bottom-1 sm:right-1 h-9 w-9 sm:h-10 sm:w-10 md:h-11 md:w-11 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 shadow-md ring-2 sm:ring-3 ring-white dark:ring-gray-900 flex items-center justify-center cursor-pointer transition-transform active:scale-95"
+            [title]="(avatarUrl() || profile()?.avatar_url) ? 'Opciones de foto de perfil' : 'Subir foto de perfil'">
+            <svg lucideCamera size="18" class="text-gray-700 dark:text-gray-200"></svg>
+          </button>
+
+          <!-- Menú Contextual Flotante de Avatar al hacer clic en el Badge de Cámara -->
+          @if (isAvatarMenuOpen()) {
+            <!-- Backdrop para cerrar al hacer clic fuera -->
+            <button type="button" aria-label="Cerrar opciones de avatar" (click)="closeAvatarMenu()"
+              class="fixed inset-0 z-40 bg-transparent cursor-default border-0 p-0 w-full h-full focus:outline-none"></button>
+
+            <div class="absolute left-1/2 -translate-x-1/2 sm:left-full sm:translate-x-3 bottom-0 sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 z-50 w-44 rounded-xl bg-white dark:bg-gray-800 shadow-xl border border-gray-100 dark:border-gray-700 py-1 text-xs text-gray-700 dark:text-gray-200 animate-in fade-in duration-100 text-left">
+              <button type="button" (click)="closeAvatarMenu(); avatarFileInput.click()"
+                class="w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors cursor-pointer">
+                <svg lucideCamera size="14" class="text-brand-600 dark:text-brand-400"></svg>
+                <span>Cambiar foto</span>
+              </button>
+
+              <button type="button" (click)="closeAvatarMenu(); onDeleteAvatar()" [disabled]="isDeletingAvatar()"
+                class="w-full px-3 py-2 text-left flex items-center gap-2 hover:bg-red-50 dark:hover:bg-red-950/40 text-red-600 dark:text-red-400 transition-colors cursor-pointer">
+                <svg lucideTrash size="14"></svg>
+                <span>{{ isDeletingAvatar() ? 'Eliminando...' : 'Eliminar foto' }}</span>
+              </button>
+            </div>
+          }
+
+          <!-- Input nativo de archivo oculto -->
+          <input #avatarFileInput type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+            class="hidden" (change)="onAvatarFileSelected($event)" />
+        </div>
+
+        <!-- Textos de Identidad (Centrado en móvil, alineado a la izquierda en desktop) -->
+        <div class="flex flex-col items-center md:items-start min-w-0">
+          <div class="flex items-center gap-2 flex-wrap justify-center md:justify-start">
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 m-0 leading-tight">
+              {{ firstName() || 'Usuario' }} {{ lastName() }}
+            </h1>
+            @if (profile()?.is_verified) {
+              <p-tag severity="success" [rounded]="true" class="text-xs">
+                <span class="flex items-center gap-1">
+                  <svg lucideCircleCheck size="12"></svg>
+                  <span>Verificado</span>
+                </span>
+              </p-tag>
+            }
+          </div>
+
+          <div class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-1 flex-wrap justify-center md:justify-start">
+            <span class="font-mono font-medium text-gray-700 dark:text-gray-300">@{{ profile()?.username }}</span>
+            <span>·</span>
+            <span>{{ profile()?.email }}</span>
+            @if (city() || country()) {
+              <span>·</span>
+              <span class="flex items-center gap-1">
+                <svg lucideMapPin size="12"></svg>
+                <span>{{ city() ? city() + ', ' : '' }}{{ country() }}</span>
+              </span>
+            }
+          </div>
+
+          @if (phone()) {
+            <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mt-1 justify-center md:justify-start">
+              <svg lucidePhone size="12"></svg>
+              <span>{{ phone() }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Resumen Administrativo y Acciones Rápidas (Rol, ID, Cambiar Contraseña) -->
+      <div class="flex flex-wrap items-center justify-center md:justify-end gap-2.5 pt-3 md:pt-0 border-t md:border-t-0 border-gray-100 dark:border-gray-800 w-full md:w-auto">
+        <div class="px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 text-xs flex items-center gap-2">
+          <span class="text-gray-500 dark:text-gray-400">Rol:</span>
+          <span class="font-semibold text-brand-700 dark:text-brand-400">
+            {{ activeRole()?.name || 'Administrador Sistema' }}
+          </span>
+        </div>
+
+        <div class="px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 text-xs flex items-center gap-2">
+          <span class="text-gray-500 dark:text-gray-400">ID:</span>
+          <span class="font-mono text-gray-700 dark:text-gray-300">{{ (profile()?.id || '').substring(0, 8) }}...</span>
+          <button type="button" (click)="copyUserId()" pTooltip="Copiar ID de usuario" tooltipPosition="top"
+            class="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer">
+            <svg lucideCopy size="13"></svg>
+          </button>
+        </div>
+
+        <p-button label="Cambiar Contraseña" icon="pi pi-key" severity="secondary" [outlined]="true" size="small"
+          (click)="openPasswordModal()"></p-button>
+      </div>
+
+    </div>
   </div>
+
+  <!-- Layout en Dos Columnas: Formulario de Perfil (2/3) vs Seguridad y Auditoría (1/3) -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+    <!-- COLUMNA PRINCIPAL: Datos del Perfil (2 Columnas) -->
+    <div class="lg:col-span-2 space-y-5">
+
+      <!-- Tarjeta 1: Información Personal y Contacto -->
+      <div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-xs space-y-4">
+        <div class="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-800">
+          <div class="p-1.5 rounded-md bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400">
+            <svg lucideUser size="16"></svg>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-gray-100 m-0">Información Personal y Contacto</h2>
+            <span class="text-xs text-gray-500 dark:text-gray-400">Actualiza tus nombres de visualización y canales de comunicación</span>
+          </div>
+        </div>
+
+        <!-- Nombres y Apellidos -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="flex flex-col gap-1.5">
+            <label for="profile_first_name" class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+              Nombre
+            </label>
+            <input id="profile_first_name" type="text" pInputText [ngModel]="firstName()"
+              (ngModelChange)="firstName.set($event)" placeholder="Tu nombre" class="w-full text-sm" />
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="profile_last_name" class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+              Apellido
+            </label>
+            <input id="profile_last_name" type="text" pInputText [ngModel]="lastName()"
+              (ngModelChange)="lastName.set($event)" placeholder="Tu apellido" class="w-full text-sm" />
+          </div>
+        </div>
+
+        <!-- Username y Correo (Solo Lectura con Candado / Identificadores) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="flex flex-col gap-1.5">
+            <label for="profile_username" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+              <span class="flex items-center gap-1">
+                <span>Nombre de Usuario</span>
+                <svg lucideLock size="12" class="text-gray-400" pTooltip="Identificador fijo no modificable"></svg>
+              </span>
+              <span class="text-[10px] text-gray-400 font-normal">Identificador único</span>
+            </label>
+            <div class="relative">
+              <input id="profile_username" type="text" pInputText [value]="profile()?.username || ''" [disabled]="true"
+                class="w-full text-sm font-mono bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 cursor-not-allowed" />
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="profile_email" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+              <span class="flex items-center gap-1">
+                <span>Correo Electrónico</span>
+                <svg lucideLock size="12" class="text-gray-400" pTooltip="Cuenta principal vinculada"></svg>
+              </span>
+              <span class="text-[10px] text-gray-400 font-normal">Cuenta vinculada</span>
+            </label>
+            <div class="relative">
+              <input id="profile_email" type="text" pInputText [value]="profile()?.email || ''" [disabled]="true"
+                class="w-full text-sm bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 cursor-not-allowed" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Teléfono / WhatsApp -->
+        <div class="flex flex-col gap-1.5">
+          <label for="profile_phone" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+            <span class="flex items-center gap-1">
+              <svg lucidePhone size="13" class="text-gray-400"></svg>
+              <span>Teléfono / WhatsApp</span>
+            </span>
+            @if (getWhatsAppUrl()) {
+              <a [href]="getWhatsAppUrl()" target="_blank"
+                class="text-[11px] text-green-600 dark:text-green-400 hover:underline flex items-center gap-1 font-medium">
+                <i class="pi pi-whatsapp"></i>
+                <span>Abrir chat de WhatsApp</span>
+              </a>
+            }
+          </label>
+          <input id="profile_phone" type="tel" pInputText [ngModel]="phone()"
+            (ngModelChange)="phone.set($event)" placeholder="+591 70012345" class="w-full text-sm" />
+        </div>
+      </div>
+
+      <!-- Tarjeta 2: Ubicación y Preferencias Regionales (Con Buscadores p-select) -->
+      <div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-xs space-y-4">
+        <div class="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-800">
+          <div class="p-1.5 rounded-md bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400">
+            <svg lucideGlobe size="16"></svg>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-gray-100 m-0">Ubicación y Configuración Regional</h2>
+            <span class="text-xs text-gray-500 dark:text-gray-400">País de residencia, ciudad y zona horaria para registros del sistema</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- País (Con Filtro de Búsqueda Integrado) -->
+          <div class="flex flex-col gap-1.5">
+            <label for="profile_country" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+              <svg lucideGlobe size="13" class="text-gray-400"></svg>
+              <span>País</span>
+            </label>
+            <p-select id="profile_country" [options]="countryOptions" [ngModel]="country()"
+              (ngModelChange)="country.set($event)" optionLabel="label" optionValue="value"
+              [filter]="true" filterBy="label" filterPlaceholder="Buscar país..."
+              emptyFilterMessage="No se encontraron países"
+              appendTo="body" class="w-full text-sm">
+            </p-select>
+          </div>
+
+          <!-- Zona Horaria (Con Filtro de Búsqueda Integrado) -->
+          <div class="flex flex-col gap-1.5">
+            <label for="profile_timezone" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+              <svg lucideClock size="13" class="text-gray-400"></svg>
+              <span>Zona Horaria (IANA)</span>
+            </label>
+            <p-select id="profile_timezone" [options]="timezoneOptions" [ngModel]="timezone()"
+              (ngModelChange)="timezone.set($event)" optionLabel="label" optionValue="value"
+              [filter]="true" filterBy="label" filterPlaceholder="Buscar zona horaria..."
+              emptyFilterMessage="No se encontraron zonas"
+              appendTo="body" class="w-full text-sm">
+            </p-select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Ciudad -->
+          <div class="flex flex-col gap-1.5">
+            <label for="profile_city" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+              <svg lucideBuilding size="13" class="text-gray-400"></svg>
+              <span>Ciudad / Sucursal</span>
+            </label>
+            <input id="profile_city" type="text" pInputText [ngModel]="city()"
+              (ngModelChange)="city.set($event)" placeholder="Ej. Santa Cruz, La Paz..." class="w-full text-sm" />
+          </div>
+
+          <!-- Dirección Física -->
+          <div class="flex flex-col gap-1.5">
+            <label for="profile_address" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+              <svg lucideMapPin size="13" class="text-gray-400"></svg>
+              <span>Dirección Física / Oficina</span>
+            </label>
+            <input id="profile_address" type="text" pInputText [ngModel]="address()"
+              (ngModelChange)="address.set($event)" placeholder="Ej. Av. San Martín #450, Equipetrol" class="w-full text-sm" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de Acciones Unificada del Formulario (Único Guardar Cambios de la Página) -->
+      <div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div class="flex items-center gap-2 text-xs">
+          @if (isDirty()) {
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 font-medium">
+              <span class="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+              Tienes cambios sin guardar
+            </span>
+          } @else {
+            <span class="text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+              <svg lucideCircleCheck size="14" class="text-emerald-500"></svg>
+              Tus datos están sincronizados con el servidor
+            </span>
+          }
+        </div>
+
+        <div class="flex items-center gap-2.5 justify-end">
+          <p-button label="Descartar" icon="pi pi-undo" severity="secondary" [outlined]="true" size="small"
+            [disabled]="!isDirty() || isSaving()" (click)="onDiscardChanges()"
+            pTooltip="Restaurar valores originales del servidor" tooltipPosition="top">
+          </p-button>
+
+          <p-button label="Guardar Cambios" icon="pi pi-check" severity="primary" size="small"
+            [loading]="isSaving()" [disabled]="!isDirty()" (click)="onSaveProfile()">
+          </p-button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- COLUMNA LATERAL: Seguridad, Credenciales y Auditoría (1 Columna) -->
+    <div class="space-y-5">
+
+      <!-- Tarjeta 3: Seguridad y Credenciales (Único Lugar para Cambiar Contraseña) -->
+      <div class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 shadow-xs space-y-4">
+        <div class="flex items-center gap-2 pb-2 border-b border-gray-100 dark:border-gray-800">
+          <div class="p-1.5 rounded-md bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400">
+            <svg lucideShield size="16"></svg>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-gray-900 dark:text-gray-100 m-0">Seguridad y Credenciales</h2>
+            <span class="text-xs text-gray-500 dark:text-gray-400">Acceso, clave y estado de la sesión</span>
+          </div>
+        </div>
+
+        <!-- Bloque de Contraseña -->
+        <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/40 border border-gray-200/70 dark:border-gray-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
+              <svg lucideLock size="13" class="text-gray-500"></svg>
+              <span>Contraseña de Acceso</span>
+            </span>
+            <span class="text-[10px] text-gray-400">••••••••</span>
+          </div>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400 m-0 leading-relaxed">
+            Te recomendamos actualizar tu clave periódicamente para mantener tu cuenta administrativa protegida.
+          </p>
+          <p-button label="Cambiar Contraseña" icon="pi pi-key" severity="secondary" [outlined]="true"
+            size="small" class="w-full justify-center pt-1" (click)="openPasswordModal()">
+          </p-button>
+        </div>
+
+        <!-- Metadatos de Seguridad y Permisos -->
+        <div class="space-y-2.5 text-xs pt-1">
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+            <span class="text-gray-600 dark:text-gray-400">Rol Activo:</span>
+            <span class="font-bold text-brand-700 dark:text-brand-400">
+              {{ activeRole()?.name || 'Administrador Sistema' }}
+            </span>
+          </div>
+
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+            <span class="text-gray-600 dark:text-gray-400">Estado de Cuenta:</span>
+            <p-tag [value]="profile()?.is_active ? 'Activa' : 'Inactiva'"
+              [severity]="profile()?.is_active ? 'success' : 'danger'" [rounded]="true">
+            </p-tag>
+          </div>
+
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+            <span class="text-gray-600 dark:text-gray-400">Correo Validado:</span>
+            <p-tag [value]="profile()?.is_verified ? 'Verificado' : 'Pendiente'"
+              [severity]="profile()?.is_verified ? 'success' : 'warn'" [rounded]="true">
+            </p-tag>
+          </div>
+
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+            <span class="text-gray-600 dark:text-gray-400">Fecha de Registro:</span>
+            <span class="font-medium text-gray-800 dark:text-gray-200">
+              {{ profile()?.created_at | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </div>
+
+          @if (profile()?.updated_at) {
+            <div class="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+              <span class="text-gray-600 dark:text-gray-400">Última Modificación:</span>
+              <span class="font-medium text-gray-800 dark:text-gray-200">
+                {{ profile()?.updated_at | date:'dd/MM/yyyy HH:mm' }}
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Tarjeta 4: Mensaje de Seguridad Anti-IDOR -->
+      <div class="p-4 rounded-xl border border-blue-100 dark:border-blue-900/40 bg-blue-50/50 dark:bg-blue-950/20 text-xs text-blue-900 dark:text-blue-200 space-y-1.5">
+        <div class="font-bold flex items-center gap-1.5 text-blue-700 dark:text-blue-300">
+          <svg lucideShield size="15"></svg>
+          <span>Autoservicio Seguro (Anti-IDOR)</span>
+        </div>
+        <p class="m-0 text-blue-800 dark:text-blue-300/80 leading-relaxed text-[11px]">
+          Tus datos personales y cambios de contraseña se procesan de forma atómica usando tu token de sesión actual en <code>/api/auth/me</code>, garantizando que nadie pueda modificar cuentas ajenas.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
+
+<!-- Modal: Cambiar Contraseña -->
+<p-dialog header="Cambiar Mi Contraseña" [visible]="showPasswordModal()" (visibleChange)="showPasswordModal.set($event)"
+  [modal]="true" [draggable]="false" [resizable]="false" [style]="{ width: '100%', maxWidth: '440px' }" class="p-fluid">
+
+  <div class="space-y-4">
+    <div class="text-xs text-gray-500 dark:text-gray-400">
+      Ingresa tu contraseña actual y define una nueva clave segura con al menos 6 caracteres.
+    </div>
+
+    <!-- Contraseña Actual -->
+    <div class="flex flex-col gap-1.5">
+      <label for="current_password" class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+        Contraseña Actual <span class="text-red-500">*</span>
+      </label>
+      <p-password id="current_password" [ngModel]="currentPassword()"
+        (ngModelChange)="currentPassword.set($event)" [toggleMask]="true" [feedback]="false"
+        placeholder="••••••••••••" inputClass="w-full text-sm" class="w-full">
+      </p-password>
+    </div>
+
+    <!-- Nueva Contraseña -->
+    <div class="flex flex-col gap-1.5">
+      <label for="new_password" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+        <span>Nueva Contraseña <span class="text-red-500">*</span></span>
+        <span class="text-[10px] text-gray-400 font-normal">Mínimo 6 caracteres</span>
+      </label>
+      <p-password id="new_password" [ngModel]="newPassword()"
+        (ngModelChange)="newPassword.set($event)" [toggleMask]="true" [feedback]="true"
+        placeholder="••••••••••••" inputClass="w-full text-sm" class="w-full">
+      </p-password>
+    </div>
+
+    <!-- Confirmar Nueva Contraseña -->
+    <div class="flex flex-col gap-1.5">
+      <label for="confirm_password" class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+        Confirmar Nueva Contraseña <span class="text-red-500">*</span>
+      </label>
+      <p-password id="confirm_password" [ngModel]="confirmPassword()"
+        (ngModelChange)="confirmPassword.set($event)" [toggleMask]="true" [feedback]="false"
+        placeholder="••••••••••••" inputClass="w-full text-sm" class="w-full">
+      </p-password>
+    </div>
+
+    <!-- Mensaje de Error en Tiempo Real -->
+    @if (passwordError()) {
+      <div class="p-2.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-xs text-red-600 dark:text-red-400 flex items-center gap-1.5">
+        <svg lucideCircleAlert size="14" class="shrink-0"></svg>
+        <span>{{ passwordError() }}</span>
+      </div>
+    }
+  </div>
+
+  <ng-template #footer>
+    <div class="flex items-center justify-end gap-2 w-full">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" size="small"
+        (click)="closePasswordModal()"></p-button>
+      <p-button label="Actualizar Contraseña" icon="pi pi-check" severity="primary" size="small"
+        [loading]="isChangingPassword()" [disabled]="!isPasswordValid()"
+        (click)="onSubmitChangePassword()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Diálogo Modal: Recorte y Ajuste de Foto de Perfil (HTML5 Canvas Cropper) -->
+<app-avatar-cropper-dialog #cropperDialog
+  [(visible)]="showCropperModal"
+  [isProcessing]="isUploadingAvatar()"
+  (cropApplied)="onCropApplied($event)">
+</app-avatar-cropper-dialog>

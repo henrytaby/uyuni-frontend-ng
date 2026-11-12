@@ -2,6 +2,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { ApplicationConfig, ErrorHandler,inject, provideAppInitializer, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
 import { provideLucideConfig } from '@lucide/angular';
 import { definePreset } from '@primeuix/themes';
@@ -89,6 +90,8 @@ export const appConfig: ApplicationConfig = {
         return configService.loadConfig();
     }),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
-    provideLucideConfig({ strokeWidth: 1.5 })
+    provideLucideConfig({ strokeWidth: 1.5 }),
+    MessageService,
+    ConfirmationService
   ]
 };

@@ -1,0 +1,93 @@
+<p-dialog header="Ajustar y Centrar Foto de Perfil" [visible]="visible()" (visibleChange)="visible.set($event)"
+  [modal]="true" [draggable]="false" [resizable]="false" [style]="{ width: '100%', maxWidth: '420px' }" class="p-fluid" (onHide)="cancel()">
+
+  <div class="space-y-3 py-0.5"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onFileDrop($event)">
+
+    <!-- Instrucción Clara de Uso -->
+    <div class="text-xs text-gray-500 dark:text-gray-400 text-center leading-relaxed">
+      Arrastra la foto con el mouse para encuadrarla. Ajusta el tamaño con el slider o la rueda del ratón.
+    </div>
+
+    <!-- Área Interactiva de Recorte (Canvas con Máscara Circular) -->
+    <div class="relative flex justify-center items-center bg-gray-950 rounded-xl overflow-hidden shadow-inner p-1 select-none"
+      [class.ring-2]="isDragOver()" [class.ring-brand-500]="isDragOver()">
+
+      <canvas #cropCanvas
+        (pointerdown)="onPointerDown($event)"
+        (pointermove)="onPointerMove($event)"
+        (pointerup)="onPointerUp($event)"
+        (pointercancel)="onPointerUp($event)"
+        (wheel)="onWheel($event)"
+        class="cursor-grab active:cursor-grabbing touch-none rounded-lg w-full max-w-[340px] aspect-square block"
+        style="width: 340px; height: 340px;">
+      </canvas>
+
+      <!-- Overlay si el usuario arrastra otro archivo encima -->
+      @if (isDragOver()) {
+        <div class="absolute inset-0 bg-brand-950/80 backdrop-blur-xs flex flex-col items-center justify-center text-white p-4 text-center pointer-events-none">
+          <svg lucideUpload size="32" class="text-brand-400 mb-2 animate-bounce"></svg>
+          <span class="text-sm font-semibold">Suelta aquí tu nueva imagen</span>
+        </div>
+      }
+    </div>
+
+    <!-- Controles de Zoom y Rotación -->
+    <div class="space-y-2 px-1">
+      <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-300">
+        <span class="font-medium">Escala / Zoom:</span>
+        <span class="font-mono text-brand-600 dark:text-brand-400 font-semibold">{{ zoomPercentage() }}</span>
+      </div>
+
+      <div class="flex items-center gap-2.5">
+        <button type="button" (click)="zoomOut()"
+          class="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors shrink-0 cursor-pointer"
+          title="Reducir zoom">
+          <svg lucideMinus size="14"></svg>
+        </button>
+
+        <input type="range" [min]="0.3" [max]="4.0" [step]="0.05"
+          [ngModel]="zoom()" (ngModelChange)="onZoomChange($event)"
+          class="w-full accent-brand-600 cursor-pointer h-1.5 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+
+        <button type="button" (click)="zoomIn()"
+          class="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors shrink-0 cursor-pointer"
+          title="Aumentar zoom">
+          <svg lucidePlus size="14"></svg>
+        </button>
+
+        <!-- Botón Rotar 90 Grados -->
+        <button type="button" (click)="rotate90()"
+          class="p-1.5 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors flex items-center gap-1 text-xs shrink-0 ml-1 cursor-pointer"
+          title="Girar 90 grados">
+          <svg lucideRotateCw size="14"></svg>
+          <span>90°</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Opción de Cambiar a Otra Foto -->
+    <div class="flex items-center justify-between pt-1 text-xs border-t border-gray-100 dark:border-gray-800 px-1">
+      <span class="text-gray-400">¿Prefieres otra foto?</span>
+      <button type="button" (click)="changeFileInput.click()"
+        class="text-brand-600 dark:text-brand-400 hover:underline font-medium flex items-center gap-1 cursor-pointer">
+        <svg lucideUpload size="12"></svg>
+        <span>Elegir otro archivo</span>
+      </button>
+      <input #changeFileInput type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+        class="hidden" (change)="onNewFileSelected($event)" />
+    </div>
+
+  </div>
+
+  <ng-template #footer>
+    <div class="flex items-center justify-end gap-2 w-full">
+      <p-button label="Cancelar" severity="secondary" [outlined]="true" size="small"
+        (click)="cancel()" [disabled]="isProcessing()"></p-button>
+      <p-button label="Aplicar y Subir" icon="pi pi-check" severity="primary" size="small"
+        [loading]="isProcessing()" (click)="applyCrop()"></p-button>
+    </div>
+  </ng-template>
+</p-dialog>

@@ -1,0 +1,563 @@
+<p-drawer [visible]="visible()" (visibleChange)="visible.set($event)" position="right" [modal]="true"
+  class="w-full sm:w-[540px] md:w-[650px] lg:w-[750px] max-w-full" [style]="{ width: '100%', maxWidth: '750px' }">
+
+  <!-- Header del Drawer -->
+  <ng-template #header>
+    <div class="flex items-center gap-3 w-full pr-2">
+      @if (mode() === 'create') {
+        @if (avatarUrl()) {
+          <p-avatar [image]="avatarUrl()" shape="circle" size="large"
+            class="shrink-0 border border-brand-200 dark:border-brand-700"></p-avatar>
+        } @else {
+          <div class="w-10 h-10 rounded-full bg-brand-50 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-800 flex items-center justify-center shrink-0 text-brand-600 dark:text-brand-400">
+            <svg lucideUserPlus size="20"></svg>
+          </div>
+        }
+        <div class="flex flex-col min-w-0">
+          <h2 class="text-base font-bold text-gray-900 dark:text-gray-100 m-0 leading-tight">Nuevo Usuario</h2>
+          <span class="text-xs text-gray-500 dark:text-gray-400">Completa los datos y asigna roles iniciales</span>
+        </div>
+      } @else {
+        <p-avatar [label]="!avatarUrl() && !(currentDisplayUser()?.avatar_url) ? getInitials(currentDisplayUser()) : undefined"
+          [image]="avatarUrl() || (currentDisplayUser()?.avatar_url || '')" shape="circle" size="large"
+          class="shrink-0 bg-brand-100 text-brand-800 dark:bg-brand-900 dark:text-brand-200 font-bold border border-brand-200 dark:border-brand-700"></p-avatar>
+        <div class="flex flex-col min-w-0 flex-1">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h2 class="text-base font-bold text-gray-900 dark:text-gray-100 m-0 leading-tight truncate">
+              {{ currentDisplayUser()?.first_name }} {{ currentDisplayUser()?.last_name }}
+            </h2>
+            @if (isLoadingDetails()) {
+              <i class="pi pi-spin pi-spinner text-xs text-brand-600 dark:text-brand-400" pTooltip="Sincronizando datos..." tooltipPosition="top"></i>
+            }
+            <div class="flex items-center gap-1 shrink-0">
+              <p-tag [value]="currentDisplayUser()?.is_active ? 'Activo' : 'Inactivo'"
+                [severity]="currentDisplayUser()?.is_active ? 'success' : 'danger'" [rounded]="true" class="text-xs"></p-tag>
+              @if (currentDisplayUser()?.is_superuser) {
+                <p-tag severity="warn" [rounded]="true" class="text-xs">
+                  <span class="flex items-center gap-1">
+                    <svg lucideShield size="11"></svg>
+                    <span>Superuser</span>
+                  </span>
+                </p-tag>
+              }
+            </div>
+          </div>
+          <span class="text-xs text-gray-500 dark:text-gray-400 truncate">
+            @{{ currentDisplayUser()?.username }} · {{ currentDisplayUser()?.email }}
+          </span>
+        </div>
+      }
+    </div>
+  </ng-template>
+
+  <!-- Contenido con Tabs -->
+  <div class="flex flex-col h-full overflow-hidden">
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)" class="w-full flex-1 flex flex-col overflow-hidden">
+      
+      <!-- Lista de Pestañas -->
+      <p-tablist>
+        <p-tab value="0">
+          <span class="inline-flex items-center gap-2 text-sm font-medium">
+            <svg lucideUser size="16"></svg>
+            <span>Datos Generales</span>
+          </span>
+        </p-tab>
+        <p-tab value="1">
+          <span class="inline-flex items-center gap-2 text-sm font-medium">
+            <svg lucideShield size="16"></svg>
+            <span>Roles y Permisos</span>
+            @if (selectedRoleSlugs().length > 0) {
+              <span class="ml-1 px-1.5 py-0.2 text-xs bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-300 rounded-full font-bold">
+                {{ selectedRoleSlugs().length }}
+              </span>
+            }
+          </span>
+        </p-tab>
+        <p-tab value="2" [disabled]="mode() === 'create'">
+          <span class="inline-flex items-center gap-2 text-sm font-medium" [pTooltip]="mode() === 'create' ? 'Disponible tras guardar el usuario' : ''">
+            <svg lucideHistory size="16"></svg>
+            <span>Historial de Accesos</span>
+          </span>
+        </p-tab>
+      </p-tablist>
+
+      <p-tabpanels class="flex-1 overflow-y-auto p-4!">
+
+        <!-- Pestaña 1: Datos Generales -->
+        <p-tabpanel value="0" class="p-0!">
+          <div class="space-y-4">
+
+            <!-- 1. IDENTIFICACIÓN Y CUENTA -->
+            <div class="space-y-3">
+              <div class="flex items-center gap-1.5 pb-1 border-b border-gray-100 dark:border-gray-800 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <svg lucideUser size="14"></svg>
+                <span>Identificación y Cuenta</span>
+              </div>
+
+              <!-- Nombres y Apellidos -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1.5">
+                  <label for="drawer_first_name" class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                    Nombre
+                  </label>
+                  <input id="drawer_first_name" type="text" pInputText [ngModel]="firstName()"
+                    (ngModelChange)="firstName.set($event)" placeholder="Ej. Lucía" class="w-full text-sm" />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  <label for="drawer_last_name" class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                    Apellido
+                  </label>
+                  <input id="drawer_last_name" type="text" pInputText [ngModel]="lastName()"
+                    (ngModelChange)="lastName.set($event)" placeholder="Ej. Pérez" class="w-full text-sm" />
+                </div>
+              </div>
+
+              <!-- Username y Correo -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1.5">
+                  <label for="drawer_username" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                    <span>Usuario <span class="text-red-500">*</span></span>
+                    <span class="text-[10px] text-gray-400 font-normal">Sin espacios</span>
+                  </label>
+                  <div class="relative">
+                    <input id="drawer_username" type="text" pInputText [ngModel]="username()"
+                      (ngModelChange)="username.set($event)" (keydown)="onUsernameKeyDown($event)"
+                      (paste)="onUsernamePaste($event)"
+                      placeholder="usuario_admin" class="w-full text-sm font-mono"
+                      [invalid]="username().length > 0 && !usernameValidation().isValid"
+                      [class.border-red-500!]="username().length > 0 && !usernameValidation().isValid" />
+                  </div>
+                  @if (username().length > 0 && !usernameValidation().isValid) {
+                    <span class="text-xs text-red-500 dark:text-red-400 flex items-center gap-1 mt-0.5 font-normal">
+                      <svg lucideCircleAlert size="13" class="shrink-0"></svg>
+                      <span>{{ usernameValidation().error }}</span>
+                    </span>
+                  }
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                  <label for="drawer_email" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                    <span>Correo Electrónico <span class="text-red-500">*</span></span>
+                    <span class="text-[10px] text-gray-400 font-normal">Sin espacios</span>
+                  </label>
+                  <input id="drawer_email" type="text" inputmode="email" autocomplete="email" pInputText [ngModel]="email()"
+                    (ngModelChange)="email.set($event)" (keydown)="onEmailKeyDown($event)"
+                    (paste)="onEmailPaste($event)"
+                    placeholder="correo@empresa.com" class="w-full text-sm"
+                    [invalid]="email().length > 0 && !emailValidation().isValid"
+                    [class.border-red-500!]="email().length > 0 && !emailValidation().isValid" />
+                  @if (email().length > 0 && !emailValidation().isValid) {
+                    <span class="text-xs text-red-500 dark:text-red-400 flex items-center gap-1 mt-0.5 font-normal">
+                      <svg lucideCircleAlert size="13" class="shrink-0"></svg>
+                      <span>{{ emailValidation().error }}</span>
+                    </span>
+                  }
+                </div>
+              </div>
+
+              <!-- Avatar URL con Preview -->
+              <div class="flex flex-col gap-1.5">
+                <label for="drawer_avatar_url" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                  <span class="flex items-center gap-1.5">
+                    <svg lucideImage size="13" class="text-gray-400"></svg>
+                    <span>URL del Avatar (Fotografía de perfil)</span>
+                  </span>
+                  <span class="text-[10px] text-gray-400 font-normal">Opcional (HTTPS)</span>
+                </label>
+                <div class="flex items-center gap-2">
+                  <p-avatar [image]="avatarUrl()" [label]="!avatarUrl() ? getUserInitials() : undefined" shape="circle"
+                    size="normal" class="shrink-0 bg-brand-50 text-brand-700 border border-brand-200"></p-avatar>
+                  <input id="drawer_avatar_url" type="url" pInputText [ngModel]="avatarUrl()"
+                    (ngModelChange)="avatarUrl.set($event)"
+                    placeholder="https://ejemplo.com/fotos/usuario.jpg" class="w-full text-sm" />
+                  @if (avatarUrl()) {
+                    <p-button icon="pi pi-times" severity="secondary" [text]="true" size="small"
+                      (click)="avatarUrl.set('')" pTooltip="Quitar avatar" tooltipPosition="top"></p-button>
+                  }
+                </div>
+              </div>
+
+              <!-- Contraseña -->
+              <div class="flex flex-col gap-1.5 bg-gray-50 dark:bg-gray-800/40 p-3 rounded-lg border border-gray-200 dark:border-gray-700/80"
+                [class.border-red-500!]="password().length > 0 && !passwordValidation().isValid">
+                <label for="drawer_password" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                  <span>
+                    {{ mode() === 'create' ? 'Contraseña Inicial' : 'Actualizar Contraseña' }}
+                    @if (mode() === 'create') {
+                      <span class="text-red-500">*</span>
+                    }
+                  </span>
+                  <span class="text-[11px] text-gray-500 dark:text-gray-400 font-normal">
+                    {{ mode() === 'create' ? 'Mínimo 6 caracteres' : 'Dejar en blanco para conservar actual' }}
+                  </span>
+                </label>
+                <p-password id="drawer_password" [ngModel]="password()" (ngModelChange)="password.set($event)"
+                  [toggleMask]="true" [feedback]="false" placeholder="••••••••••••"
+                  [invalid]="password().length > 0 && !passwordValidation().isValid"
+                  inputClass="w-full text-sm" class="w-full">
+                </p-password>
+                @if (password().length > 0 && !passwordValidation().isValid) {
+                  <span class="text-xs text-red-500 dark:text-red-400 flex items-center gap-1 mt-0.5 font-normal">
+                    <svg lucideCircleAlert size="13" class="shrink-0"></svg>
+                    <span>{{ passwordValidation().error }}</span>
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- 2. CONTACTO Y UBICACIÓN -->
+            <div class="space-y-3 pt-2">
+              <div class="flex items-center gap-1.5 pb-1 border-b border-gray-100 dark:border-gray-800 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <svg lucideMapPin size="14"></svg>
+                <span>Contacto y Ubicación</span>
+              </div>
+
+              <!-- Teléfono / WhatsApp y Ciudad -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1.5">
+                  <label for="drawer_phone" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                    <span class="flex items-center gap-1">
+                      <svg lucidePhone size="13" class="text-gray-400"></svg>
+                      <span>Teléfono / WhatsApp</span>
+                    </span>
+                    @if (getWhatsAppUrl()) {
+                      <a [href]="getWhatsAppUrl()" target="_blank"
+                        class="text-[11px] text-green-600 dark:text-green-400 hover:underline flex items-center gap-1 font-medium"
+                        pTooltip="Abrir chat en WhatsApp" tooltipPosition="top">
+                        <i class="pi pi-whatsapp"></i>
+                        <span>WhatsApp</span>
+                      </a>
+                    }
+                  </label>
+                  <input id="drawer_phone" type="tel" pInputText [ngModel]="phone()"
+                    (ngModelChange)="phone.set($event)" placeholder="+591 70012345" class="w-full text-sm" />
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                  <label for="drawer_city" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <svg lucideBuilding size="13" class="text-gray-400"></svg>
+                    <span>Ciudad</span>
+                  </label>
+                  <input id="drawer_city" type="text" pInputText [ngModel]="city()"
+                    (ngModelChange)="city.set($event)" placeholder="Ej. La Paz, Santa Cruz..." class="w-full text-sm" />
+                </div>
+              </div>
+
+              <!-- Dirección Física -->
+              <div class="flex flex-col gap-1.5">
+                <label for="drawer_address" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                  <svg lucideMapPin size="13" class="text-gray-400"></svg>
+                  <span>Dirección Física / Oficina</span>
+                </label>
+                <input id="drawer_address" type="text" pInputText [ngModel]="address()"
+                  (ngModelChange)="address.set($event)" placeholder="Ej. Av. San Martín #450, Edif. Torre..." class="w-full text-sm" />
+              </div>
+
+              <!-- País y Zona Horaria (Desplegables p-select) -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1.5">
+                  <label for="drawer_country" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <svg lucideGlobe size="13" class="text-gray-400"></svg>
+                    <span>País</span>
+                  </label>
+                  <p-select id="drawer_country" [options]="countryOptions" [ngModel]="country()"
+                    (ngModelChange)="country.set($event)" optionLabel="label" optionValue="value"
+                    [filter]="true" filterBy="label" filterPlaceholder="Buscar país..."
+                    emptyFilterMessage="No se encontraron países"
+                    appendTo="body" class="w-full text-sm">
+                  </p-select>
+                </div>
+
+                <div class="flex flex-col gap-1.5">
+                  <label for="drawer_timezone" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                    <svg lucideClock size="13" class="text-gray-400"></svg>
+                    <span>Zona Horaria (IANA)</span>
+                  </label>
+                  <p-select id="drawer_timezone" [options]="timezoneOptions" [ngModel]="timezone()"
+                    (ngModelChange)="timezone.set($event)" optionLabel="label" optionValue="value"
+                    [filter]="true" filterBy="label" filterPlaceholder="Buscar zona horaria..."
+                    emptyFilterMessage="No se encontraron zonas"
+                    appendTo="body" class="w-full text-sm">
+                  </p-select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. NOTAS ADMINISTRATIVAS INTERNAS (Estilo Post-it corporativo) -->
+            <div class="p-3 bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 rounded-lg space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-semibold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                  <svg lucideStickyNote size="14" class="text-amber-600 dark:text-amber-400"></svg>
+                  <span>Notas Administrativas</span>
+                </span>
+                <span class="text-[10px] text-amber-700 dark:text-amber-400 font-normal">
+                  Solo visible para administradores
+                </span>
+              </div>
+              <textarea id="drawer_notes" rows="2" pTextarea [autoResize]="true" [ngModel]="notes()"
+                (ngModelChange)="notes.set($event)"
+                placeholder="Observaciones de RRHH, sucursal o notas internas..."
+                class="w-full text-xs bg-white dark:bg-gray-900 border-amber-300 dark:border-amber-800 focus:border-amber-500! rounded-md p-2">
+              </textarea>
+            </div>
+
+            <!-- 4. ESTADO Y PERMISOS DE CUENTA -->
+            <div class="flex flex-col gap-2.5 pt-2">
+              <div class="flex items-center gap-1.5 pb-1 border-b border-gray-100 dark:border-gray-800 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <svg lucideShield size="14"></svg>
+                <span>Estado y Permisos de Cuenta</span>
+              </div>
+
+              <!-- Usuario Activo -->
+              <div class="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                <div class="flex flex-col gap-0.5">
+                  <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Cuenta Activa</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Permite al usuario autenticarse en la plataforma</span>
+                </div>
+                <p-toggleswitch [ngModel]="isActive()" (ngModelChange)="isActive.set($event)"></p-toggleswitch>
+              </div>
+
+              <!-- Correo Verificado -->
+              <div class="flex items-center justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                <div class="flex flex-col gap-0.5">
+                  <span class="text-sm font-semibold text-gray-900 dark:text-gray-100">Correo Verificado</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400">Confirma que la dirección de correo fue validada</span>
+                </div>
+                <p-toggleswitch [ngModel]="isVerified()" (ngModelChange)="isVerified.set($event)"></p-toggleswitch>
+              </div>
+
+              <!-- Superusuario -->
+              <div class="flex items-center justify-between p-3 rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50/40 dark:bg-amber-950/20">
+                <div class="flex flex-col gap-0.5">
+                  <div class="flex items-center gap-1.5">
+                    <svg lucideShield size="15" class="text-amber-600 dark:text-amber-400"></svg>
+                    <span class="text-sm font-semibold text-amber-900 dark:text-amber-200">Privilegios de Superusuario</span>
+                  </div>
+                  <span class="text-xs text-amber-700/80 dark:text-amber-400/80">Otorga acceso total irrestricto sin evaluar permisos modulares</span>
+                </div>
+                <p-toggleswitch [ngModel]="isSuperuser()" (ngModelChange)="isSuperuser.set($event)"></p-toggleswitch>
+              </div>
+            </div>
+
+            <!-- Metadatos de Auditoría (Solo en modo edición) -->
+            @if (mode() === 'edit' && currentDisplayUser()?.created_at) {
+              <div class="pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-[11px] text-gray-400">
+                <span>Registrado: {{ currentDisplayUser()?.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+                @if (currentDisplayUser()?.updated_at) {
+                  <span>Actualizado: {{ currentDisplayUser()?.updated_at | date:'dd/MM/yyyy HH:mm' }}</span>
+                }
+              </div>
+            }
+
+          </div>
+        </p-tabpanel>
+
+        <!-- Pestaña 2: Roles y Permisos -->
+        <p-tabpanel value="1" class="p-0!">
+          <div class="space-y-4">
+            
+            <div class="flex flex-col gap-1.5">
+              <label for="roles_multiselect" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                <span>Roles Asignados al Usuario</span>
+                <span class="text-xs text-brand-600 dark:text-brand-400 font-medium">
+                  {{ selectedRoleSlugs().length }} seleccionados
+                </span>
+              </label>
+              
+              <p-multiselect inputId="roles_multiselect" [options]="roleOptions()" [ngModel]="selectedRoleSlugs()"
+                (ngModelChange)="selectedRoleSlugs.set($event)" optionLabel="name" optionValue="slug"
+                placeholder="Seleccionar roles..." [loading]="isLoadingRoles()" class="w-full" display="chip"
+                [filter]="true" filterPlaceholder="Buscar rol..." [showClear]="true">
+                <ng-template let-role #item>
+                  <div class="flex items-center gap-2 py-1">
+                    <i [class]="role.icon || 'pi pi-shield'" class="text-brand-600"></i>
+                    <div class="flex flex-col">
+                      <span class="font-medium text-sm">{{ role.name }}</span>
+                      @if (role.description) {
+                        <span class="text-xs text-gray-500">{{ role.description }}</span>
+                      }
+                    </div>
+                  </div>
+                </ng-template>
+              </p-multiselect>
+            </div>
+
+            <!-- Tarjetas de Roles Seleccionados -->
+            <div class="flex flex-col gap-2 pt-2">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                Detalle de Roles Activos
+              </h4>
+
+              @if (selectedRolesDetails().length > 0) {
+                <div class="grid grid-cols-1 gap-2">
+                  @for (role of selectedRolesDetails(); track role.slug) {
+                    <div class="flex items-start justify-between p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/40 hover:border-brand-300 dark:hover:border-brand-700 transition-colors">
+                      <div class="flex items-start gap-3">
+                        <div class="p-2 rounded-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-brand-600 dark:text-brand-400 shrink-0">
+                          <i [class]="role.icon || 'pi pi-shield'" class="text-base"></i>
+                        </div>
+                        <div class="flex flex-col">
+                          <div class="flex items-center gap-2">
+                            <span class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ role.name }}</span>
+                            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                              {{ role.slug }}
+                            </span>
+                          </div>
+                          <span class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                            {{ role.description || 'Sin descripción adicional para este rol' }}
+                          </span>
+                        </div>
+                      </div>
+                      <p-button icon="pi pi-times" [text]="true" [rounded]="true" severity="secondary" size="small"
+                        (click)="removeRole(role.slug)" pTooltip="Quitar rol" tooltipPosition="left"></p-button>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="flex flex-col items-center justify-center p-6 border border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-center bg-gray-50/50 dark:bg-gray-900/50">
+                  <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 mb-2">
+                    <svg lucideShield size="20"></svg>
+                  </div>
+                  <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">Sin roles asignados</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400 max-w-sm mt-1">
+                    Selecciona al menos un rol en el desplegable superior para otorgar permisos a este usuario en los distintos módulos del sistema.
+                  </span>
+                </div>
+              }
+            </div>
+
+          </div>
+        </p-tabpanel>
+
+        <!-- Pestaña 3: Historial de Accesos -->
+        <p-tabpanel value="2" class="p-0!">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between pb-1">
+              <div>
+                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 m-0">Inicios de Sesión Recientes</h4>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Auditoría de accesos e IPs registradas</span>
+              </div>
+              @if (loginTotal() > 0) {
+                <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 font-medium">
+                  {{ loginTotal() }} eventos totales
+                </span>
+              }
+            </div>
+
+            <p-table [value]="loginLogs()" [lazy]="true" (onLazyLoad)="onLoginLazyLoad($event)" [paginator]="true"
+              [rows]="loginRows()" [first]="loginFirst()" [totalRecords]="loginTotal()" [loading]="isLoadingLogins()"
+              [showCurrentPageReport]="true" [rowsPerPageOptions]="[10, 20, 50]" class="text-xs dense-table w-full"
+              currentPageReportTemplate="{first}-{last} de {totalRecords}">
+              
+              <ng-template pTemplate="header">
+                <tr>
+                  <th style="width: 5.5rem">Resultado</th>
+                  <th style="width: 8rem">Fecha y Hora</th>
+                  <th style="width: 7.5rem">Dirección IP</th>
+                  <th>Dispositivo y SO</th>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="body" let-log>
+                <tr>
+                  <!-- 1. Resultado -->
+                  <td class="vertical-align-middle">
+                    @if (log.is_successful) {
+                      <p-tag value="Exitoso" severity="success" [rounded]="true" class="text-[11px]"></p-tag>
+                    } @else {
+                      <p-tag value="Fallido" severity="danger" [rounded]="true" class="text-[11px]"></p-tag>
+                    }
+                  </td>
+
+                  <!-- 2. Fecha y Hora -->
+                  <td class="vertical-align-middle whitespace-nowrap">
+                    <div class="flex flex-col text-xs leading-tight">
+                      <span class="font-semibold text-gray-900 dark:text-gray-100">
+                        {{ log.created_at | date:'dd/MM/yyyy' }}
+                      </span>
+                      <span class="text-[11px] text-gray-500 dark:text-gray-400 font-mono">
+                        {{ log.created_at | date:'HH:mm:ss' }}
+                      </span>
+                    </div>
+                  </td>
+
+                  <!-- 3. Dirección IP con Copia -->
+                  <td class="vertical-align-middle whitespace-nowrap">
+                    <div class="inline-flex items-center gap-1 font-mono text-xs">
+                      <span class="px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                        {{ log.ip_address }}
+                      </span>
+                      <button type="button" (click)="copyToClipboard(log.ip_address)"
+                        class="text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 p-0.5 rounded transition-colors"
+                        pTooltip="Copiar IP" tooltipPosition="top">
+                        <svg lucideCopy size="12"></svg>
+                      </button>
+                    </div>
+                  </td>
+
+                  <!-- 4. Dispositivo y SO -->
+                  <td class="vertical-align-middle">
+                    @let info = formatHostInfo(log.host_info);
+                    <div class="flex items-center gap-2 max-w-full">
+                      <div class="p-1 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 shrink-0">
+                        @if (info.isMobile) {
+                          <svg lucideSmartphone size="14"></svg>
+                        } @else {
+                          <svg lucideLaptop size="14"></svg>
+                        }
+                      </div>
+                      <div class="flex flex-col min-w-0 flex-1">
+                        <span class="font-medium text-gray-900 dark:text-gray-100 text-xs truncate">
+                          {{ info.browser }} en {{ info.os }}
+                        </span>
+                        <span class="text-[10px] text-gray-400 font-mono truncate max-w-[170px]" [pTooltip]="log.host_info" tooltipPosition="top">
+                          {{ log.host_info }}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="4" class="text-center p-6 text-gray-500">
+                    <div class="flex flex-col items-center justify-center gap-1">
+                      <svg lucideHistory size="24" class="text-gray-300 dark:text-gray-600 mb-1"></svg>
+                      <span class="font-medium text-sm">No hay registros de acceso</span>
+                      <span class="text-xs text-gray-400">Este usuario aún no tiene inicios de sesión registrados.</span>
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+            </p-table>
+
+          </div>
+        </p-tabpanel>
+
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+
+  <!-- Sticky Footer -->
+  <ng-template #footer>
+    <div class="flex items-center justify-between w-full pt-3 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
+      <div>
+        @if (mode() === 'edit') {
+          <p-button icon="pi pi-trash" label="Eliminar" severity="danger" [outlined]="true" size="small"
+            (click)="onDeleteUser()"></p-button>
+        }
+      </div>
+      <div class="flex items-center gap-2">
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" size="small"
+          (click)="closeDrawer()"></p-button>
+        <span [pTooltip]="!isFormValid() ? 'Corrige los errores marcados en rojo para poder guardar' : ''" tooltipPosition="top">
+          <p-button [label]="mode() === 'create' ? 'Crear Usuario' : 'Guardar Cambios'" icon="pi pi-check"
+            severity="primary" size="small" [loading]="isSubmitting()" [disabled]="!isFormValid()"
+            (click)="onSubmit()"></p-button>
+        </span>
+      </div>
+    </div>
+  </ng-template>
+
+</p-drawer>

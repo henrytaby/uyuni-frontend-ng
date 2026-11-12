@@ -14,10 +14,17 @@ import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
-import { LucideCircleAlert,LucideCircleCheck, LucideMail, LucideShield } from '@lucide/angular';
+import {
+  LucideCircleAlert,
+  LucideCircleCheck,
+  LucideMail,
+  LucidePhone,
+  LucideShield
+} from '@lucide/angular';
 
 import { LoggerService } from '@core/services/logger.service';
 
+import { UserDrawerComponent } from '../../components/user-drawer/user-drawer.component';
 import { User } from '../../models/user.model';
 import { UserService } from '../../services/user.service';
 import { UserFilterService, UserFilterState } from '../../services/user-filter.service';
@@ -38,9 +45,11 @@ import { UserFilterService, UserFilterState } from '../../services/user-filter.s
     Tooltip,
     Select,
     LucideMail,
+    LucidePhone,
     LucideShield,
     LucideCircleCheck,
-    LucideCircleAlert
+    LucideCircleAlert,
+    UserDrawerComponent
   ],
   templateUrl: './user-list.component.html',
   styleUrls: ['./user-list.component.css'],
@@ -52,20 +61,25 @@ export class UserListComponent {
   private readonly logger = inject(LoggerService);
 
   // State Signals
-  userList = signal<User[]>([]);
-  totalRecords = signal<number>(0);
-  isLoading = signal<boolean>(false);
-  first = signal<number>(0);
-  rows = signal<number>(15);
+  readonly userList = signal<User[]>([]);
+  readonly totalRecords = signal<number>(0);
+  readonly isLoading = signal<boolean>(false);
+  readonly first = signal<number>(0);
+  readonly rows = signal<number>(15);
   
   // Search subject for debouncing
   private readonly searchSubject = new Subject<string>();
-  searchValue = signal<string>('');
+  readonly searchValue = signal<string>('');
 
   // Filter signals
-  selectedActivo = signal<boolean | null>(null);
-  selectedSuperuser = signal<boolean | null>(null);
-  selectedVerified = signal<boolean | null>(null);
+  readonly selectedActivo = signal<boolean | null>(null);
+  readonly selectedSuperuser = signal<boolean | null>(null);
+  readonly selectedVerified = signal<boolean | null>(null);
+
+  // Drawer state
+  readonly drawerVisible = signal<boolean>(false);
+  readonly selectedUser = signal<User | null>(null);
+  readonly drawerMode = signal<'create' | 'edit'>('create');
 
   readonly activoOptions: { label: string; value: boolean }[] = [
     { label: 'Activos', value: true },
@@ -93,6 +107,28 @@ export class UserListComponent {
       this.first.set(0); // Reset to first page on search
       this.loadData({ first: 0, rows: this.rows() });
     });
+  }
+
+  openCreateUser(): void {
+    this.selectedUser.set(null);
+    this.drawerMode.set('create');
+    this.drawerVisible.set(true);
+  }
+
+  openEditUser(user: User): void {
+    this.selectedUser.set(user);
+    this.drawerMode.set('edit');
+    this.drawerVisible.set(true);
+  }
+
+  onUserSaved(savedUser: User): void {
+    this.logger.info('User saved, reloading table', { userId: savedUser.id }, 'UserListComponent');
+    this.loadData({ first: this.first(), rows: this.rows() });
+  }
+
+  onUserDeleted(userId: string): void {
+    this.logger.info('User deleted, reloading table', { userId }, 'UserListComponent');
+    this.loadData({ first: this.first(), rows: this.rows() });
   }
 
   onActivoChange(isActive: boolean | null): void {

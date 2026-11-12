@@ -25,10 +25,6 @@ export const routes: Routes = [
         title: 'Blank | Enterprise Admin'
       },
       {
-        path: 'staff',
-        loadChildren: () => import('@features/staff/staff.routes').then(m => m.routes),
-      },
-      {
         path: 'users',
         loadChildren: () => import('@features/users/user.routes').then(m => m.routes),
       },

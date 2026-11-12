@@ -200,7 +200,7 @@ export class AuthService {
   /**
    * Refresh user profile from backend
    */
-  private refreshProfile(): void {
+  refreshProfile(): void {
     this.http.get<User>(`${this.configService.apiUrl}/auth/me`).subscribe({
       next: (user) => {
         this.userSignal.set(user);

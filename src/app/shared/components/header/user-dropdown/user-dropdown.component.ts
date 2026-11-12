@@ -1,8 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy,Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal
+} from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { LucideCircleQuestionMark, LucideLogOut,LucideSettings, LucideSquareUserRound } from '@lucide/angular';
+import { LucideLogOut, LucideSquareUserRound } from '@lucide/angular';
 
 import { AuthService } from '@core/auth/auth.service';
 
@@ -14,13 +20,20 @@ import { DropdownItemComponent } from '@shared/components/ui/dropdown/dropdown-i
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './user-dropdown.component.html',
-  imports:[CommonModule,RouterModule,DropdownComponent,DropdownItemComponent,LucideSquareUserRound,LucideSettings,LucideCircleQuestionMark,LucideLogOut]
+  imports: [
+    CommonModule,
+    RouterModule,
+    DropdownComponent,
+    DropdownItemComponent,
+    LucideSquareUserRound,
+    LucideLogOut
+  ]
 })
 export class UserDropdownComponent {
-  private authService = inject(AuthService);
-  currentUser = this.authService.currentUser;
-  
-  userInitials = computed(() => {
+  private readonly authService = inject(AuthService);
+  readonly currentUser = this.authService.currentUser;
+
+  readonly userInitials = computed(() => {
     const user = this.currentUser();
     if (!user) return '';
     const first = user.first_name ? user.first_name.charAt(0).toUpperCase() : '';
@@ -28,17 +41,17 @@ export class UserDropdownComponent {
     return `${first}${last}`;
   });
 
-  isOpen = signal(false);
+  readonly isOpen = signal(false);
 
-  toggleDropdown() {
+  toggleDropdown(): void {
     this.isOpen.update(prev => !prev);
   }
 
-  closeDropdown() {
+  closeDropdown(): void {
     this.isOpen.set(false);
   }
 
-  handleLogout() {
+  handleLogout(): void {
     this.authService.logout();
     this.closeDropdown();
   }

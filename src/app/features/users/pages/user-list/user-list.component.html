@@ -1,11 +1,21 @@
 <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900">
-  <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-4 gap-3">
-    <h1 class="text-lg font-bold m-0 text-color">Usuarios</h1>
+  
+  <!-- Encabezado con Título, Búsqueda y Botón Nuevo Usuario -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+    <div>
+      <h1 class="text-lg font-bold m-0 text-gray-900 dark:text-gray-100">Usuarios</h1>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Gestión de cuentas, roles y auditoría de accesos</p>
+    </div>
 
-    <p-iconfield iconPosition="left" class="w-full md:w-20rem">
-      <p-inputicon class="pi pi-search"></p-inputicon>
-      <input type="text" pInputText placeholder="Buscar usuarios..." class="w-full" (input)="onSearch($event)" />
-    </p-iconfield>
+    <div class="flex items-center gap-2.5 w-full sm:w-auto">
+      <p-iconfield iconPosition="left" class="w-full sm:w-64">
+        <p-inputicon class="pi pi-search"></p-inputicon>
+        <input type="text" pInputText placeholder="Buscar usuarios..." class="w-full text-sm" (input)="onSearch($event)" />
+      </p-iconfield>
+
+      <p-button label="Nuevo Usuario" icon="pi pi-plus" size="small" severity="primary" class="shrink-0"
+        (click)="openCreateUser()"></p-button>
+    </div>
   </div>
 
   <!-- Barra de Filtros de Alta Densidad Responsiva -->
@@ -48,10 +58,12 @@
     </div>
   </div>
 
+  <!-- Tabla Principal de Usuarios -->
   <p-table [value]="userList()" [lazy]="true" (onLazyLoad)="loadData($event)" [paginator]="true" [rows]="rows()"
     [rowHover]="true" [first]="first()" [totalRecords]="totalRecords()" [loading]="isLoading()"
     [showCurrentPageReport]="true" [rowsPerPageOptions]="[15, 20, 30, 50]" paginatorStyleClass="justify-content-end"
     currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros" class="text-sm dense-table">
+    
     <ng-template pTemplate="header">
       <tr>
         <th pSortableColumn="first_name" style="min-width: 14rem">
@@ -66,19 +78,20 @@
             <p-sortIcon field="email"></p-sortIcon>
           </div>
         </th>
-        <th pSortableColumn="is_superuser" style="min-width: 9rem">
+        <th style="min-width: 10rem">Roles</th>
+        <th pSortableColumn="is_superuser" style="min-width: 8.5rem">
           <div class="flex align-items-center gap-2 whitespace-nowrap">
             <span>Tipo de Cuenta</span>
             <p-sortIcon field="is_superuser"></p-sortIcon>
           </div>
         </th>
-        <th pSortableColumn="is_verified" style="min-width: 9rem">
+        <th pSortableColumn="is_verified" style="min-width: 8.5rem">
           <div class="flex align-items-center gap-2 whitespace-nowrap">
             <span>Verificación</span>
             <p-sortIcon field="is_verified"></p-sortIcon>
           </div>
         </th>
-        <th pSortableColumn="created_at" style="min-width: 10rem">
+        <th pSortableColumn="created_at" style="min-width: 9.5rem">
           <div class="flex align-items-center gap-2 whitespace-nowrap">
             <span>Fecha de Registro</span>
             <p-sortIcon field="created_at"></p-sortIcon>
@@ -96,26 +109,61 @@
 
     <ng-template pTemplate="body" let-user>
       <tr>
+        <!-- Nombre / Usuario (Clickable para abrir edición) -->
         <td class="vertical-align-middle">
-          <div class="flex items-center gap-3">
-            <p-avatar [label]="getInitials(user)" shape="circle"
-              class="shrink-0 bg-gray-100 text-brand-700"></p-avatar>
+          <button type="button" class="flex items-center gap-3 cursor-pointer group text-left bg-transparent border-none p-0 w-full"
+            (click)="openEditUser(user)">
+            <p-avatar [image]="user.avatar_url || ''" [label]="!user.avatar_url ? getInitials(user) : undefined" shape="circle"
+              class="shrink-0 bg-gray-100 text-brand-700 group-hover:bg-brand-100 transition-colors border border-gray-200 dark:border-gray-700"></p-avatar>
             <div class="flex flex-col">
-              <span class="text-gray-900 dark:text-gray-100 font-medium">
+              <span class="text-gray-900 dark:text-gray-100 font-medium group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors">
                 {{ user.first_name }} {{ user.last_name }}
               </span>
-              <span class="text-gray-500 dark:text-gray-400 text-xs">
-                @{{ user.username }}
+              <span class="text-gray-500 dark:text-gray-400 text-xs flex items-center gap-1">
+                <span>@{{ user.username }}</span>
+                @if (user.city) {
+                  <span>·</span>
+                  <span class="text-gray-400 dark:text-gray-500">{{ user.city }}</span>
+                }
               </span>
             </div>
+          </button>
+        </td>
+
+        <!-- Correo Electrónico y Teléfono -->
+        <td class="vertical-align-middle">
+          <div class="flex flex-col gap-0.5">
+            <span class="inline-flex gap-1.5 items-center">
+              <svg lucideMail size="14" class="text-gray-400 dark:text-gray-600 shrink-0"></svg>
+              <a [href]="'mailto:' + user.email" class="text-brand-600 no-underline hover:underline text-xs">{{ user.email }}</a>
+            </span>
+            @if (user.phone) {
+              <span class="inline-flex gap-1.5 items-center text-xs text-gray-500 dark:text-gray-400">
+                <svg lucidePhone size="12" class="text-gray-400 shrink-0"></svg>
+                <span>{{ user.phone }}</span>
+              </span>
+            }
           </div>
         </td>
+
+        <!-- Roles Asignados -->
         <td class="vertical-align-middle">
-          <span class="inline-flex gap-1.5 items-center">
-            <svg lucideMail size="15" class="text-gray-400 dark:text-gray-600"></svg>
-            <a [href]="'mailto:' + user.email" class="text-brand-600 no-underline hover:underline">{{ user.email }}</a>
-          </span>
+          <div class="flex items-center gap-1 flex-wrap">
+            @if (user.roles && user.roles.length > 0) {
+              @for (role of user.roles; track role.slug) {
+                <p-tag [value]="role.name" severity="info" [rounded]="true" class="text-xs"></p-tag>
+              }
+            } @else if (user.role_slugs && user.role_slugs.length > 0) {
+              @for (slug of user.role_slugs; track slug) {
+                <p-tag [value]="slug" severity="info" [rounded]="true" class="text-xs"></p-tag>
+              }
+            } @else {
+              <span class="text-xs text-gray-400 italic">Sin rol</span>
+            }
+          </div>
         </td>
+
+        <!-- Tipo de Cuenta -->
         <td class="vertical-align-middle">
           @if (user.is_superuser) {
             <p-tag severity="warn" [rounded]="true" class="text-xs">
@@ -128,37 +176,55 @@
             <p-tag value="Usuario Regular" severity="secondary" [rounded]="true" class="text-xs"></p-tag>
           }
         </td>
+
+        <!-- Verificación -->
         <td class="vertical-align-middle">
           @if (user.is_verified) {
-            <span class="inline-flex items-center gap-1.5 text-green-600 dark:text-green-400 font-medium">
-              <svg lucideCircleCheck size="16"></svg>
+            <span class="inline-flex items-center gap-1.5 text-green-600 dark:text-green-400 font-medium text-xs">
+              <svg lucideCircleCheck size="15"></svg>
               <span>Verificado</span>
             </span>
           } @else {
-            <span class="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">
-              <svg lucideCircleAlert size="16"></svg>
+            <span class="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium text-xs">
+              <svg lucideCircleAlert size="15"></svg>
               <span>Pendiente</span>
             </span>
           }
         </td>
-        <td class="vertical-align-middle text-gray-600 dark:text-gray-400">
+
+        <!-- Fecha de Registro -->
+        <td class="vertical-align-middle text-gray-600 dark:text-gray-400 text-xs">
           {{ user.created_at | date:'dd/MM/yyyy HH:mm' }}
         </td>
+
+        <!-- Estado -->
         <td class="vertical-align-middle text-center">
           <p-tag [value]="user.is_active ? 'Activo' : 'Inactivo'" [severity]="user.is_active ? 'success' : 'danger'"
             [rounded]="true" class="text-xs"></p-tag>
         </td>
+
+        <!-- Acciones -->
         <td class="text-center vertical-align-middle">
-          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="secondary" pTooltip="Editar"
-            tooltipPosition="left"></p-button>
+          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="secondary" pTooltip="Editar Usuario"
+            tooltipPosition="left" (click)="openEditUser(user)"></p-button>
         </td>
       </tr>
     </ng-template>
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="7" class="text-center p-4">No se encontraron usuarios con los criterios buscados.</td>
+        <td colspan="8" class="text-center p-4">No se encontraron usuarios con los criterios buscados.</td>
       </tr>
     </ng-template>
   </p-table>
+
+  <!-- Slide-Over Drawer Responsive para Creación y Edición -->
+  <app-user-drawer
+    [(visible)]="drawerVisible"
+    [user]="selectedUser()"
+    [mode]="drawerMode()"
+    (userSaved)="onUserSaved($event)"
+    (userDeleted)="onUserDeleted($event)">
+  </app-user-drawer>
+
 </div>

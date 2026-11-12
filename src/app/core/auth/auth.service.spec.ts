@@ -34,8 +34,8 @@ describe('AuthService', () => {
   };
 
   const mockRoles: UserRole[] = [
-    { id: 1, name: 'Admin', slug: 'admin', description: 'Administrator role', icon: 'pi pi-cog' },
-    { id: 2, name: 'User', slug: 'user', description: 'User role', icon: 'pi pi-user' }
+    { id: 1, name: 'Admin', slug: 'admin', description: 'Administrator role' },
+    { id: 2, name: 'User', slug: 'user', description: 'User role' }
   ];
 
   const mockTokenResponse: TokenResponse = {
@@ -48,7 +48,6 @@ describe('AuthService', () => {
     {
       group_name: 'Dashboard',
       slug: 'dashboard',
-      icon: 'pi pi-home',
       sort_order: 1,
       modules: []
     }

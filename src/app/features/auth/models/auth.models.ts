@@ -5,12 +5,19 @@ export interface TokenResponse {
 }
 
 export interface User {
-  id: number;
+  id: number | string;
   username: string;
   email: string;
-  first_name?: string;
-  last_name?: string;
+  first_name?: string | null;
+  last_name?: string | null;
+  avatar_url?: string | null;
+  phone?: string | null;
+  country?: string | null;
+  city?: string | null;
+  address?: string | null;
+  timezone?: string | null;
   is_verified: boolean;
+  is_active?: boolean;
 }
 
 export interface UserRole {
