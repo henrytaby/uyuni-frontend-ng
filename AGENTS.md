@@ -664,6 +664,14 @@ $$\text{Canonical value} = \frac{\text{Pixel value}}{4}$$
 
 | Arbitrary Bracket (❌ FORBIDDEN) | Canonical v4 (✅ REQUIRED) | Cálculo ($n / 4$) |
 |---------------------------------|---------------------------|-------------------|
+| `rounded-[2px]` | `rounded-xs` | Token semántico nativo v4 ($2\text{px}$) |
+| `rounded-l-[2px]` | `rounded-l-xs` | Token nativo borde izquierdo ($2\text{px}$) |
+| `size-[19px]!` | `size-4.75!` | $19 / 4 = 4.75$ con modificador `!` sufijo |
+| `pl-[39px]` | `pl-9.75` | $39 / 4 = 9.75$ |
+| `max-w-[190px]` | `max-w-47.5` | $190 / 4 = 47.5$ |
+| `h-[36px]` | `h-9` | $36 / 4 = 9$ |
+| `h-[34px]` | `h-8.5` | $34 / 4 = 8.5$ |
+| `w-[3.5px]` | `w-0.75` o `w-1` | Fracciones válidas ($3\text{px}$ / $4\text{px}$) |
 | `mt-[11px]` | `mt-2.75` | $11 / 4 = 2.75$ |
 | `w-[260px]` | `w-65` | $260 / 4 = 65$ |
 | `sm:w-[540px]` | `sm:w-135` | $540 / 4 = 135$ |
