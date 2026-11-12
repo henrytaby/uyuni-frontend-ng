@@ -1,12 +1,12 @@
 <div class="relative min-h-dvh w-full overflow-x-hidden bg-slate-50 dark:bg-gray-950 flex flex-col lg:flex-row">
 
-  <!-- Botón de Tema Flotante (Esquina Superior Derecha, Discreto y Elegante) -->
-  <div class="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 z-50">
-    <app-theme-toggle-two />
-  </div>
-
   <!-- Panel Izquierdo: Formulario de Autenticación Centrado Vertical y Horizontalmente -->
   <div class="relative flex flex-col items-center justify-center w-full min-h-dvh p-4 sm:p-6 lg:p-10 lg:w-1/2 overflow-y-auto">
+    <!-- Botón de Tema (Esquina Superior Derecha del Panel de Formulario) -->
+    <div class="absolute top-3.5 right-3.5 sm:top-5 sm:right-5 z-20">
+      <app-theme-toggle-two />
+    </div>
+
     <!-- Fondo Sutil con Micro-Gradiente Corporativo -->
     <div class="absolute inset-0 bg-gradient-to-br from-brand-50/20 via-transparent to-slate-100/50 dark:from-brand-950/20 dark:via-transparent dark:to-gray-900/30 pointer-events-none"></div>
 
