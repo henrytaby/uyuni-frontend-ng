@@ -1,0 +1,359 @@
+<div class="p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900">
+
+  <!-- Encabezado con Título, Búsqueda y Botón Nueva Ficha -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+    <div>
+      <h1 class="text-lg font-bold m-0 text-gray-900 dark:text-gray-100 flex items-center gap-2">
+        <span>Catálogo Maestro de Productos</span>
+        <span class="text-xs font-normal px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
+          Fichas Comerciales
+        </span>
+      </h1>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+        Gestión centralizada de especificaciones técnicas, precios protegidos y material publicitario
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2.5 w-full sm:w-auto">
+      <p-iconfield iconPosition="left" class="w-full sm:w-64">
+        <p-inputicon class="pi pi-search"></p-inputicon>
+        <input
+          type="text"
+          pInputText
+          placeholder="Buscar por #, código, nombre..."
+          class="w-full text-sm"
+          (input)="onSearch($event)" />
+      </p-iconfield>
+
+      <p-button
+        label="Nueva Ficha"
+        icon="pi pi-plus"
+        size="small"
+        severity="primary"
+        class="shrink-0"
+        (click)="openCreateProduct()">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Barra de Filtros de Alta Densidad Responsiva -->
+  <div
+    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm items-center w-full">
+
+    <!-- Categoría -->
+    <div class="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 w-full min-w-0">
+      <span class="font-medium text-color whitespace-nowrap text-xs">Categoría:</span>
+      <p-select
+        [options]="categories()"
+        [ngModel]="selectedCategory()"
+        (ngModelChange)="onCategoryChange($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todas"
+        [showClear]="true"
+        appendTo="body"
+        class="w-full min-w-0">
+      </p-select>
+    </div>
+
+    <!-- Canasta Live -->
+    <div class="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 w-full min-w-0">
+      <span class="font-medium text-color whitespace-nowrap text-xs">Canasta Live:</span>
+      <p-select
+        [options]="liveBaskets()"
+        [ngModel]="selectedLiveBasket()"
+        (ngModelChange)="onLiveBasketChange($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todas"
+        [showClear]="true"
+        appendTo="body"
+        class="w-full min-w-0">
+      </p-select>
+    </div>
+
+    <!-- Estado -->
+    <div class="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 w-full min-w-0">
+      <span class="font-medium text-color whitespace-nowrap text-xs">Estado:</span>
+      <p-select
+        [options]="activoOptions"
+        [ngModel]="selectedActivo()"
+        (ngModelChange)="onActivoChange($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todos"
+        [showClear]="true"
+        appendTo="body"
+        class="w-full min-w-0">
+      </p-select>
+    </div>
+
+    <!-- Botón Limpiar -->
+    <div class="flex w-full min-w-0">
+      <p-button
+        type="button"
+        icon="pi pi-filter-slash"
+        label="Limpiar Filtros"
+        severity="secondary"
+        [outlined]="true"
+        size="small"
+        class="w-full min-w-0 justify-content-center"
+        (click)="clearFilters()"
+        [disabled]="selectedCategory() === null && selectedLiveBasket() === null && selectedActivo() === null">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Tabla Principal de Fichas Maestras -->
+  <p-table
+    [value]="productList()"
+    [lazy]="true"
+    (onLazyLoad)="loadData($event)"
+    [paginator]="true"
+    [rows]="rows()"
+    [rowHover]="true"
+    [first]="first()"
+    [totalRecords]="totalRecords()"
+    [loading]="isLoading()"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[15, 20, 30, 50]"
+    paginatorStyleClass="justify-content-end"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} fichas"
+    class="text-sm dense-table">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="item_number" style="width: 7rem">
+          <div class="flex items-center gap-1.5 whitespace-nowrap">
+            <span># Ítem</span>
+            <p-sortIcon field="item_number"></p-sortIcon>
+          </div>
+        </th>
+        <th pSortableColumn="name" style="min-width: 15rem">
+          <div class="flex items-center gap-1.5 whitespace-nowrap">
+            <span>Producto / Marca</span>
+            <p-sortIcon field="name"></p-sortIcon>
+          </div>
+        </th>
+        <th style="min-width: 11rem">
+          <div class="flex items-center gap-1.5 whitespace-nowrap">
+            <span>Categoría & Canasta</span>
+          </div>
+        </th>
+        <th pSortableColumn="official_price" style="min-width: 12rem">
+          <div class="flex items-center gap-1.5 whitespace-nowrap">
+            <span>Precios (BOB)</span>
+            <p-sortIcon field="official_price"></p-sortIcon>
+          </div>
+        </th>
+        <th style="min-width: 9rem">
+          <div class="flex items-center gap-1.5 whitespace-nowrap">
+            <span>Stock Físico</span>
+          </div>
+        </th>
+        <th style="min-width: 8rem" class="text-center">
+          <div class="flex items-center justify-center gap-1.5 whitespace-nowrap">
+            <span>Marketing</span>
+          </div>
+        </th>
+        <th pSortableColumn="is_active" class="text-center" style="width: 6.5rem">
+          <div class="flex items-center justify-center gap-1.5 whitespace-nowrap">
+            <span>Estado</span>
+            <p-sortIcon field="is_active"></p-sortIcon>
+          </div>
+        </th>
+        <th style="width: 3.5rem"></th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-prod>
+      <tr>
+        <!-- # Ítem y Código Normalizado -->
+        <td class="vertical-align-middle">
+          <div class="flex flex-col">
+            <span class="font-mono font-bold text-gray-900 dark:text-gray-100 text-xs">
+              #{{ prod.item_number }}
+            </span>
+            <span class="font-mono text-gray-400 text-xs">
+              {{ prod.code }}
+            </span>
+          </div>
+        </td>
+
+        <!-- Producto (Foto WebP + Nombre Comercial + Marca/Modelo) -->
+        <td class="vertical-align-middle">
+          <button
+            type="button"
+            class="flex items-center gap-3 cursor-pointer group text-left bg-transparent border-none p-0 w-full"
+            (click)="openEditProduct(prod)">
+            <p-avatar
+              [image]="prod.cover_image_url || ''"
+              [label]="!prod.cover_image_url ? getInitials(prod.name) : undefined"
+              shape="circle"
+              class="shrink-0 bg-gray-100 text-brand-700 group-hover:bg-brand-100 transition-colors border border-gray-200 dark:border-gray-700">
+            </p-avatar>
+            <div class="flex flex-col min-w-0">
+              <span class="text-gray-900 dark:text-gray-100 font-medium group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors truncate">
+                {{ prod.name }}
+              </span>
+              <span class="text-gray-500 dark:text-gray-400 text-xs flex items-center gap-1">
+                @if (prod.brand) {
+                  <span class="font-medium text-gray-600 dark:text-gray-300">{{ prod.brand }}</span>
+                }
+                @if (prod.brand && prod.model) {
+                  <span>·</span>
+                }
+                @if (prod.model) {
+                  <span class="text-gray-400 dark:text-gray-500 font-mono">{{ prod.model }}</span>
+                }
+                @if (!prod.brand && !prod.model) {
+                  <span class="text-gray-400 italic">Genérico</span>
+                }
+              </span>
+            </div>
+          </button>
+        </td>
+
+        <!-- Categoría & Canasta Live -->
+        <td class="vertical-align-middle">
+          <div class="flex flex-col gap-1 items-start">
+            <p-tag
+              [value]="getCategoryLabel(prod.category_id)"
+              severity="secondary"
+              [rounded]="true"
+              class="text-xs">
+            </p-tag>
+            @if (prod.live_basket_id && getLiveBasketLabel(prod.live_basket_id)) {
+              <span class="inline-flex items-center gap-1 text-xs text-brand-600 dark:text-brand-400 font-medium">
+                <svg lucideSparkles size="11"></svg>
+                <span>{{ getLiveBasketLabel(prod.live_basket_id) }}</span>
+              </span>
+            }
+          </div>
+        </td>
+
+        <!-- Precios (Oficial / Publicado / Mínimo Protegido) -->
+        <td class="vertical-align-middle">
+          <div class="flex flex-col text-xs font-mono">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-gray-400">Oficial:</span>
+              <span class="text-gray-900 dark:text-gray-100 font-medium">Bs. {{ prod.official_price | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-gray-400">Publ.:</span>
+              <span class="text-gray-600 dark:text-gray-300">Bs. {{ prod.published_price | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-2 border-t border-gray-100 dark:border-gray-800 pt-0.5 mt-0.5">
+              <span class="text-red-500 font-sans font-medium">Piso:</span>
+              <span class="text-red-600 dark:text-red-400 font-bold">Bs. {{ prod.minimum_price | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </td>
+
+        <!-- Stock Físico Consolidado -->
+        <td class="vertical-align-middle">
+          <div class="flex flex-col gap-1">
+            <div class="inline-flex items-center gap-1.5 text-xs">
+              <span class="w-2 h-2 rounded-full" [ngClass]="prod.total_available_stock > 0 ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'"></span>
+              <span class="font-bold text-gray-900 dark:text-gray-100 font-mono">{{ prod.total_available_stock }}</span>
+              <span class="text-gray-500 text-xs">disponibles</span>
+            </div>
+            @if (prod.total_sold_stock > 0 || prod.total_merma_stock > 0) {
+              <div class="text-xs text-gray-400 flex items-center gap-2">
+                <span>{{ prod.total_sold_stock }} vend.</span>
+                @if (prod.total_merma_stock > 0) {
+                  <span class="text-amber-500">· {{ prod.total_merma_stock }} merma</span>
+                }
+              </div>
+            }
+          </div>
+        </td>
+
+        <!-- Auditoría Comercial / Marketing -->
+        <td class="vertical-align-middle text-center">
+          <div class="flex items-center justify-center gap-2 text-gray-400">
+            <!-- Video -->
+            <span
+              [pTooltip]="prod.has_video ? 'Video demostrativo grabado' : 'Sin video grabado'"
+              [class.text-purple-600]="prod.has_video"
+              [class.dark:text-purple-400]="prod.has_video"
+              [class.opacity-30]="!prod.has_video">
+              <svg lucideVideo size="15"></svg>
+            </span>
+
+            <!-- FB Verificado -->
+            <span
+              [pTooltip]="prod.is_fb_verified ? 'Creativos verificados en FB' : 'Pendiente verificación FB'"
+              [class.text-blue-600]="prod.is_fb_verified"
+              [class.dark:text-blue-400]="prod.is_fb_verified"
+              [class.opacity-30]="!prod.is_fb_verified">
+              <svg lucideShare2 size="15"></svg>
+            </span>
+
+            <!-- Ficha Aprobada -->
+            <span
+              [pTooltip]="prod.is_reviewed ? 'Ficha técnica revisada y aprobada' : 'Ficha sin revisar'"
+              [class.text-green-600]="prod.is_reviewed"
+              [class.dark:text-green-400]="prod.is_reviewed"
+              [class.opacity-30]="!prod.is_reviewed">
+              <svg lucideCircleCheck size="15"></svg>
+            </span>
+
+            <!-- WhatsApp -->
+            <span
+              [pTooltip]="prod.is_whatsapp_published ? 'Publicado en catálogo WhatsApp' : 'No publicado en WhatsApp'"
+              [class.text-emerald-600]="prod.is_whatsapp_published"
+              [class.dark:text-emerald-400]="prod.is_whatsapp_published"
+              [class.opacity-30]="!prod.is_whatsapp_published">
+              <svg lucideMessageSquare size="15"></svg>
+            </span>
+          </div>
+        </td>
+
+        <!-- Estado Activo -->
+        <td class="vertical-align-middle text-center">
+          <p-tag
+            [value]="prod.is_active ? 'Activo' : 'Inactivo'"
+            [severity]="prod.is_active ? 'success' : 'danger'"
+            [rounded]="true"
+            class="text-xs">
+          </p-tag>
+        </td>
+
+        <!-- Acciones -->
+        <td class="text-center vertical-align-middle">
+          <p-button
+            icon="pi pi-pencil"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            pTooltip="Editar Ficha Maestra"
+            tooltipPosition="left"
+            (click)="openEditProduct(prod)">
+          </p-button>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="8" class="text-center p-6 text-gray-500 dark:text-gray-400">
+          No se encontraron fichas maestras con los criterios de búsqueda seleccionados.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Slide-Over Drawer para Creación y Edición -->
+  <app-product-master-drawer
+    [(visible)]="drawerVisible"
+    [product]="selectedProduct()"
+    [mode]="drawerMode()"
+    [categories]="categories()"
+    [liveBaskets]="liveBaskets()"
+    (productSaved)="onProductSaved($event)"
+    (productDeleted)="onProductDeleted($event)">
+  </app-product-master-drawer>
+
+</div>
+
