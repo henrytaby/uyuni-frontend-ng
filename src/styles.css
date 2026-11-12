@@ -669,4 +669,137 @@
   border-top-color: #1f2937 !important;
 }
 
+/* ==========================================================================
+   Enterprise Drawer Styling (PrimeNG Drawer High-Density Enterprise Theme)
+   ========================================================================== */
+.p-drawer {
+  box-shadow: -4px 0 25px -5px rgba(0, 0, 0, 0.1), -2px 0 10px -6px rgba(0, 0, 0, 0.05) !important;
+  background-color: #ffffff !important;
+}
+
+:is(.dark .p-drawer) {
+  border-left-color: #1f2937 !important;
+  box-shadow: -4px 0 30px rgba(0, 0, 0, 0.5) !important;
+  background-color: #111827 !important;
+}
+
+/* Compact Enterprise Drawer Header */
+.p-drawer-header {
+  padding: 0.625rem 0.875rem !important; /* 10px 14px on mobile */
+  border-bottom: 1px solid #e2e8f0 !important;
+  background-color: #ffffff !important;
+  min-height: auto !important;
+}
+
+@media (min-width: 640px) {
+  .p-drawer-header {
+    padding: 0.75rem 1.25rem !important; /* 12px 20px on desktop */
+  }
+}
+
+:is(.dark .p-drawer-header) {
+  background-color: #111827 !important;
+  border-bottom-color: #1f2937 !important;
+}
+
+/* Close Button in Drawer */
+.p-drawer-close-button {
+  width: 1.875rem !important; /* 30px */
+  height: 1.875rem !important;
+  border-radius: 0.375rem !important;
+  border: 1px solid #e2e8f0 !important;
+  background-color: #ffffff !important;
+  color: #64748b !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+.p-drawer-close-button:hover {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+:is(.dark .p-drawer-close-button) {
+  border-color: #374151 !important;
+  background-color: #1f2937 !important;
+  color: #9ca3af !important;
+}
+
+:is(.dark .p-drawer-close-button:hover) {
+  background-color: #374151 !important;
+  color: #ffffff !important;
+  border-color: #4b5563 !important;
+}
+
+/* Zero dead outer padding in Drawer Content so tabs dock cleanly with no gap */
+.p-drawer-content {
+  padding: 0 !important;
+  background-color: #ffffff !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+:is(.dark .p-drawer-content) {
+  background-color: #111827 !important;
+}
+
+/* High-Density Drawer Tab Navigation */
+.p-drawer .p-tablist {
+  background-color: #f8fafc !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+:is(.dark .p-drawer .p-tablist) {
+  background-color: #0f172a !important;
+  border-bottom-color: #1f2937 !important;
+}
+
+.p-drawer .p-tab {
+  padding: 0.5rem 0.75rem !important; /* 8px 12px on mobile */
+  font-size: 0.8125rem !important; /* ~13px */
+  gap: 0.375rem !important;
+}
+
+@media (min-width: 640px) {
+  .p-drawer .p-tab {
+    padding: 0.625rem 1rem !important; /* 10px 16px on desktop */
+    font-size: 0.875rem !important; /* 14px */
+    gap: 0.5rem !important;
+  }
+}
+
+/* Drawer Tabpanels Scroll Area */
+.p-drawer .p-tabpanels {
+  background-color: transparent !important;
+}
+
+/* Compact Enterprise Drawer Footer */
+.p-drawer-footer {
+  padding: 0.625rem 0.875rem !important; /* 10px 14px on mobile */
+  border-top: 1px solid #e2e8f0 !important;
+  background-color: #f8fafc !important;
+  box-shadow: 0 -2px 6px 0 rgba(0, 0, 0, 0.03) !important;
+}
+
+@media (min-width: 640px) {
+  .p-drawer-footer {
+    padding: 0.75rem 1.25rem !important; /* 12px 20px on desktop */
+  }
+}
+
+:is(.dark .p-drawer-footer) {
+  background-color: #111827 !important;
+  border-top-color: #1f2937 !important;
+  box-shadow: 0 -2px 10px 0 rgba(0, 0, 0, 0.2) !important;
+}
+
+
 
