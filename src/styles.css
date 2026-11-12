@@ -520,11 +520,37 @@
    ========================================================================== */
 .p-select-label,
 .p-inputtext,
+.p-textarea,
 .p-select,
 .p-dropdown,
 .p-multiselect,
 .p-button {
   font-size: 0.875rem !important; /* text-sm ~14px */
+}
+
+/* ==========================================================================
+   Enterprise Input Placeholders Styling (Distinguishable, soft muted gray)
+   ========================================================================== */
+::placeholder,
+.p-inputtext::placeholder,
+.p-textarea::placeholder,
+.p-password input::placeholder,
+.p-select-label.p-placeholder,
+.p-dropdown-label.p-placeholder,
+.p-multiselect-label.p-placeholder {
+  color: #94a3b8 !important; /* slate-400: plomo claro distintivo de ayuda */
+  opacity: 1 !important;
+}
+
+:is(.dark ::placeholder),
+:is(.dark .p-inputtext::placeholder),
+:is(.dark .p-textarea::placeholder),
+:is(.dark .p-password input::placeholder),
+:is(.dark .p-select-label.p-placeholder),
+:is(.dark .p-dropdown-label.p-placeholder),
+:is(.dark .p-multiselect-label.p-placeholder) {
+  color: #64748b !important; /* slate-500 en modo oscuro */
+  opacity: 1 !important;
 }
 
 /* ==========================================================================

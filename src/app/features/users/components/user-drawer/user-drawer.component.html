@@ -15,7 +15,7 @@
         }
         <div class="flex flex-col min-w-0">
           <h2 class="text-sm sm:text-base font-bold text-gray-900 dark:text-gray-100 m-0 leading-tight">Nuevo Usuario</h2>
-          <span class="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">Completa los datos y asigna roles</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400 truncate">Completa los datos y asigna roles</span>
         </div>
       } @else {
         <div class="relative group shrink-0">
@@ -40,18 +40,18 @@
             }
             <div class="flex items-center gap-1 shrink-0">
               <p-tag [value]="currentDisplayUser()?.is_active ? 'Activo' : 'Inactivo'"
-                [severity]="currentDisplayUser()?.is_active ? 'success' : 'danger'" [rounded]="true" class="text-[11px]"></p-tag>
+                [severity]="currentDisplayUser()?.is_active ? 'success' : 'danger'" [rounded]="true" class="text-xs"></p-tag>
               @if (currentDisplayUser()?.is_superuser) {
-                <p-tag severity="warn" [rounded]="true" class="text-[11px]">
+                <p-tag severity="warn" [rounded]="true" class="text-xs">
                   <span class="flex items-center gap-1">
-                    <svg lucideShield size="10"></svg>
+                    <svg lucideShield size="11"></svg>
                     <span>Superuser</span>
                   </span>
                 </p-tag>
               }
             </div>
           </div>
-          <span class="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 truncate">
+          <span class="text-xs text-gray-500 dark:text-gray-400 truncate">
             @{{ currentDisplayUser()?.username }} · {{ currentDisplayUser()?.email }}
           </span>
         </div>
@@ -106,14 +106,14 @@
               <!-- Nombres y Apellidos -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1.5">
-                  <label for="drawer_first_name" class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  <label for="drawer_first_name" class="text-[13px] font-semibold text-gray-700 dark:text-gray-300">
                     Nombre
                   </label>
                   <input id="drawer_first_name" type="text" pInputText [ngModel]="firstName()"
                     (ngModelChange)="firstName.set($event)" placeholder="Ej. Lucía" class="w-full text-sm" />
                 </div>
                 <div class="flex flex-col gap-1.5">
-                  <label for="drawer_last_name" class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  <label for="drawer_last_name" class="text-[13px] font-semibold text-gray-700 dark:text-gray-300">
                     Apellido
                   </label>
                   <input id="drawer_last_name" type="text" pInputText [ngModel]="lastName()"
@@ -124,15 +124,15 @@
               <!-- Username y Correo -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1.5">
-                  <label for="drawer_username" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                  <label for="drawer_username" class="text-[13px] font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
                     <span>Usuario <span class="text-red-500">*</span></span>
-                    <span class="text-[10px] text-gray-400 font-normal">Sin espacios</span>
+                    <span class="text-xs text-gray-400 font-normal">Sin espacios</span>
                   </label>
                   <div class="relative">
                     <input id="drawer_username" type="text" pInputText [ngModel]="username()"
                       (ngModelChange)="username.set($event)" (keydown)="onUsernameKeyDown($event)"
                       (paste)="onUsernamePaste($event)"
-                      placeholder="usuario_admin" class="w-full text-sm font-mono"
+                      placeholder="Ej. usuario_admin" class="w-full text-sm font-mono"
                       [invalid]="username().length > 0 && !usernameValidation().isValid"
                       [class.border-red-500!]="username().length > 0 && !usernameValidation().isValid" />
                   </div>
@@ -145,14 +145,14 @@
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                  <label for="drawer_email" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                  <label for="drawer_email" class="text-[13px] font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
                     <span>Correo Electrónico <span class="text-red-500">*</span></span>
-                    <span class="text-[10px] text-gray-400 font-normal">Sin espacios</span>
+                    <span class="text-xs text-gray-400 font-normal">Sin espacios</span>
                   </label>
                   <input id="drawer_email" type="text" inputmode="email" autocomplete="email" pInputText [ngModel]="email()"
                     (ngModelChange)="email.set($event)" (keydown)="onEmailKeyDown($event)"
                     (paste)="onEmailPaste($event)"
-                    placeholder="correo@empresa.com" class="w-full text-sm"
+                    placeholder="Ej. correo@empresa.com" class="w-full text-sm"
                     [invalid]="email().length > 0 && !emailValidation().isValid"
                     [class.border-red-500!]="email().length > 0 && !emailValidation().isValid" />
                   @if (email().length > 0 && !emailValidation().isValid) {
@@ -167,14 +167,14 @@
               <!-- Contraseña -->
               <div class="flex flex-col gap-1.5 bg-gray-50 dark:bg-gray-800/40 p-3 rounded-lg border border-gray-200 dark:border-gray-700/80"
                 [class.border-red-500!]="password().length > 0 && !passwordValidation().isValid">
-                <label for="drawer_password" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                <label for="drawer_password" class="text-[13px] font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
                   <span>
                     {{ mode() === 'create' ? 'Contraseña Inicial' : 'Actualizar Contraseña' }}
                     @if (mode() === 'create') {
                       <span class="text-red-500">*</span>
                     }
                   </span>
-                  <span class="text-[11px] text-gray-500 dark:text-gray-400 font-normal">
+                  <span class="text-xs text-gray-500 dark:text-gray-400 font-normal">
                     {{ mode() === 'create' ? 'Mínimo 6 caracteres' : 'Dejar en blanco para conservar actual' }}
                   </span>
                 </label>
@@ -202,14 +202,14 @@
               <!-- Teléfono / WhatsApp y Ciudad -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1.5">
-                  <label for="drawer_phone" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                  <label for="drawer_phone" class="text-[13px] font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
                     <span class="flex items-center gap-1">
                       <svg lucidePhone size="13" class="text-gray-400"></svg>
                       <span>Teléfono / WhatsApp</span>
                     </span>
                     @if (getWhatsAppUrl()) {
                       <a [href]="getWhatsAppUrl()" target="_blank"
-                        class="text-[11px] text-green-600 dark:text-green-400 hover:underline flex items-center gap-1 font-medium"
+                        class="text-xs text-green-600 dark:text-green-400 hover:underline flex items-center gap-1 font-medium"
                         pTooltip="Abrir chat en WhatsApp" tooltipPosition="top">
                         <i class="pi pi-whatsapp"></i>
                         <span>WhatsApp</span>
@@ -217,11 +217,11 @@
                     }
                   </label>
                   <input id="drawer_phone" type="tel" pInputText [ngModel]="phone()"
-                    (ngModelChange)="phone.set($event)" placeholder="+591 70012345" class="w-full text-sm" />
+                    (ngModelChange)="phone.set($event)" placeholder="Ej. +591 70012345" class="w-full text-sm" />
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                  <label for="drawer_city" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                  <label for="drawer_city" class="text-[13px] font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
                     <svg lucideBuilding size="13" class="text-gray-400"></svg>
                     <span>Ciudad</span>
                   </label>
@@ -232,7 +232,7 @@
 
               <!-- Dirección Física -->
               <div class="flex flex-col gap-1.5">
-                <label for="drawer_address" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                <label for="drawer_address" class="text-[13px] font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
                   <svg lucideMapPin size="13" class="text-gray-400"></svg>
                   <span>Dirección Física / Oficina</span>
                 </label>
@@ -243,7 +243,7 @@
               <!-- País y Zona Horaria (Desplegables p-select) -->
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div class="flex flex-col gap-1.5">
-                  <label for="drawer_country" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                  <label for="drawer_country" class="text-[13px] font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
                     <svg lucideGlobe size="13" class="text-gray-400"></svg>
                     <span>País</span>
                   </label>
@@ -256,7 +256,7 @@
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                  <label for="drawer_timezone" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
+                  <label for="drawer_timezone" class="text-[13px] font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1">
                     <svg lucideClock size="13" class="text-gray-400"></svg>
                     <span>Zona Horaria (IANA)</span>
                   </label>
@@ -272,19 +272,19 @@
 
             <!-- 3. NOTAS ADMINISTRATIVAS INTERNAS (Estilo Post-it corporativo) -->
             <div class="p-3 bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 rounded-lg space-y-2">
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-semibold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[13px] font-semibold text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
                   <svg lucideStickyNote size="14" class="text-amber-600 dark:text-amber-400"></svg>
                   <span>Notas Administrativas</span>
                 </span>
-                <span class="text-[10px] text-amber-700 dark:text-amber-400 font-normal">
+                <span class="text-xs text-amber-700 dark:text-amber-400 font-normal">
                   Solo visible para administradores
                 </span>
               </div>
               <textarea id="drawer_notes" rows="2" pTextarea [autoResize]="true" [ngModel]="notes()"
                 (ngModelChange)="notes.set($event)"
                 placeholder="Observaciones de RRHH, sucursal o notas internas..."
-                class="w-full text-xs bg-white dark:bg-gray-900 border-amber-300 dark:border-amber-800 focus:border-amber-500! rounded-md p-2">
+                class="w-full text-sm bg-white dark:bg-gray-900 border-amber-300 dark:border-amber-800 focus:border-amber-500! rounded-md p-2">
               </textarea>
             </div>
 
@@ -328,7 +328,7 @@
 
             <!-- Metadatos de Auditoría (Solo en modo edición) -->
             @if (mode() === 'edit' && currentDisplayUser()?.created_at) {
-              <div class="pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-[11px] text-gray-400">
+              <div class="pt-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs text-gray-400">
                 <span>Registrado: {{ currentDisplayUser()?.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
                 @if (currentDisplayUser()?.updated_at) {
                   <span>Actualizado: {{ currentDisplayUser()?.updated_at | date:'dd/MM/yyyy HH:mm' }}</span>
@@ -344,7 +344,7 @@
           <div class="space-y-3.5 sm:space-y-4">
             
             <div class="flex flex-col gap-1.5">
-              <label for="roles_multiselect" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+              <label for="roles_multiselect" class="text-[13px] font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
                 <span>Roles Asignados al Usuario</span>
                 <span class="text-xs text-brand-600 dark:text-brand-400 font-medium">
                   {{ selectedRoleSlugs().length }} seleccionados
@@ -386,7 +386,7 @@
                         <div class="flex flex-col">
                           <div class="flex items-center gap-2">
                             <span class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ role.name }}</span>
-                            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                            <span class="font-mono text-xs px-1.5 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                               {{ role.slug }}
                             </span>
                           </div>
@@ -450,9 +450,9 @@
                   <!-- 1. Resultado -->
                   <td class="vertical-align-middle">
                     @if (log.is_successful) {
-                      <p-tag value="Exitoso" severity="success" [rounded]="true" class="text-[11px]"></p-tag>
+                      <p-tag value="Exitoso" severity="success" [rounded]="true" class="text-xs"></p-tag>
                     } @else {
-                      <p-tag value="Fallido" severity="danger" [rounded]="true" class="text-[11px]"></p-tag>
+                      <p-tag value="Fallido" severity="danger" [rounded]="true" class="text-xs"></p-tag>
                     }
                   </td>
 
@@ -462,7 +462,7 @@
                       <span class="font-semibold text-gray-900 dark:text-gray-100">
                         {{ log.created_at | date:'dd/MM/yyyy' }}
                       </span>
-                      <span class="text-[11px] text-gray-500 dark:text-gray-400 font-mono">
+                      <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">
                         {{ log.created_at | date:'HH:mm:ss' }}
                       </span>
                     </div>
@@ -497,7 +497,7 @@
                         <span class="font-medium text-gray-900 dark:text-gray-100 text-xs truncate">
                           {{ info.browser }} en {{ info.os }}
                         </span>
-                        <span class="text-[10px] text-gray-400 font-mono truncate max-w-42.5" [pTooltip]="log.host_info" tooltipPosition="top">
+                        <span class="text-xs text-gray-400 font-mono truncate max-w-42.5" [pTooltip]="log.host_info" tooltipPosition="top">
                           {{ log.host_info }}
                         </span>
                       </div>
