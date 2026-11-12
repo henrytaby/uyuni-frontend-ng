@@ -1,81 +1,87 @@
-<div class="flex flex-col w-full h-full justify-center items-center px-4 sm:px-0">
+<div class="w-full">
+  <!-- Tarjeta de Acceso Enterprise -->
+  <div class="w-full rounded-2xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800 shadow-xl shadow-gray-200/40 dark:shadow-none p-6 sm:p-8 transition-all">
 
-  <!-- Glassmorphism Card -->
-  <div
-    class="w-full max-w-105 p-6 sm:p-8 rounded-2xl backdrop-blur-xl bg-white/70 dark:bg-gray-900/60 border border-white/40 dark:border-white/10 shadow-2xl transition-all duration-300">
-
-    <!-- Branding Section -->
+    <!-- Encabezado con Logotipo Corporativo -->
     <div class="flex flex-col items-center mb-6">
-      <div class="relative w-full flex justify-center mb-5">
-        <!-- Light Mode Logo -->
+      <div class="relative w-full flex justify-center mb-4">
+        <!-- Logo Modo Claro -->
         <img
-          class="h-14 w-auto object-contain drop-shadow-sm transition-transform hover:scale-105 duration-300 dark:hidden"
+          class="h-11 sm:h-12 w-auto object-contain dark:hidden"
           src="/images/logo/logo-01.png" alt="Uyuni" />
 
-        <!-- Dark Mode Logo -->
+        <!-- Logo Modo Oscuro -->
         <img
-          class="hidden h-14 w-auto object-contain drop-shadow-sm transition-transform hover:scale-105 duration-300 dark:block"
+          class="hidden h-11 sm:h-12 w-auto object-contain dark:block"
           src="/images/logo/logo-02.png" alt="Uyuni" />
       </div>
 
       <div class="text-center space-y-1">
-        <h2 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
-          Bienvenido de nuevo
-        </h2>
-        <p class="text-xs text-gray-500 dark:text-gray-400">
-          Ingrese sus credenciales para acceder al sistema
+        <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight m-0">
+          Iniciar Sesión
+        </h1>
+        <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 m-0">
+          Ingresa tus credenciales para acceder al sistema
         </p>
       </div>
     </div>
 
-    <!-- Error Message (Unified Server + Local) -->
+    <!-- Alerta de Error Unificada -->
     @if (errorMessage() || localError()) {
-    <div class="mb-6 fade-in-up">
-      <div
-        class="flex items-center gap-3 px-4 py-3 rounded-lg bg-red-50/80 dark:bg-red-900/10 border border-red-100 dark:border-red-500/10">
-        <svg lucideCircleAlert size="20" class="text-red-600 dark:text-red-400"></svg>
-        <span class="text-sm font-normal text-red-700 dark:text-red-300">
-          {{ errorMessage() || localError() }}
-        </span>
+      <div class="mb-5 p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 flex items-center gap-2.5 text-xs sm:text-sm text-red-700 dark:text-red-300">
+        <svg lucideCircleAlert size="16" class="shrink-0 text-red-600 dark:text-red-400"></svg>
+        <span>{{ errorMessage() || localError() }}</span>
       </div>
-    </div>
     }
 
-    <!-- Login Form -->
-    <form (ngSubmit)="onSignIn()" class="space-y-8">
+    <!-- Formulario de Acceso -->
+    <form (ngSubmit)="onSignIn()" class="space-y-4.5">
 
-      <!-- Username Field -->
-      <div class="w-full">
-        <p-floatLabel>
-          <input pInputText id="username" [ngModel]="username()" (ngModelChange)="username.set($event); clearError()"
-            name="username" class="w-full bg-white/50! dark:bg-black/20!" [disabled]="isLoading()" required />
-          <label for="username">Usuario</label>
-        </p-floatLabel>
+      <!-- Campo: Nombre de Usuario -->
+      <div class="flex flex-col gap-1.5">
+        <label for="username" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+          <svg lucideUser size="13" class="text-gray-400"></svg>
+          <span>Usuario</span>
+        </label>
+        <input pInputText id="username" type="text"
+          [ngModel]="username()" (ngModelChange)="username.set($event); clearError()"
+          name="username" placeholder="Tu nombre de usuario (ej. admin)"
+          class="w-full text-sm" [disabled]="isLoading()" required autocomplete="username" />
       </div>
 
-      <!-- Password Field -->
-      <div class="w-full">
-        <p-floatLabel>
-          <p-password id="password" [ngModel]="password()" (ngModelChange)="password.set($event); clearError()"
-            name="password" [toggleMask]="true" [feedback]="false" [fluid]="true"
-            inputClass="w-full bg-white/50! dark:bg-black/20!" [disabled]="isLoading()" required />
-          <label for="password">Contraseña</label>
-        </p-floatLabel>
+      <!-- Campo: Contraseña -->
+      <div class="flex flex-col gap-1.5">
+        <label for="password" class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <svg lucideLock size="13" class="text-gray-400"></svg>
+            <span>Contraseña</span>
+          </span>
+        </label>
+        <p-password id="password"
+          [ngModel]="password()" (ngModelChange)="password.set($event); clearError()"
+          name="password" [toggleMask]="true" [feedback]="false" [fluid]="true"
+          placeholder="••••••••••••" inputClass="w-full text-sm" [disabled]="isLoading()"
+          required autocomplete="current-password" />
       </div>
 
-      <!-- Submit Button -->
+      <!-- Botón de Envío -->
       <div class="pt-2">
-        <p-button label="Iniciar Sesión" [loading]="isLoading()" [disabled]="isLoading() || !isFormValid()"
-          type="submit" [fluid]="true" size="large">
+        <p-button label="Iniciar Sesión" icon="pi pi-sign-in"
+          [loading]="isLoading()" [disabled]="isLoading() || !isFormValid()"
+          type="submit" [fluid]="true" severity="primary">
         </p-button>
       </div>
 
     </form>
 
-    <!-- Footer -->
-    <div class="mt-6 pt-5 border-t border-gray-200/50 dark:border-white/10 text-center">
-      <p class="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-        © 2026 Uyuni
+    <!-- Indicador de Seguridad y Footer Corporativo -->
+    <div class="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 flex flex-col items-center gap-2 text-center">
+      <div class="flex items-center gap-1.5 text-[11px] text-gray-400 dark:text-gray-500 font-medium">
+        <svg lucideShieldCheck size="13" class="text-emerald-500"></svg>
+        <span>Acceso Administrativo Seguro · TLS 1.3</span>
+      </div>
+      <p class="text-[10px] text-gray-400 dark:text-gray-600 m-0 tracking-wider uppercase">
+        © 2026 Uyuni. Todos los derechos reservados.
       </p>
     </div>
 

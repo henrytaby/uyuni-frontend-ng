@@ -2,11 +2,9 @@ import { ChangeDetectionStrategy, Component, computed, input, output, signal } f
 import { FormsModule } from '@angular/forms';
 
 import { ButtonModule } from 'primeng/button';
-import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
-import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
-import { LucideCircleAlert } from '@lucide/angular';
+import { LucideCircleAlert, LucideLock, LucideShieldCheck, LucideUser } from '@lucide/angular';
 
 @Component({
   selector: 'app-signin-form',
@@ -16,15 +14,15 @@ import { LucideCircleAlert } from '@lucide/angular';
     ButtonModule,
     InputTextModule,
     PasswordModule,
-    FloatLabelModule,
-    MessageModule,
-    LucideCircleAlert
+    LucideCircleAlert,
+    LucideLock,
+    LucideShieldCheck,
+    LucideUser
   ],
   templateUrl: './signin-form.component.html',
   styles: `
     :host {
-      display: flex;
-      flex: 1;
+      display: block;
       width: 100%;
     }
   `

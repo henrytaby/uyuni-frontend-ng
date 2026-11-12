@@ -1,7 +1,8 @@
 <p-button (onClick)="toggleTheme()" [rounded]="true" [text]="true"
-  class="w-14! h-14! bg-brand-500! hover:bg-brand-600! border-0! rounded-full! transition-colors text-white! p-0! flex items-center justify-center">
+  class="h-9! w-9! border border-gray-200! dark:border-gray-800! bg-white/90! dark:bg-gray-900/90! backdrop-blur-sm! text-gray-600! dark:text-gray-300! hover:bg-gray-100! dark:hover:bg-gray-800! transition-colors p-0! flex items-center justify-center shadow-xs cursor-pointer"
+  title="Cambiar tema">
   <ng-template pTemplate="icon">
-    <svg lucideSun size="22" class="dark:hidden text-white!"></svg>
-    <svg lucideMoon size="22" class="hidden dark:block text-white!"></svg>
+    <svg lucideSun size="16" class="dark:hidden text-gray-700!"></svg>
+    <svg lucideMoon size="16" class="hidden dark:block text-gray-200!"></svg>
   </ng-template>
 </p-button>
