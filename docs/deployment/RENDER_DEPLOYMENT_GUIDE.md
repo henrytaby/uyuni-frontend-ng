@@ -14,9 +14,9 @@ flowchart TD
 
     subgraph RenderPlatform ["🟣 2. Plataforma Render.com ($0.00)"]
         direction TB
-        BUILD["Build Engine (Node.js 22 LTS)<br/>Ejecuta: npm run build"]
+        BUILD["Build Engine (Node.js 22 LTS)<br/>Ejecuta: npm install && npm run build"]
         CDN["Render Global CDN Edge Network<br/>Sirve dist/ng-uyuniadmin/browser/"]
-        REDIRECTS["_redirects Engine<br/>/* /index.html 200 (SPA)"]
+        REWRITES["Render Rewrite Rule<br/>/* -> /index.html (Rewrite SPA)"]
     end
 
     subgraph BackendTarget ["⚡ 3. Backend Uyuni"]
@@ -25,7 +25,7 @@ flowchart TD
 
     GH -->|Webhook automático en git push| BUILD
     BUILD --> CDN
-    CDN --> REDIRECTS
+    CDN --> REWRITES
     CDN -.->|Peticiones API configuradas en config.json| BACKEND
 
     %% Estilos Corporativos Uyuni
@@ -34,7 +34,7 @@ flowchart TD
     classDef apiNode fill:#0b3835,stroke:#36bfb7,stroke-width:2px,color:#ffffff;
 
     class GH gitNode;
-    class BUILD,CDN,REDIRECTS renderNode;
+    class BUILD,CDN,REWRITES renderNode;
     class BACKEND apiNode;
 ```
 
@@ -75,7 +75,7 @@ Completa los campos del formulario con los siguientes valores exactos:
 | **Name** | `uyuni-admin-app` (o el nombre de tu cliente) | Nombre del servicio en tu dashboard |
 | **Branch** | `main` | Rama que disparará los despliegues automáticos |
 | **Root Directory** | *(Dejar vacío)* | Raíz del proyecto |
-| **Build Command** | `npm run build` | Comando de compilación optimizada de Angular 21 |
+| **Build Command** | `npm install && npm run build` | **CRÍTICO:** Descarga dependencias y ejecuta la compilación optimizada de Angular 21 (disparando el `prebuild` automático) |
 | **Publish Directory** | `dist/ng-uyuniadmin/browser` | **CRÍTICO:** Directorio donde Angular 21 genera el `index.html` y los chunks |
 
 > [!CAUTION]
@@ -95,9 +95,9 @@ En **Uyuni Frontend**, la configuración se gestiona dinámicamente mediante `pu
 2. Añade las siguientes variables:
    * **`API_URL`**: `https://tu-backend-uyuni.onrender.com/api` (o la URL de tu API en producción).
    * **`MOCK_AUTH`**: `false` (desactiva el modo mock para autenticar contra tu backend real).
-3. Tu **Build Command** se mantiene estándar y limpio:
+3. Tu **Build Command** debe ser:
    ```bash
-   npm run build
+   npm install && npm run build
    ```
    *(Durante `npm run build`, el script `prebuild` detecta automáticamente `API_URL` y `MOCK_AUTH` y las inyecta en `public/assets/config/config.json` antes de que Angular compile).*
 
@@ -115,31 +115,45 @@ El repositorio incluye el archivo [render.yaml](file:///opt/uyuni/uyuni-frontend
 ### Paso 4: Desplegar
 
 1. Haz clic en **Create Static Site** (o **Apply** si usaste el Blueprint).
-2. Render clonará el repositorio, ejecutará `npm run build` y publicará los archivos en su red CDN perimetral.
+2. Render clonará el repositorio, ejecutará `npm install && npm run build` y publicará los archivos en su red CDN perimetral.
+
+> [!NOTE]
+> **Aviso de `npm audit` en la consola:** Durante la ejecución de `npm install`, es completamente normal ver mensajes de auditoría de paquetes en color rojo como `67 vulnerabilities (1 low, 43 moderate, 19 high, 4 critical)`. Esto **NO** es un error de compilación ni interrumpe el despliegue. El proceso continuará automáticamente con la compilación de Angular 21.
+
 3. Al finalizar verás el estado en verde: **`Live`**.
 4. Tu aplicación estará disponible de inmediato en una URL gratuita:  
    `https://uyuni-admin-app.onrender.com`
 
 ---
 
-### Paso 5: Verificación de Redirecciones SPA (Rutas Profundas)
+### Paso 5: Configurar Regla Rewrite en Render (CRÍTICO para SPAs en Render)
 
-El proyecto incluye en su carpeta `public/` el archivo `_redirects` con la siguiente regla:
+A diferencia de otras plataformas, Render no lee automáticamente archivos `_redirects` en sitios estáticos creados manualmente desde el dashboard. Debes registrar la regla de reescritura en el panel de Render:
 
-```text
-/*    /index.html   200
-```
+1. En el menú lateral izquierdo de tu servicio en Render, haz clic en **Redirects/Rewrites**.
+2. Haz clic en el botón **Add Rule**.
+3. Completa los campos con estos valores exactos:
+   * **Type:** `Rewrite` *(⚠️ Asegúrate de que sea Rewrite y NO Redirect, para que no cambie la URL visible en el navegador)*.
+   * **Source:** `/*`
+   * **Destination:** `/index.html`
+4. Haz clic en **Save Changes**.
 
-Al compilar, este archivo se copia a `dist/ng-uyuniadmin/browser/_redirects`. Render lo detecta automáticamente.
-
-**Prueba de Fuego:**
-1. Abre tu aplicación y navega a `/signin`, `/profile` o `/users`.
-2. Presiona recargar (`F5` o `Cmd+R`).
-3. La página debe recargar de inmediato el componente correspondiente **sin mostrar error 404**.
+> [!TIP]
+> Esta regla se aplica de forma **inmediata** (no requiere volver a compilar). En cuanto guardes los cambios, al recargar o ingresar directamente a `https://novalabs-bo.onrender.com/users` o `/profile`, Angular responderá de inmediato sin mostrar `Not Found`.
 
 ---
 
-### Paso 6: Configurar Dominio Personalizado (Opcional)
+### Paso 6: Verificación de Enrutamiento (Rutas Profundas)
+
+**Prueba de Fuego:**
+1. Abre tu navegador e ingresa directamente a:  
+   `https://novalabs-bo.onrender.com/signin` o `https://novalabs-bo.onrender.com/users`
+2. Presiona recargar (`F5` o `Cmd+R`).
+3. La página cargará el componente correspondiente de inmediato sin mostrar error 404 ni `Not Found`.
+
+---
+
+### Paso 7: Configurar Dominio Personalizado (Opcional)
 
 1. En tu panel de Render, ve a la sección **Custom Domains** y haz clic en **Add Custom Domain**.
 2. Ingresa tu subdominio (ej: `admin.tuempresa.com`).

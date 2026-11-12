@@ -152,7 +152,7 @@ const MyPreset = definePreset(Aura, {
 Elige la plataforma según el contrato del cliente:
 
 1. **En Render.com ($0.00 / mes):**  
-   Crea un nuevo **Static Site** vinculado a la rama del cliente, asigna el dominio `admin.empresa.com` y publica siguiendo la [**Guía de Render**](./RENDER_DEPLOYMENT_GUIDE.md).
+   Crea un nuevo **Static Site** vinculado a la rama del cliente, define Build Command: `npm install && npm run build`, Publish Directory: `dist/ng-uyuniadmin/browser`, configura la regla de reescritura SPA en **Redirects/Rewrites** (`/* -> /index.html` como `Rewrite`), asigna el dominio `admin.empresa.com` y publica siguiendo la [**Guía de Render**](./RENDER_DEPLOYMENT_GUIDE.md).
 2. **En Vercel ($0.00 / mes):**  
    Crea un nuevo **Project** en Vercel, apunta el subdominio `admin.empresa.com` y publica siguiendo la [**Guía de Vercel**](./VERCEL_DEPLOYMENT_GUIDE.md).
 3. **En VPS Nginx (Servidor Propio):**  
