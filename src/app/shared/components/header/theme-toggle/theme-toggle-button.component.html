@@ -1,10 +1,13 @@
-<p-button (onClick)="toggleTheme()" [outlined]="true" severity="secondary"
-  class="group h-9 w-9 border-gray-200 bg-white text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white rounded-full transition-colors flex items-center justify-center p-0">
-  <ng-template pTemplate="content">
-    @if ((theme$ | async) === 'dark') {
-    <svg lucideSun size="20"></svg>
-    } @else {
-    <svg lucideMoon size="20"></svg>
-    }
-  </ng-template>
-</p-button>
+<button
+  type="button"
+  (click)="toggleTheme()"
+  [pTooltip]="((theme$ | async) === 'dark') ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+  tooltipPosition="bottom"
+  class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white transition-all cursor-pointer shadow-2xs"
+  [attr.aria-label]="((theme$ | async) === 'dark') ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'">
+  @if ((theme$ | async) === 'dark') {
+    <svg lucideSun size="22" class="w-[22px] h-[22px] text-amber-400 shrink-0"></svg>
+  } @else {
+    <svg lucideMoon size="22" class="w-[22px] h-[22px] text-gray-600 dark:text-gray-300 shrink-0"></svg>
+  }
+</button>

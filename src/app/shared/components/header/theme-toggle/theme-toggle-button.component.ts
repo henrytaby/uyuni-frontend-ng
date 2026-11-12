@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy,Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
-import { ButtonModule } from 'primeng/button';
+import { Tooltip } from 'primeng/tooltip';
 import { LucideMoon, LucideSun } from '@lucide/angular';
 
 import { ThemeService } from '@shared/services/theme.service';
@@ -10,7 +10,7 @@ import { ThemeService } from '@shared/services/theme.service';
   selector: 'app-theme-toggle-button',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './theme-toggle-button.component.html',
-  imports:[CommonModule, ButtonModule, LucideSun, LucideMoon]
+  imports: [CommonModule, Tooltip, LucideSun, LucideMoon]
 })
 export class ThemeToggleButtonComponent {
   

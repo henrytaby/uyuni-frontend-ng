@@ -2,8 +2,9 @@ import { CommonModule } from '@angular/common';
 import { AfterViewInit, ChangeDetectionStrategy, Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 
+import { Tooltip } from 'primeng/tooltip';
 import { filter, Subscription } from 'rxjs';
-import { LucideChevronDown, LucideDynamicIcon } from '@lucide/angular';
+import { LucideChevronDown, LucideChevronLeft, LucideChevronRight, LucideDynamicIcon } from '@lucide/angular';
 
 import { AuthService } from '@core/auth/auth.service';
 
@@ -23,7 +24,10 @@ interface NavItem {
   imports: [
     CommonModule,
     RouterModule,
+    Tooltip,
     LucideChevronDown,
+    LucideChevronLeft,
+    LucideChevronRight,
     LucideDynamicIcon
   ],
   templateUrl: './app-sidebar.component.html',
@@ -88,8 +92,15 @@ export class AppSidebarComponent implements OnInit, OnDestroy, AfterViewInit {
     this.routeSubscription?.unsubscribe();
   }
 
-  isActive(path: string): boolean {
-    return this.router.url === path;
+  isActive(path?: string): boolean {
+    if (!path) return false;
+    if (path === '/') return this.router.url === '/';
+    return this.router.url === path || this.router.url.startsWith(path + '/') || this.router.url.startsWith(path + '?');
+  }
+
+  isParentActive(nav: NavItem): boolean {
+    if (!nav.subItems) return false;
+    return nav.subItems.some(sub => this.isActive(sub.path));
   }
 
   toggleSubmenu(section: string, index: number) {
