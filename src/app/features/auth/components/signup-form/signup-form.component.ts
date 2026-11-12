@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed,signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
@@ -8,6 +8,8 @@ import { DividerModule } from 'primeng/divider';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
+
+import { LoggerService } from '@core/services/logger.service';
 
 @Component({
   selector: 'app-signup-form',
@@ -32,15 +34,17 @@ import { PasswordModule } from 'primeng/password';
   `
 })
 export class SignupFormComponent {
-  isLoading = signal(false);
+  private readonly logger = inject(LoggerService);
 
-  fname = signal('');
-  lname = signal('');
-  email = signal('');
-  password = signal('');
-  isChecked = signal(false);
+  readonly isLoading = signal(false);
 
-  isFormValid = computed(() => 
+  readonly fname = signal('');
+  readonly lname = signal('');
+  readonly email = signal('');
+  readonly password = signal('');
+  readonly isChecked = signal(false);
+
+  readonly isFormValid = computed(() => 
     this.fname().trim().length > 0 && 
     this.lname().trim().length > 0 && 
     this.email().trim().length > 0 && 
@@ -55,11 +59,10 @@ export class SignupFormComponent {
     // Simulate API call
     setTimeout(() => {
       this.isLoading.set(false);
-      console.log('Registering:', { 
+      this.logger.info('Registering attempt', { 
         fname: this.fname(), 
         lname: this.lname(), 
         email: this.email(),
-        password: this.password(),
         terms: this.isChecked() 
       });
     }, 1500);

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed,EventEmitter, input, Output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { ButtonModule } from 'primeng/button';
@@ -30,11 +30,11 @@ import { LucideCircleAlert } from '@lucide/angular';
   `
 })
 export class SigninFormComponent {
-  @Output() signIn = new EventEmitter<{ username: string; password: string }>();
-  @Output() errorCleared = new EventEmitter<void>();
+  readonly signIn = output<{ username: string; password: string }>();
+  readonly errorCleared = output<void>();
   
-  isLoading = input<boolean>(false);
-  errorMessage = input<string | null>(null);
+  readonly isLoading = input<boolean>(false);
+  readonly errorMessage = input<string | null>(null);
 
   username = signal('');
   password = signal('');

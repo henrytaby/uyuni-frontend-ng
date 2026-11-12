@@ -38,3 +38,33 @@ UyuniAdmin is an **Enterprise Admin Dashboard**, NOT a marketing website.
 
 Avoid excessive whitespace, giant hero banners, or low-density marketing components.
 
+## 4. Canonical Spacing & Sizing Scale (`suggestCanonicalClasses`)
+
+**⚠️ CRITICAL**: In Tailwind CSS v4, dynamic spacing and sizing utilities resolve any numeric multiple of `--spacing` (which defaults to `4px` / `0.25rem`). Writing arbitrary pixel brackets like `w-[260px]`, `mt-[11px]`, `max-w-[170px]`, `max-w-[340px]`, `min-w-[800px]` triggers Tailwind Language Server `suggestCanonicalClasses` warnings.
+
+Always calculate the canonical class using the formula:
+$$\text{Canonical value} = \frac{\text{Pixel value}}{4}$$
+
+| Arbitrary Bracket (❌ FORBIDDEN) | Canonical v4 (✅ REQUIRED) | Cálculo ($n / 4$) |
+|---------------------------------|---------------------------|-------------------|
+| `mt-[11px]` | `mt-2.75` | $11 / 4 = 2.75$ |
+| `w-[260px]` | `w-65` | $260 / 4 = 65$ |
+| `sm:w-[540px]` | `sm:w-135` | $540 / 4 = 135$ |
+| `md:w-[650px]` | `md:w-162.5` | $650 / 4 = 162.5$ |
+| `lg:w-[750px]` | `lg:w-187.5` | $750 / 4 = 187.5$ |
+| `max-w-[170px]` | `max-w-42.5` | $170 / 4 = 42.5$ |
+| `max-w-[250px]` | `max-w-62.5` | $250 / 4 = 62.5$ |
+| `max-w-[300px]` | `max-w-75` | $300 / 4 = 75$ |
+| `max-w-[340px]` | `max-w-85` | $340 / 4 = 85$ |
+| `max-w-[420px]` | `max-w-105` | $420 / 4 = 105$ |
+| `max-w-[450px]` | `max-w-112.5` | $450 / 4 = 112.5$ |
+| `max-w-[500px]` | `max-w-125` | $500 / 4 = 125$ |
+| `max-w-[630px]` | `max-w-157.5` | $630 / 4 = 157.5$ |
+| `min-w-[800px]` | `min-w-200` | $800 / 4 = 200$ |
+| `h-[180px]` | `h-45` | $180 / 4 = 45$ |
+| `max-h-[350px]` | `max-h-87.5` | $350 / 4 = 87.5$ |
+
+### Why this happens:
+Tailwind v4 replaces the rigid v3 numerical map with a continuous mathematical scale based on `--spacing: 0.25rem`. As a result, fractional numbers (`w-2.75`, `max-w-42.5`, `max-w-162.5`) are valid first-class citizens. Avoid bracket syntax for spacing unless using arbitrary CSS units (e.g. `calc()`, `dvh`).
+
+

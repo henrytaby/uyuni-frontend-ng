@@ -1,12 +1,14 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 
 import { BehaviorSubject } from 'rxjs';
+
+import { LoggerService } from '@core/services/logger.service';
 
 type Theme = 'light' | 'dark';
 
 @Injectable({ providedIn: 'root' })
-
 export class ThemeService {
+  private readonly logger = inject(LoggerService);
   private themeSubject = new BehaviorSubject<Theme>('light');
   theme$ = this.themeSubject.asObservable();
 
@@ -15,7 +17,7 @@ export class ThemeService {
     try {
       savedTheme = (localStorage.getItem('theme') as Theme) || 'light';
     } catch (e) {
-      console.warn('LocalStorage access failed:', e);
+      this.logger.warn('LocalStorage access failed:', e);
     }
     this.setTheme(savedTheme);
   }
@@ -30,7 +32,7 @@ export class ThemeService {
     try {
       localStorage.setItem('theme', theme);
     } catch (e) {
-      console.warn('LocalStorage write failed:', e);
+      this.logger.warn('LocalStorage write failed:', e);
     }
     if (typeof document !== 'undefined') {
       if (theme === 'dark') {

@@ -1,5 +1,5 @@
 <p-drawer [visible]="visible()" (visibleChange)="visible.set($event)" position="right" [modal]="true"
-  class="w-full sm:w-[540px] md:w-[650px] lg:w-[750px] max-w-full" [style]="{ width: '100%', maxWidth: '750px' }">
+  class="w-full sm:w-135 md:w-162.5 lg:w-187.5 max-w-full" [style]="{ width: '100%', maxWidth: '750px' }">
 
   <!-- Header del Drawer -->
   <ng-template #header>
@@ -497,7 +497,7 @@
                         <span class="font-medium text-gray-900 dark:text-gray-100 text-xs truncate">
                           {{ info.browser }} en {{ info.os }}
                         </span>
-                        <span class="text-[10px] text-gray-400 font-mono truncate max-w-[170px]" [pTooltip]="log.host_info" tooltipPosition="top">
+                        <span class="text-[10px] text-gray-400 font-mono truncate max-w-42.5" [pTooltip]="log.host_info" tooltipPosition="top">
                           {{ log.host_info }}
                         </span>
                       </div>

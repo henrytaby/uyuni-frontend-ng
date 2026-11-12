@@ -1,34 +1,38 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy,Component, EventEmitter, inject, Input, Output } from '@angular/core';
-import { Router,RouterModule } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output
+} from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-dropdown-item',
   templateUrl: './dropdown-item.component.html',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   host: {
     'class': 'block w-full',
     'style': 'display: block !important;'
   }
 })
 export class DropdownItemComponent {
-  @Input() to?: string;
-  @Input() baseClassName = '';
-  @Input() className = '';
-  @Input() tag: 'a' | 'button' = 'button';
-  @Output() itemClick = new EventEmitter<void>();
+  readonly to = input<string | undefined>(undefined);
+  readonly baseClassName = input<string>('');
+  readonly className = input<string>('');
+  readonly tag = input<'a' | 'button'>('button');
+  readonly itemClick = output<void>();
 
-  private router = inject(Router);
+  private readonly router = inject(Router);
 
-  get combinedClasses(): string {
-    return `${this.baseClassName} ${this.className}`.trim();
-  }
+  readonly combinedClasses = computed(() => `${this.baseClassName()} ${this.className()}`.trim());
 
   handleClick() {
-    if (this.to) {
-      this.router.navigateByUrl(this.to);
+    const toUrl = this.to();
+    if (toUrl) {
+      this.router.navigateByUrl(toUrl);
     }
     this.itemClick.emit();
   }

@@ -15,12 +15,12 @@
 
       <!-- date picker -->
       <p-datepicker [(ngModel)]="dateValue" selectionMode="range" [readonlyInput]="true"
-        placeholder="Fechas" styleClass="w-full sm:w-auto p-inputtext-sm" />
+        placeholder="Fechas" class="w-full sm:w-auto p-inputtext-sm" />
     </div>
   </div>
 
   <div class="max-w-full overflow-x-auto custom-scrollbar">
-    <div class="min-w-[800px] xl:min-w-full">
+    <div class="min-w-200 xl:min-w-full">
       <p-chart type="line" [data]="data" [options]="options" height="250px" />
     </div>
   </div>
