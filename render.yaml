@@ -1,0 +1,26 @@
+services:
+  - type: static
+    name: uyuni-frontend
+    buildCommand: npm run build
+    staticPublishPath: dist/ng-uyuniadmin/browser
+    pullRequestPreviewsEnabled: true
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /assets/config/config.json
+        name: Cache-Control
+        value: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0
+      - path: /index.html
+        name: Cache-Control
+        value: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0
+      - path: /*.(js|css|woff2|png|svg|ico)
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+    envVars:
+      - key: API_URL
+        value: http://127.0.0.1:8000/api
+      - key: MOCK_AUTH
+        value: "false"
+

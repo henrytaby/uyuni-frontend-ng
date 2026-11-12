@@ -87,35 +87,34 @@ Completa los campos del formulario con los siguientes valores exactos:
 
 ### Paso 3: Configurar la URL de la API de Producción
 
-En **Uyuni Frontend**, la configuración se gestiona dinámicamente mediante `public/assets/config/config.json`. Tienes dos opciones para definir tu URL de producción:
+En **Uyuni Frontend**, la configuración se gestiona dinámicamente mediante `public/assets/config/config.json`. El proyecto incluye un hook de compilación automático (`scripts/prepare-config.js`) que garantiza la creación del archivo a partir de `config.example.json` si se trata de un clon limpio y le inyecta las variables de entorno de Render:
 
-#### Opción A: Inyección Dinámica por Variable de Entorno en Render (Recomendada)
-Para que no tengas que modificar archivos de código, puedes configurar el **Build Command** en Render para que inyecte la URL de la API antes de compilar:
+#### Opción A: Variables de Entorno en el Dashboard de Render (Recomendada y Automática)
 
-1. Ve a la pestaña **Environment** en tu servicio de Render y añade:
-   * Key: `API_URL`
-   * Value: `https://uyuni-backend-empresa.onrender.com` (o la URL de tu API)
-2. Cambia el **Build Command** por:
+1. En la configuración de tu servicio en Render, ve a la sección **Environment Variables** (o pestaña **Environment**).
+2. Añade las siguientes variables:
+   * **`API_URL`**: `https://tu-backend-uyuni.onrender.com/api` (o la URL de tu API en producción).
+   * **`MOCK_AUTH`**: `false` (desactiva el modo mock para autenticar contra tu backend real).
+3. Tu **Build Command** se mantiene estándar y limpio:
    ```bash
-   sed -i 's|"apiUrl": ".*"|"apiUrl": "'"$API_URL"'"|g' public/assets/config/config.json && sed -i 's|"mockAuth": true|"mockAuth": false|g' public/assets/config/config.json && npm run build
+   npm run build
    ```
+   *(Durante `npm run build`, el script `prebuild` detecta automáticamente `API_URL` y `MOCK_AUTH` y las inyecta en `public/assets/config/config.json` antes de que Angular compile).*
 
-#### Opción B: Commit Directo en el Repositorio
-Si prefieres no usar variables en el build, simplemente edita `public/assets/config/config.json` antes de hacer push:
-```json
-{
-  "apiUrl": "https://uyuni-backend-empresa.onrender.com",
-  "featureFlags": {
-    "mockAuth": false
-  }
-}
-```
+#### Opción B: Despliegue con Blueprint 1-Clic (`render.yaml`)
+
+El repositorio incluye el archivo [render.yaml](file:///opt/uyuni/uyuni-frontend-ng/render.yaml) configurado para Render Blueprints. 
+
+1. En el panel de Render, selecciona **New +** > **Blueprint**.
+2. Conecta el repositorio `uyuni-frontend-ng`.
+3. Render detectará automáticamente `render.yaml`, configurará el servicio como **Static Site**, las rutas de reescritura SPA y los encabezados de caché `Cache-Control`.
+4. Define o confirma el valor de `API_URL` en pantalla y haz clic en **Apply**.
 
 ---
 
 ### Paso 4: Desplegar
 
-1. Haz clic en **Create Static Site**.
+1. Haz clic en **Create Static Site** (o **Apply** si usaste el Blueprint).
 2. Render clonará el repositorio, ejecutará `npm run build` y publicará los archivos en su red CDN perimetral.
 3. Al finalizar verás el estado en verde: **`Live`**.
 4. Tu aplicación estará disponible de inmediato en una URL gratuita:  
