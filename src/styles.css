@@ -508,26 +508,27 @@
    ========================================================================== */
 .p-paginator .p-select,
 .p-paginator .p-dropdown {
-  min-width: auto !important;
+  min-width: 3.5rem !important; /* ~56px compacto y balanceado */
   width: auto !important;
-  height: 32px !important;
+  height: 30px !important;
 }
 
 .p-paginator .p-select-label,
 .p-paginator .p-dropdown-label {
   padding-top: 0px !important;
   padding-bottom: 0px !important;
-  padding-left: 8px !important;
-  padding-right: 4px !important;
+  padding-left: 6px !important;
+  padding-right: 2px !important;
   font-size: 0.8125rem !important; /* ~13px */
-  line-height: 26px !important;
+  line-height: 28px !important;
   display: flex !important;
   align-items: center !important;
+  justify-content: center !important;
 }
 
 .p-paginator .p-select-dropdown,
 .p-paginator .p-dropdown-trigger {
-  width: 20px !important;
+  width: 16px !important;
   padding: 0 !important;
 }
 

@@ -1,0 +1,333 @@
+<div class="p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900">
+
+  <!-- Encabezado con Título, Búsqueda y Botón Nuevo Producto -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+    <div>
+      <h1 class="text-lg font-bold m-0 text-gray-900 dark:text-gray-100 flex items-center gap-2">
+        <span>Inventario Físico de Productos</span>
+        <span class="text-xs font-normal px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
+          Control por Lotes
+        </span>
+      </h1>
+      <span class="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+        Existencias físicas reales, costeo unitario por caja, trazabilidad de mermas e inspección técnica
+      </span>
+    </div>
+
+    <div class="flex items-center gap-2.5 w-full sm:w-auto">
+      <p-iconfield iconPosition="left" class="w-full sm:w-64">
+        <p-inputicon class="pi pi-search"></p-inputicon>
+        <input
+          type="text"
+          pInputText
+          placeholder="Buscar por nombre, variante, caja..."
+          class="w-full text-sm"
+          (input)="onSearch($event)" />
+      </p-iconfield>
+
+      <p-button
+        label="Nuevo Producto"
+        icon="pi pi-plus"
+        size="small"
+        severity="primary"
+        class="shrink-0"
+        (click)="openCreateProduct()">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Barra de Filtros de Alta Densidad Responsiva -->
+  <div
+    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm items-center w-full">
+
+    <!-- Lote / Caja -->
+    <div class="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 w-full min-w-0">
+      <span class="font-medium text-color whitespace-nowrap text-xs">Caja / Lote:</span>
+      <p-select
+        [options]="batches()"
+        [ngModel]="selectedBatch()"
+        (ngModelChange)="onBatchChange($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todas las Cajas"
+        [showClear]="true"
+        [filter]="true"
+        filterPlaceholder="Buscar caja..."
+        appendTo="body"
+        class="w-full min-w-0">
+      </p-select>
+    </div>
+
+    <!-- Ficha Maestra -->
+    <div class="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 w-full min-w-0">
+      <span class="font-medium text-color whitespace-nowrap text-xs">Ficha Maestra:</span>
+      <p-select
+        [options]="masterProducts()"
+        [ngModel]="selectedMasterProduct()"
+        (ngModelChange)="onMasterChange($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todas las Fichas"
+        [showClear]="true"
+        [filter]="true"
+        filterPlaceholder="Buscar ficha..."
+        appendTo="body"
+        class="w-full min-w-0">
+      </p-select>
+    </div>
+
+    <!-- Estado -->
+    <div class="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 w-full min-w-0">
+      <span class="font-medium text-color whitespace-nowrap text-xs">Estado:</span>
+      <p-select
+        [options]="statuses()"
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="onStatusChange($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todos los Estados"
+        [showClear]="true"
+        appendTo="body"
+        class="w-full min-w-0">
+      </p-select>
+    </div>
+
+    <!-- Botón Limpiar -->
+    <div class="flex w-full min-w-0">
+      <p-button
+        type="button"
+        icon="pi pi-filter-slash"
+        label="Limpiar Filtros"
+        severity="secondary"
+        [outlined]="true"
+        size="small"
+        class="w-full min-w-0 justify-content-center"
+        (click)="clearFilters()"
+        [disabled]="selectedBatch() === null && selectedMasterProduct() === null && selectedStatus() === null">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Tabla Principal de Existencias Físicas -->
+  <p-table
+    [value]="productList()"
+    [lazy]="true"
+    (onLazyLoad)="loadData($event)"
+    [paginator]="true"
+    [rows]="rows()"
+    [rowHover]="true"
+    [first]="first()"
+    [totalRecords]="totalRecords()"
+    [loading]="isLoading()"
+    [showCurrentPageReport]="true"
+    [rowsPerPageOptions]="[15, 20, 30, 50]"
+    paginatorStyleClass="justify-content-end"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} unidades"
+    class="text-sm dense-table">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="name" style="min-width: 15rem">
+          <div class="flex items-center gap-1.5 whitespace-nowrap">
+            <span>Producto Físico & Variante</span>
+            <p-sortIcon field="name"></p-sortIcon>
+          </div>
+        </th>
+        <th style="min-width: 11rem">
+          <div class="flex items-center gap-1.5 whitespace-nowrap">
+            <span>Caja / Lote</span>
+          </div>
+        </th>
+        <th pSortableColumn="cost_price" style="min-width: 11rem">
+          <div class="flex items-center gap-1.5 whitespace-nowrap">
+            <span>Costos & Precios (BOB)</span>
+            <p-sortIcon field="cost_price"></p-sortIcon>
+          </div>
+        </th>
+        <th pSortableColumn="available_quantity" style="min-width: 10rem">
+          <div class="flex items-center gap-1.5 whitespace-nowrap">
+            <span>Existencias</span>
+            <p-sortIcon field="available_quantity"></p-sortIcon>
+          </div>
+        </th>
+        <th style="min-width: 9rem">
+          <div class="flex items-center gap-1.5 whitespace-nowrap">
+            <span>Condición Física</span>
+          </div>
+        </th>
+        <th style="width: 6.5rem" class="text-center">
+          <div class="flex items-center justify-center gap-1.5 whitespace-nowrap">
+            <span>Inspección</span>
+          </div>
+        </th>
+        <th pSortableColumn="status" class="text-center" style="width: 7.5rem">
+          <div class="flex items-center justify-center gap-1.5 whitespace-nowrap">
+            <span>Estado</span>
+            <p-sortIcon field="status"></p-sortIcon>
+          </div>
+        </th>
+        <th style="width: 3.5rem"></th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-prod>
+      <tr>
+        <!-- Producto & Variante (Clickable para drawer) -->
+        <td class="vertical-align-middle">
+          <button
+            type="button"
+            class="flex items-center gap-3 cursor-pointer group text-left bg-transparent border-none p-0 w-full"
+            (click)="openEditProduct(prod)">
+            <p-avatar
+              [label]="getInitials(prod.name)"
+              shape="circle"
+              class="shrink-0 bg-gray-100 text-brand-700 group-hover:bg-brand-100 transition-colors border border-gray-200 dark:border-gray-700">
+            </p-avatar>
+            <div class="flex flex-col min-w-0">
+              <span class="text-gray-900 dark:text-gray-100 font-medium group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors truncate">
+                {{ prod.name }}
+              </span>
+              <span class="text-gray-500 dark:text-gray-400 text-xs flex items-center gap-1.5">
+                @if (prod.variant_name) {
+                  <span class="font-medium text-brand-600 dark:text-brand-400">{{ prod.variant_name }}</span>
+                } @else {
+                  <span class="text-gray-400 italic">Estándar</span>
+                }
+                @if (prod.sheet_row_id) {
+                  <span class="text-gray-300 dark:text-gray-600">·</span>
+                  <span class="text-gray-400 font-mono text-[11px]">Fila #{{ prod.sheet_row_id }}</span>
+                }
+              </span>
+            </div>
+          </button>
+        </td>
+
+        <!-- Caja / Lote de Origen -->
+        <td class="vertical-align-middle">
+          @if (prod.batch_name) {
+            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-medium">
+              <svg lucideBoxes size="13" class="text-gray-500"></svg>
+              <span>{{ prod.batch_name }}</span>
+            </span>
+          } @else {
+            <span class="text-xs text-gray-400 italic">Sin lote asignado</span>
+          }
+        </td>
+
+        <!-- Costos y Precios -->
+        <td class="vertical-align-middle">
+          <div class="flex flex-col text-xs font-mono">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-gray-400">Costo Real:</span>
+              <span class="text-gray-900 dark:text-gray-100 font-bold">
+                {{ prod.cost_price !== null && prod.cost_price !== undefined ? ('Bs. ' + (prod.cost_price | number:'1.2-2')) : 'S/C' }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between gap-2 text-gray-500 text-[11px]">
+              <span>Oficial / Piso:</span>
+              <span>Bs. {{ prod.official_price | number:'1.0-0' }} / {{ prod.minimum_price | number:'1.0-0' }}</span>
+            </div>
+          </div>
+        </td>
+
+        <!-- Existencias Físicas -->
+        <td class="vertical-align-middle">
+          <div class="flex flex-col gap-0.5">
+            <div class="inline-flex items-center gap-1 text-xs">
+              <span class="font-mono font-bold" [ngClass]="prod.available_quantity > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-400'">
+                {{ prod.available_quantity }} disp.
+              </span>
+              <span class="text-gray-400 text-[11px]">/ {{ prod.initial_quantity }} ini.</span>
+            </div>
+            @if (prod.sold_quantity > 0 || prod.merma_quantity > 0) {
+              <div class="text-[11px] text-gray-400 flex items-center gap-1.5">
+                <span>{{ prod.sold_quantity }} vend.</span>
+                @if (prod.merma_quantity > 0) {
+                  <span class="text-red-500 font-medium">· {{ prod.merma_quantity }} merma</span>
+                }
+              </div>
+            }
+          </div>
+        </td>
+
+        <!-- Condición Física -->
+        <td class="vertical-align-middle">
+          <p-tag
+            [value]="getConditionLabel(prod.physical_condition)"
+            [severity]="prod.physical_condition === 'OPERATIONAL' ? 'success' : (prod.physical_condition === 'REPAIRED' ? 'info' : 'warn')"
+            [rounded]="true"
+            class="text-xs">
+          </p-tag>
+        </td>
+
+        <!-- Inspección Técnica Probada -->
+        <td class="vertical-align-middle text-center">
+          <div class="flex items-center justify-center gap-1.5">
+            <span
+              [pTooltip]="prod.is_reviewed ? 'Inspeccionado y probado en mesa' : 'Pendiente de prueba funcional'"
+              [class.text-green-600]="prod.is_reviewed"
+              [class.dark:text-green-400]="prod.is_reviewed"
+              [class.text-gray-300]="!prod.is_reviewed"
+              [class.dark:text-gray-600]="!prod.is_reviewed">
+              <svg lucideShieldCheck size="16"></svg>
+            </span>
+            @if (prod.defect_detail) {
+              <span
+                class="text-amber-500 cursor-help"
+                [pTooltip]="prod.defect_detail"
+                tooltipPosition="left">
+                <i class="pi pi-info-circle text-xs"></i>
+              </span>
+            }
+          </div>
+        </td>
+
+        <!-- Estado Comercial -->
+        <td class="vertical-align-middle text-center">
+          <p-tag
+            [value]="getStatusLabel(prod.status)"
+            [severity]="getStatusSeverity(prod.status)"
+            [rounded]="true"
+            class="text-xs">
+          </p-tag>
+        </td>
+
+        <!-- Acciones -->
+        <td class="text-center vertical-align-middle">
+          <p-button
+            icon="pi pi-pencil"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            pTooltip="Editar Existencia"
+            tooltipPosition="left"
+            (click)="openEditProduct(prod)">
+          </p-button>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="8" class="text-center p-6 text-gray-500 dark:text-gray-400">
+          No se encontraron existencias físicas con los criterios de búsqueda seleccionados.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Slide-Over Drawer para Creación y Edición -->
+  <app-product-drawer
+    [(visible)]="drawerVisible"
+    [product]="selectedProduct()"
+    [mode]="drawerMode()"
+    [masterProducts]="masterProducts()"
+    [batches]="batches()"
+    [statuses]="statuses()"
+    [physicalConditions]="physicalConditions()"
+    (productSaved)="onProductSaved($event)"
+    (productDeleted)="onProductDeleted($event)">
+  </app-product-drawer>
+
+</div>
+

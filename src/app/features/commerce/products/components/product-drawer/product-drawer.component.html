@@ -1,0 +1,366 @@
+<p-drawer
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  position="right"
+  [modal]="true"
+  [style]="{ width: '44rem', maxWidth: '100vw' }">
+
+  <!-- Header del Drawer -->
+  <ng-template #header>
+    <div class="flex items-center justify-between w-full pr-2">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800 flex items-center justify-center text-brand-700 dark:text-brand-300">
+          <svg lucidePackage size="18"></svg>
+        </div>
+        <div>
+          <h2 class="text-base font-bold text-gray-900 dark:text-gray-100 m-0 flex items-center gap-2">
+            <span>{{ mode() === 'create' ? 'Nuevo Producto Físico' : 'Existencia Física' }}</span>
+            @if (mode() === 'edit' && currentDisplayProduct()?.variant_name) {
+              <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                {{ currentDisplayProduct()?.variant_name }}
+              </span>
+            }
+          </h2>
+          <span class="block text-xs text-gray-500 dark:text-gray-400 m-0">
+            {{ mode() === 'create' ? 'Ingreso de existencias físicas por caja o lote' : (currentDisplayProduct()?.name || 'Inventario por Lote') }}
+          </span>
+        </div>
+      </div>
+
+      @if (mode() === 'edit' && currentDisplayProduct()?.id) {
+        <button
+          type="button"
+          class="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          pTooltip="Copiar ID Universal (UUID)"
+          tooltipPosition="left"
+          (click)="copyToClipboard(currentDisplayProduct()!.id, 'ID de Producto')">
+          <svg lucideCopy size="15"></svg>
+        </button>
+      }
+    </div>
+  </ng-template>
+
+  <!-- Contenido con Tabs -->
+  <div class="py-2">
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+      <p-tablist class="text-xs border-b border-gray-200 dark:border-gray-700">
+        <p-tab value="0">
+          <div class="flex items-center gap-1.5 py-1">
+            <svg lucideTag size="14"></svg>
+            <span>Ficha y Procedencia</span>
+          </div>
+        </p-tab>
+        <p-tab value="1">
+          <div class="flex items-center gap-1.5 py-1">
+            <svg lucideDollarSign size="14"></svg>
+            <span>Cantidades y Costo</span>
+          </div>
+        </p-tab>
+        <p-tab value="2">
+          <div class="flex items-center gap-1.5 py-1">
+            <svg lucideShieldCheck size="14"></svg>
+            <span>Condición e Inspección</span>
+          </div>
+        </p-tab>
+      </p-tablist>
+
+      <p-tabpanels class="pt-4">
+        <!-- TAB 0: FICHA Y PROCEDENCIA -->
+        <p-tabpanel value="0">
+          <div class="flex flex-col gap-4 text-sm">
+
+            <!-- Fila 1: Ficha Maestra Obligatoria -->
+            <div>
+              <label for="prod_master" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Ficha Maestra de Catálogo <span class="text-red-500">*</span>
+              </label>
+              <p-select
+                inputId="prod_master"
+                [options]="masterProducts()"
+                [ngModel]="masterProductId()"
+                (ngModelChange)="masterProductId.set($event)"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Seleccione la Ficha Maestra (# Ítem, Nombre)"
+                [filter]="true"
+                filterPlaceholder="Buscar ficha..."
+                appendTo="body"
+                class="w-full">
+              </p-select>
+              @if (!masterProductValidation().isValid) {
+                <span class="block text-xs text-red-500 mt-1 m-0">{{ masterProductValidation().error }}</span>
+              }
+            </div>
+
+            <!-- Fila 2: Lote / Caja y Fila Excel -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="prod_batch" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Caja o Lote de Importación
+                </label>
+                <p-select
+                  inputId="prod_batch"
+                  [options]="batches()"
+                  [ngModel]="batchId()"
+                  (ngModelChange)="batchId.set($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Seleccionar Lote / Caja"
+                  [showClear]="true"
+                  [filter]="true"
+                  filterPlaceholder="Buscar caja..."
+                  appendTo="body"
+                  class="w-full">
+                </p-select>
+              </div>
+
+              <div>
+                <label for="prod_sheet_row" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Fila en Hoja Excel (Trazabilidad)
+                </label>
+                <p-inputnumber
+                  inputId="prod_sheet_row"
+                  [ngModel]="sheetRowId()"
+                  (ngModelChange)="sheetRowId.set($event)"
+                  [min]="1"
+                  [useGrouping]="false"
+                  placeholder="Ej: 53 o 165"
+                  class="w-full">
+                </p-inputnumber>
+              </div>
+            </div>
+
+            <!-- Fila 3: Variante Física de Diseño -->
+            <div>
+              <label for="prod_variant" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Variante Física o de Diseño en esta Caja
+              </label>
+              <input
+                id="prod_variant"
+                type="text"
+                pInputText
+                [ngModel]="variantName()"
+                (ngModelChange)="variantName.set($event)"
+                placeholder="Ej: Luna vs Sistema Solar, Color Negro, 110V..."
+                class="w-full text-sm" />
+              <span class="block text-xs text-gray-400 mt-0.5 m-0">
+                Diferenciador físico específico de las unidades llegadas en este lote.
+              </span>
+            </div>
+
+            <!-- Banner Explicativo -->
+            <div class="p-3 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-600 dark:text-gray-300 flex items-start gap-2">
+              <svg lucideInfo size="16" class="shrink-0 text-gray-400 mt-0.5"></svg>
+              <div>
+                <span class="font-bold">Herencia de Identidad:</span>
+                Los precios de catálogo (Oficial, Publicado y Mínimo Protegido) y multimedia provienen de la Ficha Maestra seleccionada.
+              </div>
+            </div>
+
+          </div>
+        </p-tabpanel>
+
+        <!-- TAB 1: CANTIDADES Y COSTO -->
+        <p-tabpanel value="1">
+          <div class="flex flex-col gap-4 text-sm">
+
+            <!-- Fila 1: Cantidad Inicial y Costo Unitario -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="prod_initial_qty" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Cantidad Recibida Inicial <span class="text-red-500">*</span>
+                </label>
+                <p-inputnumber
+                  inputId="prod_initial_qty"
+                  [ngModel]="initialQuantity()"
+                  (ngModelChange)="initialQuantity.set($event)"
+                  [min]="1"
+                  [useGrouping]="false"
+                  placeholder="1"
+                  class="w-full">
+                </p-inputnumber>
+              </div>
+
+              <div>
+                <label for="prod_cost_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Costo Unitario Real del Lote
+                </label>
+                <p-inputnumber
+                  inputId="prod_cost_price"
+                  [ngModel]="costPrice()"
+                  (ngModelChange)="costPrice.set($event)"
+                  mode="currency"
+                  currency="BOB"
+                  locale="es-BO"
+                  [minFractionDigits]="2"
+                  placeholder="Bs. 0.00"
+                  class="w-full">
+                </p-inputnumber>
+                <span class="block text-xs text-gray-400 mt-0.5 m-0">Costo prorrateado con flete y merma</span>
+              </div>
+            </div>
+
+            <!-- Fila 2: Vendidas y Mermas -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="prod_sold_qty" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Unidades Vendidas
+                </label>
+                <p-inputnumber
+                  inputId="prod_sold_qty"
+                  [ngModel]="soldQuantity()"
+                  (ngModelChange)="soldQuantity.set($event)"
+                  [min]="0"
+                  [useGrouping]="false"
+                  class="w-full">
+                </p-inputnumber>
+              </div>
+
+              <div>
+                <label for="prod_merma_qty" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Unidades en Merma / Dañadas
+                </label>
+                <p-inputnumber
+                  inputId="prod_merma_qty"
+                  [ngModel]="mermaQuantity()"
+                  (ngModelChange)="mermaQuantity.set($event)"
+                  [min]="0"
+                  [useGrouping]="false"
+                  class="w-full">
+                </p-inputnumber>
+              </div>
+            </div>
+
+            @if (!quantityValidation().isValid) {
+              <div class="p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
+                <svg lucideCircleAlert size="14" class="shrink-0"></svg>
+                <span>{{ quantityValidation().error }}</span>
+              </div>
+            }
+
+            <!-- Tarjeta de Stock Disponible Calculado -->
+            <div class="p-3 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 block">Stock Disponible Calculado:</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">Cantidad Inicial - Vendidas - Mermas</span>
+              </div>
+              <div class="text-right">
+                <span class="font-mono font-bold text-lg" [ngClass]="calculatedAvailableQuantity() > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-400'">
+                  {{ calculatedAvailableQuantity() }} unidades
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </p-tabpanel>
+
+        <!-- TAB 2: CONDICIÓN E INSPECCIÓN -->
+        <p-tabpanel value="2">
+          <div class="flex flex-col gap-4 text-sm">
+
+            <!-- Fila 1: Estado y Condición Física -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="prod_status" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Estado Comercial en Almacén
+                </label>
+                <p-select
+                  inputId="prod_status"
+                  [options]="statuses()"
+                  [ngModel]="status()"
+                  (ngModelChange)="status.set($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full">
+                </p-select>
+              </div>
+
+              <div>
+                <label for="prod_condition" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Condición Física Real
+                </label>
+                <p-select
+                  inputId="prod_condition"
+                  [options]="physicalConditions()"
+                  [ngModel]="physicalCondition()"
+                  (ngModelChange)="physicalCondition.set($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full">
+                </p-select>
+              </div>
+            </div>
+
+            <!-- Fila 2: Switch Inspección Probada -->
+            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700">
+              <div>
+                <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 block">Inspeccionado y Probado</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">¿Fue probado físicamente en mesa técnica que enciende y opera correctamente?</span>
+              </div>
+              <p-toggleswitch [ngModel]="isReviewed()" (ngModelChange)="isReviewed.set($event)"></p-toggleswitch>
+            </div>
+
+            <!-- Fila 3: Detalle de Falla o Faltantes -->
+            <div>
+              <label for="prod_defect" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Detalle de Defectos, Accesorios Faltantes o Raspón
+              </label>
+              <textarea
+                id="prod_defect"
+                pTextarea
+                [ngModel]="defectDetail()"
+                (ngModelChange)="defectDetail.set($event)"
+                rows="3"
+                placeholder="Ej: Raspón leve en parte trasera, sin cable USB original, probado funcionando OK..."
+                class="w-full text-sm">
+              </textarea>
+            </div>
+
+          </div>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+
+  <!-- Footer del Drawer -->
+  <ng-template #footer>
+    <div class="flex items-center justify-between w-full pt-2 border-t border-gray-200 dark:border-gray-700">
+      <div>
+        @if (mode() === 'edit') {
+          <p-button
+            label="Eliminar"
+            icon="pi pi-trash"
+            severity="danger"
+            [outlined]="true"
+            size="small"
+            [disabled]="isSubmitting()"
+            (click)="confirmDelete()">
+          </p-button>
+        }
+      </div>
+
+      <div class="flex items-center gap-2">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          [disabled]="isSubmitting()"
+          (click)="visible.set(false)">
+        </p-button>
+
+        <p-button
+          [label]="mode() === 'create' ? 'Registrar Existencia' : 'Actualizar Producto'"
+          icon="pi pi-check"
+          severity="primary"
+          size="small"
+          [loading]="isSubmitting()"
+          [disabled]="!isFormValid()"
+          (click)="saveProduct()">
+        </p-button>
+      </div>
+    </div>
+  </ng-template>
+
+</p-drawer>
+

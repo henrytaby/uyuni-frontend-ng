@@ -10,12 +10,12 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 
-import { Avatar } from 'primeng/avatar';
+import { MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { InputText } from 'primeng/inputtext';
-import { Select } from 'primeng/select';
+import { Paginator } from 'primeng/paginator';
 import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
@@ -23,16 +23,24 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {
   LucideCircleCheck,
+  LucideCopy,
+  LucideExternalLink,
+  LucideLayoutGrid,
+  LucideListFilter,
   LucideMessageSquare,
+  LucidePackage,
   LucideShare2,
-  LucideSparkles,
-  LucideVideo
+  LucideTable2,
+  LucideTv,
+  LucideVideo,
+  LucideX
 } from '@lucide/angular';
 
 import { CatalogItem } from '@core/models/catalog.model';
 import { LoggerService } from '@core/services/logger.service';
 
 import { ProductMasterDrawerComponent } from '../../components/product-master-drawer/product-master-drawer.component';
+import { ProductMasterFilterDrawerComponent } from '../../components/product-master-filter-drawer/product-master-filter-drawer.component';
 import { ProductMaster } from '../../models/product-master.model';
 import { ProductMasterService } from '../../services/product-master.service';
 import { ProductMasterFilterService, ProductMasterFilterState } from '../../services/product-master-filter.service';
@@ -44,20 +52,27 @@ import { ProductMasterFilterService, ProductMasterFilterState } from '../../serv
     CommonModule,
     FormsModule,
     TableModule,
+    Paginator,
     Tag,
-    Avatar,
     Button,
     InputText,
     IconField,
     InputIcon,
     Tooltip,
-    Select,
-    LucideSparkles,
     LucideCircleCheck,
     LucideVideo,
     LucideShare2,
     LucideMessageSquare,
-    ProductMasterDrawerComponent
+    LucideListFilter,
+    LucideX,
+    LucideTable2,
+    LucideLayoutGrid,
+    LucidePackage,
+    LucideExternalLink,
+    LucideCopy,
+    LucideTv,
+    ProductMasterDrawerComponent,
+    ProductMasterFilterDrawerComponent
   ],
   templateUrl: './product-master-list.component.html',
   styleUrls: ['./product-master-list.component.css'],
@@ -66,14 +81,27 @@ import { ProductMasterFilterService, ProductMasterFilterState } from '../../serv
 export class ProductMasterListComponent implements OnInit {
   private readonly productMasterService = inject(ProductMasterService);
   private readonly filterService = inject(ProductMasterFilterService);
+  private readonly messageService = inject(MessageService);
   private readonly logger = inject(LoggerService);
+
+  // View Mode: 'table' (ERP / Backoffice) vs 'cards' (Comercial / Live)
+  readonly viewMode = signal<'table' | 'cards'>(
+    (typeof localStorage !== 'undefined' &&
+      (localStorage.getItem('uyuni_pm_view_mode') as 'table' | 'cards')) ||
+      'table'
+  );
 
   // State Signals
   readonly productList = signal<ProductMaster[]>([]);
   readonly totalRecords = signal<number>(0);
   readonly isLoading = signal<boolean>(false);
   readonly first = signal<number>(0);
-  readonly rows = signal<number>(15);
+  readonly rows = signal<number>(
+    (typeof localStorage !== 'undefined' &&
+      localStorage.getItem('uyuni_pm_view_mode') === 'cards')
+      ? 12
+      : 15
+  );
 
   // Search Debouncing
   private readonly searchSubject = new Subject<string>();
@@ -83,10 +111,25 @@ export class ProductMasterListComponent implements OnInit {
   readonly categories = signal<CatalogItem[]>([]);
   readonly liveBaskets = signal<CatalogItem[]>([]);
 
-  // Filters
+  // Filters State
   readonly selectedCategory = signal<string | null>(null);
   readonly selectedLiveBasket = signal<string | null>(null);
   readonly selectedActivo = signal<boolean | null>(null);
+  readonly filterDrawerVisible = signal<boolean>(false);
+
+  readonly activeFilterCount = computed<number>(() => {
+    let count = 0;
+    if (this.selectedCategory()) count++;
+    if (this.selectedLiveBasket()) count++;
+    if (this.selectedActivo() !== null) count++;
+    return count;
+  });
+
+  readonly currentFilterState = computed<ProductMasterFilterState>(() => ({
+    selectedCategory: this.selectedCategory(),
+    selectedLiveBasket: this.selectedLiveBasket(),
+    selectedActivo: this.selectedActivo()
+  }));
 
   // Drawer
   readonly drawerVisible = signal<boolean>(false);
@@ -123,6 +166,28 @@ export class ProductMasterListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCatalogs();
+    if (this.viewMode() === 'cards') {
+      this.loadData({ first: this.first(), rows: this.rows() });
+    }
+  }
+
+  setViewMode(mode: 'table' | 'cards'): void {
+    const prevMode = this.viewMode();
+    this.viewMode.set(mode);
+    try {
+      localStorage.setItem('uyuni_pm_view_mode', mode);
+    } catch {
+      // ignore storage error
+    }
+
+    if (prevMode !== mode) {
+      const targetRows = mode === 'cards' ? 12 : 15;
+      this.rows.set(targetRows);
+      this.first.set(0);
+      if (mode === 'cards') {
+        this.loadData({ first: 0, rows: targetRows });
+      }
+    }
   }
 
   private loadCatalogs(): void {
@@ -159,26 +224,41 @@ export class ProductMasterListComponent implements OnInit {
     this.loadData({ first: this.first(), rows: this.rows() });
   }
 
-  onCategoryChange(categoryId: string | null): void {
-    this.selectedCategory.set(categoryId);
+  openFilterDrawer(): void {
+    this.filterDrawerVisible.set(true);
+  }
+
+  onFilterApplied(state: ProductMasterFilterState): void {
+    this.selectedCategory.set(state.selectedCategory);
+    this.selectedLiveBasket.set(state.selectedLiveBasket);
+    this.selectedActivo.set(state.selectedActivo);
     this.resetAndReload();
   }
 
-  onLiveBasketChange(basketId: string | null): void {
-    this.selectedLiveBasket.set(basketId);
-    this.resetAndReload();
-  }
-
-  onActivoChange(isActive: boolean | null): void {
-    this.selectedActivo.set(isActive);
-    this.resetAndReload();
-  }
-
-  clearFilters(): void {
+  onFilterCleared(): void {
     this.selectedCategory.set(null);
     this.selectedLiveBasket.set(null);
     this.selectedActivo.set(null);
     this.resetAndReload();
+  }
+
+  clearCategoryFilter(): void {
+    this.selectedCategory.set(null);
+    this.resetAndReload();
+  }
+
+  clearLiveBasketFilter(): void {
+    this.selectedLiveBasket.set(null);
+    this.resetAndReload();
+  }
+
+  clearActivoFilter(): void {
+    this.selectedActivo.set(null);
+    this.resetAndReload();
+  }
+
+  clearFilters(): void {
+    this.onFilterCleared();
   }
 
   private resetAndReload(): void {
@@ -231,6 +311,14 @@ export class ProductMasterListComponent implements OnInit {
     });
   }
 
+  onPaginatorChange(event: { first?: number; rows?: number }): void {
+    const f = event.first ?? 0;
+    const r = event.rows ?? this.rows();
+    this.first.set(f);
+    this.rows.set(r);
+    this.loadData({ first: f, rows: r });
+  }
+
   onSearch(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.searchSubject.next(value);
@@ -253,5 +341,33 @@ export class ProductMasterListComponent implements OnInit {
       return `${words[0].charAt(0)}${words[1].charAt(0)}`.toUpperCase();
     }
     return name.slice(0, 2).toUpperCase();
+  }
+
+  copyPitch(prod: ProductMaster): void {
+    const pricePub = prod.published_price ? `Bs. ${prod.published_price.toFixed(2)}` : 'A consultar';
+    const text = `*${prod.name}* (Ítem #${prod.item_number})\n` +
+      `💰 *Precio de Oferta:* ${pricePub}\n` +
+      (prod.description ? `📝 ${prod.description}\n` : '') +
+      `📦 Stock disponible: ${prod.total_available_stock} unid.`;
+
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Copiado para WhatsApp',
+          detail: `Ficha #${prod.item_number} lista para compartir.`
+        });
+      });
+    }
+  }
+
+  openWhatsAppShare(prod: ProductMaster): void {
+    const pricePub = prod.published_price ? `Bs. ${prod.published_price.toFixed(2)}` : 'A consultar';
+    const text = encodeURIComponent(
+      `Hola! Te comparto información de:\n*${prod.name}* (Ítem #${prod.item_number})\n` +
+      `💰 Precio: ${pricePub}\n` +
+      (prod.description ? `${prod.description}\n` : '')
+    );
+    window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   }
 }

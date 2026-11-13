@@ -1,5 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal
+} from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 
 import { Tooltip } from 'primeng/tooltip';
@@ -74,17 +84,29 @@ export class AppSidebarComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private routeSubscription?: Subscription;
 
+  constructor() {
+    effect(() => {
+      // Reaccionar cuando navItems se pueble desde el backend tras F5
+      const items = this.navItems();
+      if (items.length > 1) {
+        setTimeout(() => {
+          this.setActiveMenuFromRoute();
+        });
+      }
+    });
+  }
+
   ngOnInit() {
     this.routeSubscription = this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
-      this.setActiveMenuFromRoute(this.router.url);
+      this.setActiveMenuFromRoute();
     });
   }
   
   ngAfterViewInit() {
     setTimeout(() => {
-      this.setActiveMenuFromRoute(this.router.url);
+      this.setActiveMenuFromRoute();
     });
   }
 
@@ -129,36 +151,31 @@ export class AppSidebarComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  private setActiveMenuFromRoute(currentUrl: string) {
-    let foundMatch = false;
+  private setActiveMenuFromRoute() {
+    let matchedKey: string | null = null;
 
     this.navItems().forEach((nav, i) => {
-      if (nav.path && currentUrl === nav.path) {
-        this.openSubmenu.set(null);
-        foundMatch = true;
-      }
-
       if (nav.subItems) {
-        nav.subItems.forEach(subItem => {
-          if (currentUrl === subItem.path) {
-            const key = `main-${i}`;
-            this.openSubmenu.set(key);
-            foundMatch = true;
-
-            setTimeout(() => {
-              if (typeof document !== 'undefined') {
-                const el = document.getElementById(key);
-                if (el) {
-                  this.subMenuHeights.update(heights => ({ ...heights, [key]: el.scrollHeight }));
-                }
-              }
-            });
-          }
-        });
+        const hasActiveChild = nav.subItems.some(subItem => this.isActive(subItem.path));
+        if (hasActiveChild) {
+          matchedKey = `main-${i}`;
+        }
       }
     });
 
-    if (!foundMatch) {
+    if (matchedKey) {
+      const key = matchedKey;
+      this.openSubmenu.set(key);
+
+      setTimeout(() => {
+        if (typeof document !== 'undefined') {
+          const el = document.getElementById(key);
+          if (el) {
+            this.subMenuHeights.update(heights => ({ ...heights, [key]: el.scrollHeight }));
+          }
+        }
+      });
+    } else {
       this.openSubmenu.set(null);
     }
   }

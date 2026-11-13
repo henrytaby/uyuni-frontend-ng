@@ -1,0 +1,266 @@
+<div class="p-4 flex flex-col gap-4">
+
+  <!-- Header de Página -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div>
+      <div class="flex items-center gap-2">
+        <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 m-0">Ventas y Transacciones</h1>
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300">
+          {{ totalRecords() }} {{ totalRecords() === 1 ? 'venta' : 'ventas' }}
+        </span>
+      </div>
+      <span class="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+        Gestión de transacciones comerciales, canales de venta, cobros y logística de entregas.
+      </span>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <p-button
+        label="Nueva Venta"
+        icon="pi pi-plus"
+        size="small"
+        (onClick)="openCreate()" />
+    </div>
+  </div>
+
+  <!-- Barra de Filtros y Búsqueda -->
+  <div class="p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+    <div class="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+      <!-- Búsqueda -->
+      <p-iconfield class="w-full sm:w-72">
+        <p-inputicon>
+          <svg lucideSearch size="14" class="text-gray-400"></svg>
+        </p-inputicon>
+        <input
+          pInputText
+          type="text"
+          placeholder="Buscar por N° venta, cliente o teléfono..."
+          class="w-full text-xs"
+          [ngModel]="searchValue()"
+          (ngModelChange)="onSearchChange($event)" />
+      </p-iconfield>
+
+      <!-- Filtro Canal -->
+      <div class="w-44">
+        <p-select
+          inputId="filter_channel"
+          [options]="salesChannels()"
+          [ngModel]="selectedChannel()"
+          (ngModelChange)="selectedChannel.set($event); onFilterChange()"
+          optionLabel="label"
+          optionValue="label"
+          placeholder="Todos los Canales"
+          [showClear]="true"
+          class="w-full text-xs" />
+      </div>
+
+      <!-- Filtro Estado de Pago -->
+      <div class="w-44">
+        <p-select
+          inputId="filter_pay_status"
+          [options]="paymentStatuses()"
+          [ngModel]="selectedPaymentStatus()"
+          (ngModelChange)="selectedPaymentStatus.set($event); onFilterChange()"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Estado de Pago"
+          [showClear]="true"
+          class="w-full text-xs" />
+      </div>
+
+      <!-- Filtro Estado de Entrega -->
+      <div class="w-44">
+        <p-select
+          inputId="filter_del_status"
+          [options]="deliveryStatuses()"
+          [ngModel]="selectedDeliveryStatus()"
+          (ngModelChange)="selectedDeliveryStatus.set($event); onFilterChange()"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Estado de Entrega"
+          [showClear]="true"
+          class="w-full text-xs" />
+      </div>
+
+      @if (searchValue() || selectedChannel() || selectedPaymentStatus() || selectedDeliveryStatus()) {
+        <p-button
+          label="Limpiar"
+          icon="pi pi-filter-slash"
+          severity="secondary"
+          variant="text"
+          size="small"
+          (onClick)="clearFilters()" />
+      }
+    </div>
+
+    <div>
+      <p-button
+        icon="pi pi-refresh"
+        severity="secondary"
+        variant="text"
+        size="small"
+        pTooltip="Actualizar lista"
+        [loading]="isLoading()"
+        (onClick)="fetchData(searchValue())" />
+    </div>
+  </div>
+
+  <!-- Tabla de Datos -->
+  <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-xs overflow-hidden">
+    <p-table
+      class="dense-table"
+      [value]="salesList()"
+      [lazy]="true"
+      (onLazyLoad)="onLazyLoad($event)"
+      [paginator]="true"
+      [rows]="rows()"
+      [first]="first()"
+      [totalRecords]="totalRecords()"
+      [rowsPerPageOptions]="[10, 15, 25, 50]"
+      [loading]="isLoading()"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} ventas"
+      responsiveLayout="scroll">
+
+      <ng-template #header>
+        <tr class="text-xs text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+          <th pSortableColumn="sale_number" style="min-width: 12.5rem;">
+            N° Venta / Fecha <p-sortIcon field="sale_number" />
+          </th>
+          <th pSortableColumn="customer_name" style="min-width: 11rem;">
+            Cliente & Contacto <p-sortIcon field="customer_name" />
+          </th>
+          <th style="min-width: 8.5rem;">Canal</th>
+          <th pSortableColumn="total_collected" style="min-width: 8rem;" class="text-right">
+            Cobrado <p-sortIcon field="total_collected" />
+          </th>
+          <th pSortableColumn="net_profit" style="min-width: 8rem;" class="text-right">
+            Ganancia Neta <p-sortIcon field="net_profit" />
+          </th>
+          <th style="min-width: 9rem;" class="text-center">Pago</th>
+          <th style="min-width: 10rem;" class="text-center">Logística / Entrega</th>
+          <th style="width: 4.5rem;" class="text-center">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-sale>
+        <tr class="text-xs hover:bg-gray-50/80 dark:hover:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800/60 transition-colors">
+
+          <!-- N° Venta y Fecha -->
+          <td>
+            <div class="flex flex-col">
+              <span class="font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                {{ sale.sale_number }}
+              </span>
+              <span class="text-[11px] text-gray-400 font-mono">
+                {{ sale.sale_date ? (sale.sale_date | date:'dd/MM/yyyy HH:mm') : '—' }}
+              </span>
+            </div>
+          </td>
+
+          <!-- Cliente y Teléfono -->
+          <td>
+            <div class="flex flex-col">
+              <span class="font-medium text-gray-900 dark:text-gray-100 truncate max-w-[11rem]">
+                {{ sale.customer_name }}
+              </span>
+              <span class="text-[11px] text-gray-400">
+                {{ sale.customer_phone || 'Sin teléfono' }}
+              </span>
+            </div>
+          </td>
+
+          <!-- Canal -->
+          <td>
+            <span class="inline-block px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+              {{ sale.channel }}
+            </span>
+          </td>
+
+          <!-- Total Cobrado -->
+          <td class="text-right font-mono">
+            <span class="font-bold text-gray-900 dark:text-gray-100">
+              {{ sale.total_collected | number:'1.2-2' }}
+            </span>
+            <span class="text-[10px] text-gray-400 ml-1">{{ sale.currency }}</span>
+          </td>
+
+          <!-- Ganancia Neta -->
+          <td class="text-right font-mono">
+            <span class="font-bold text-emerald-600 dark:text-emerald-400">
+              +{{ sale.net_profit | number:'1.2-2' }}
+            </span>
+            <span class="text-[10px] text-gray-400 ml-1">{{ sale.currency }}</span>
+          </td>
+
+          <!-- Pago -->
+          <td class="text-center">
+            <div class="flex flex-col items-center gap-1">
+              <span class="text-[11px] font-medium text-gray-700 dark:text-gray-300">
+                {{ paymentMethodsMap().get(sale.payment_method) || sale.payment_method }}
+              </span>
+              <p-tag
+                [value]="paymentStatusesMap().get(sale.payment_status) || sale.payment_status"
+                [severity]="getPaymentStatusSeverity(sale.payment_status)"
+                class="text-[10px]" />
+            </div>
+          </td>
+
+          <!-- Logística / Entrega -->
+          <td class="text-center">
+            <div class="flex flex-col items-center gap-1">
+              <span class="text-[11px] text-gray-600 dark:text-gray-400 truncate max-w-[10rem]" [pTooltip]="sale.delivery_address || ''">
+                {{ deliveryModalitiesMap().get(sale.delivery_modality) || sale.delivery_modality }}
+              </span>
+              <p-tag
+                [value]="deliveryStatusesMap().get(sale.delivery_status) || sale.delivery_status"
+                [severity]="getDeliveryStatusSeverity(sale.delivery_status)"
+                class="text-[10px]" />
+            </div>
+          </td>
+
+          <!-- Acciones -->
+          <td class="text-center">
+            <p-button
+              icon="pi pi-pencil"
+              severity="secondary"
+              variant="text"
+              size="small"
+              pTooltip="Ver o Editar Venta"
+              (onClick)="openEdit(sale)" />
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- Template Vacío -->
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="8" class="text-center py-8 text-gray-400 dark:text-gray-500">
+            <div class="flex flex-col items-center justify-center gap-2">
+              <svg lucideShoppingCart size="32" class="text-gray-300 dark:text-gray-600"></svg>
+              <span class="text-sm font-medium">No se encontraron ventas registradas</span>
+              <span class="text-xs text-gray-400">Ajuste los términos de búsqueda o filtros de canal/estado</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+    </p-table>
+  </div>
+
+  <!-- Drawer de Ventas -->
+  <app-sale-drawer
+    [(visible)]="drawerVisible"
+    [sale]="selectedSale()"
+    [mode]="drawerMode()"
+    [salesChannels]="salesChannels()"
+    [paymentStatuses]="paymentStatuses()"
+    [paymentMethods]="paymentMethods()"
+    [deliveryModalities]="deliveryModalities()"
+    [deliveryPaidBy]="deliveryPaidBy()"
+    [deliveryStatuses]="deliveryStatuses()"
+    [availableProducts]="availableProducts()"
+    (saleSaved)="onSaleSaved($event)"
+    (saleDeleted)="onSaleDeleted($event)" />
+
+</div>

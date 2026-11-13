@@ -1,0 +1,465 @@
+<div class="p-4 flex flex-col gap-4">
+
+  <!-- Header de Página -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-700 dark:text-indigo-300">
+        <svg lucideSlidersHorizontal size="20"></svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 m-0">Catálogos y Parámetros</h1>
+        <span class="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+          Parametrización centralizada de categorías, canales comerciales, canastas live y rondas de inversión.
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor Principal con Tabs -->
+  <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-xs overflow-hidden">
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+
+      <p-tablist class="text-xs border-b border-gray-200 dark:border-gray-700 px-3 bg-gray-50/50 dark:bg-gray-800/40">
+        <!-- Tab 0: Categorías -->
+        <p-tab value="0">
+          <div class="flex items-center gap-2 py-1">
+            <svg lucideTag size="14"></svg>
+            <span>Categorías de Producto</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+              {{ totalCategories() }}
+            </span>
+          </div>
+        </p-tab>
+
+        <!-- Tab 1: Canales -->
+        <p-tab value="1">
+          <div class="flex items-center gap-2 py-1">
+            <svg lucideShare2 size="14"></svg>
+            <span>Canales de Venta</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+              {{ totalChannels() }}
+            </span>
+          </div>
+        </p-tab>
+
+        <!-- Tab 2: Canastas Live -->
+        <p-tab value="2">
+          <div class="flex items-center gap-2 py-1">
+            <svg lucideVideo size="14"></svg>
+            <span>Canastas Live</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+              {{ totalLiveBaskets() }}
+            </span>
+          </div>
+        </p-tab>
+
+        <!-- Tab 3: Rondas -->
+        <p-tab value="3">
+          <div class="flex items-center gap-2 py-1">
+            <svg lucideTrendingUp size="14"></svg>
+            <span>Rondas de Inversión</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-semibold bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+              {{ totalRounds() }}
+            </span>
+          </div>
+        </p-tab>
+      </p-tablist>
+
+      <p-tabpanels class="p-4">
+
+        <!-- ================================================================= -->
+        <!-- PANEL 0: CATEGORÍAS -->
+        <!-- ================================================================= -->
+        <p-tabpanel value="0">
+          <div class="flex flex-col gap-3">
+            <!-- Toolbar Categorías -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <p-iconfield class="w-full sm:w-72">
+                <p-inputicon>
+                  <svg lucideSearch size="14" class="text-gray-400"></svg>
+                </p-inputicon>
+                <input
+                  pInputText
+                  type="text"
+                  placeholder="Buscar categoría..."
+                  class="w-full text-xs"
+                  [ngModel]="categorySearch()"
+                  (ngModelChange)="onCategorySearch($event)" />
+              </p-iconfield>
+
+              <div class="flex items-center gap-2">
+                <p-button
+                  icon="pi pi-refresh"
+                  severity="secondary"
+                  variant="text"
+                  size="small"
+                  pTooltip="Actualizar categorías"
+                  [loading]="isLoadingCategories()"
+                  (onClick)="fetchCategories()" />
+
+                <p-button
+                  label="Nueva Categoría"
+                  icon="pi pi-plus"
+                  size="small"
+                  (onClick)="openCreateCategory()" />
+              </div>
+            </div>
+
+            <!-- Tabla Categorías -->
+            <p-table
+              class="dense-table"
+              [value]="categories()"
+              [loading]="isLoadingCategories()"
+              [paginator]="true"
+              [rows]="10"
+              responsiveLayout="scroll">
+              <ng-template #header>
+                <tr class="text-xs text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                  <th style="width: 8rem;">Código</th>
+                  <th style="min-width: 14rem;">Nombre de Categoría</th>
+                  <th style="min-width: 14rem;">Descripción</th>
+                  <th style="min-width: 14rem;">Productos Típicos</th>
+                  <th style="width: 6rem;" class="text-center">Acciones</th>
+                </tr>
+              </ng-template>
+
+              <ng-template #body let-cat>
+                <tr class="text-xs hover:bg-gray-50/80 dark:hover:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800/60">
+                  <td>
+                    <span class="font-mono font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 px-1.5 py-0.5 rounded text-[11px]">
+                      {{ cat.code }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="flex items-center gap-1.5">
+                      @if (cat.icon) {
+                        <span class="text-sm">{{ cat.icon }}</span>
+                      }
+                      <span class="font-semibold text-gray-900 dark:text-gray-100">{{ cat.name }}</span>
+                    </div>
+                  </td>
+                  <td class="text-gray-600 dark:text-gray-400">{{ cat.description || '—' }}</td>
+                  <td class="text-gray-500 text-[11px]">{{ cat.typical_products || '—' }}</td>
+                  <td class="text-center">
+                    <div class="flex items-center justify-center gap-1">
+                      <p-button icon="pi pi-pencil" severity="secondary" variant="text" size="small" (onClick)="openEditCategory(cat)" pTooltip="Editar" />
+                      <p-button icon="pi pi-trash" severity="danger" variant="text" size="small" (onClick)="confirmDeleteCategory(cat)" pTooltip="Eliminar" />
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+
+              <ng-template #emptymessage>
+                <tr>
+                  <td colspan="5" class="text-center py-6 text-gray-400">No se encontraron categorías de producto.</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </p-tabpanel>
+
+        <!-- ================================================================= -->
+        <!-- PANEL 1: CANALES DE VENTA -->
+        <!-- ================================================================= -->
+        <p-tabpanel value="1">
+          <div class="flex flex-col gap-3">
+            <!-- Toolbar Canales -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <p-iconfield class="w-full sm:w-72">
+                <p-inputicon>
+                  <svg lucideSearch size="14" class="text-gray-400"></svg>
+                </p-inputicon>
+                <input
+                  pInputText
+                  type="text"
+                  placeholder="Buscar canal..."
+                  class="w-full text-xs"
+                  [ngModel]="channelSearch()"
+                  (ngModelChange)="onChannelSearch($event)" />
+              </p-iconfield>
+
+              <div class="flex items-center gap-2">
+                <p-button
+                  icon="pi pi-refresh"
+                  severity="secondary"
+                  variant="text"
+                  size="small"
+                  pTooltip="Actualizar canales"
+                  [loading]="isLoadingChannels()"
+                  (onClick)="fetchChannels()" />
+
+                <p-button
+                  label="Nuevo Canal"
+                  icon="pi pi-plus"
+                  size="small"
+                  (onClick)="openCreateChannel()" />
+              </div>
+            </div>
+
+            <!-- Tabla Canales -->
+            <p-table
+              class="dense-table"
+              [value]="channels()"
+              [loading]="isLoadingChannels()"
+              [paginator]="true"
+              [rows]="10"
+              responsiveLayout="scroll">
+              <ng-template #header>
+                <tr class="text-xs text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                  <th style="width: 8rem;">Código</th>
+                  <th style="min-width: 14rem;">Nombre del Canal</th>
+                  <th style="min-width: 16rem;">Descripción</th>
+                  <th style="width: 7rem;" class="text-center">Estado</th>
+                  <th style="width: 6rem;" class="text-center">Acciones</th>
+                </tr>
+              </ng-template>
+
+              <ng-template #body let-ch>
+                <tr class="text-xs hover:bg-gray-50/80 dark:hover:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800/60">
+                  <td>
+                    <span class="font-mono font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded text-[11px]">
+                      {{ ch.code }}
+                    </span>
+                  </td>
+                  <td class="font-semibold text-gray-900 dark:text-gray-100">{{ ch.name }}</td>
+                  <td class="text-gray-600 dark:text-gray-400">{{ ch.description || '—' }}</td>
+                  <td class="text-center">
+                    <p-tag
+                      [value]="ch.is_active ? 'Activo' : 'Inactivo'"
+                      [severity]="ch.is_active ? 'success' : 'secondary'"
+                      class="text-[10px]" />
+                  </td>
+                  <td class="text-center">
+                    <div class="flex items-center justify-center gap-1">
+                      <p-button icon="pi pi-pencil" severity="secondary" variant="text" size="small" (onClick)="openEditChannel(ch)" pTooltip="Editar" />
+                      <p-button icon="pi pi-trash" severity="danger" variant="text" size="small" (onClick)="confirmDeleteChannel(ch)" pTooltip="Eliminar" />
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+
+              <ng-template #emptymessage>
+                <tr>
+                  <td colspan="5" class="text-center py-6 text-gray-400">No se encontraron canales de venta.</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </p-tabpanel>
+
+        <!-- ================================================================= -->
+        <!-- PANEL 2: CANASTAS LIVE -->
+        <!-- ================================================================= -->
+        <p-tabpanel value="2">
+          <div class="flex flex-col gap-3">
+            <!-- Toolbar Canastas -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <p-iconfield class="w-full sm:w-72">
+                <p-inputicon>
+                  <svg lucideSearch size="14" class="text-gray-400"></svg>
+                </p-inputicon>
+                <input
+                  pInputText
+                  type="text"
+                  placeholder="Buscar canasta..."
+                  class="w-full text-xs"
+                  [ngModel]="basketSearch()"
+                  (ngModelChange)="onBasketSearch($event)" />
+              </p-iconfield>
+
+              <div class="flex items-center gap-2">
+                <p-button
+                  icon="pi pi-refresh"
+                  severity="secondary"
+                  variant="text"
+                  size="small"
+                  pTooltip="Actualizar canastas"
+                  [loading]="isLoadingBaskets()"
+                  (onClick)="fetchLiveBaskets()" />
+
+                <p-button
+                  label="Nueva Canasta"
+                  icon="pi pi-plus"
+                  size="small"
+                  (onClick)="openCreateBasket()" />
+              </div>
+            </div>
+
+            <!-- Tabla Canastas -->
+            <p-table
+              class="dense-table"
+              [value]="liveBaskets()"
+              [loading]="isLoadingBaskets()"
+              [paginator]="true"
+              [rows]="10"
+              responsiveLayout="scroll">
+              <ng-template #header>
+                <tr class="text-xs text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                  <th style="width: 6.5rem;">Código</th>
+                  <th style="min-width: 14rem;">Etiqueta / Nombre</th>
+                  <th style="width: 9rem;">Rango Precio</th>
+                  <th style="min-width: 12rem;">Audiencia Objetivo</th>
+                  <th style="min-width: 12rem;">Descripción</th>
+                  <th style="width: 6rem;" class="text-center">Acciones</th>
+                </tr>
+              </ng-template>
+
+              <ng-template #body let-lb>
+                <tr class="text-xs hover:bg-gray-50/80 dark:hover:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800/60">
+                  <td>
+                    <span class="font-mono font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 px-1.5 py-0.5 rounded text-[11px]">
+                      {{ lb.code }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="flex flex-col">
+                      <span class="font-semibold text-gray-900 dark:text-gray-100">{{ lb.label }}</span>
+                      <span class="text-[11px] text-gray-400">{{ lb.name }}</span>
+                    </div>
+                  </td>
+                  <td class="font-mono font-medium text-emerald-600 dark:text-emerald-400">{{ lb.price_range || '—' }}</td>
+                  <td class="text-gray-600 dark:text-gray-400">{{ lb.target_audience || '—' }}</td>
+                  <td class="text-gray-500 text-[11px]">{{ lb.description || '—' }}</td>
+                  <td class="text-center">
+                    <div class="flex items-center justify-center gap-1">
+                      <p-button icon="pi pi-pencil" severity="secondary" variant="text" size="small" (onClick)="openEditBasket(lb)" pTooltip="Editar" />
+                      <p-button icon="pi pi-trash" severity="danger" variant="text" size="small" (onClick)="confirmDeleteBasket(lb)" pTooltip="Eliminar" />
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+
+              <ng-template #emptymessage>
+                <tr>
+                  <td colspan="6" class="text-center py-6 text-gray-400">No se encontraron canastas de remate live.</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </p-tabpanel>
+
+        <!-- ================================================================= -->
+        <!-- PANEL 3: RONDAS DE INVERSIÓN -->
+        <!-- ================================================================= -->
+        <p-tabpanel value="3">
+          <div class="flex flex-col gap-3">
+            <!-- Toolbar Rondas -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <p-iconfield class="w-full sm:w-72">
+                <p-inputicon>
+                  <svg lucideSearch size="14" class="text-gray-400"></svg>
+                </p-inputicon>
+                <input
+                  pInputText
+                  type="text"
+                  placeholder="Buscar ronda..."
+                  class="w-full text-xs"
+                  [ngModel]="roundSearch()"
+                  (ngModelChange)="onRoundSearch($event)" />
+              </p-iconfield>
+
+              <div class="flex items-center gap-2">
+                <p-button
+                  icon="pi pi-refresh"
+                  severity="secondary"
+                  variant="text"
+                  size="small"
+                  pTooltip="Actualizar rondas"
+                  [loading]="isLoadingRounds()"
+                  (onClick)="fetchRounds()" />
+
+                <p-button
+                  label="Nueva Ronda"
+                  icon="pi pi-plus"
+                  size="small"
+                  (onClick)="openCreateRound()" />
+              </div>
+            </div>
+
+            <!-- Tabla Rondas -->
+            <p-table
+              class="dense-table"
+              [value]="rounds()"
+              [loading]="isLoadingRounds()"
+              [paginator]="true"
+              [rows]="10"
+              responsiveLayout="scroll">
+              <ng-template #header>
+                <tr class="text-xs text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+                  <th style="width: 8rem;">Código</th>
+                  <th style="min-width: 14rem;">Nombre de la Ronda</th>
+                  <th style="width: 8.5rem;">Desembolso</th>
+                  <th style="min-width: 9rem;" class="text-right">Capital Invertido</th>
+                  <th style="width: 7rem;" class="text-center">Estado</th>
+                  <th style="min-width: 12rem;">Observaciones</th>
+                  <th style="width: 6rem;" class="text-center">Acciones</th>
+                </tr>
+              </ng-template>
+
+              <ng-template #body let-rnd>
+                <tr class="text-xs hover:bg-gray-50/80 dark:hover:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800/60">
+                  <td>
+                    <span class="font-mono font-bold text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 px-1.5 py-0.5 rounded text-[11px]">
+                      {{ rnd.code }}
+                    </span>
+                  </td>
+                  <td class="font-semibold text-gray-900 dark:text-gray-100">{{ rnd.name }}</td>
+                  <td class="font-mono text-gray-500 text-[11px]">{{ rnd.disbursement_date || '—' }}</td>
+                  <td class="text-right font-mono font-bold text-gray-900 dark:text-gray-100">
+                    {{ rnd.capital_invested | number:'1.2-2' }} <span class="text-[10px] text-gray-400 font-normal">{{ rnd.currency }}</span>
+                  </td>
+                  <td class="text-center">
+                    <p-tag
+                      [value]="rnd.status === 'active' ? 'Activa' : 'Cerrada'"
+                      [severity]="rnd.status === 'active' ? 'success' : 'secondary'"
+                      class="text-[10px]" />
+                  </td>
+                  <td class="text-gray-500 text-[11px]">{{ rnd.observations || '—' }}</td>
+                  <td class="text-center">
+                    <div class="flex items-center justify-center gap-1">
+                      <p-button icon="pi pi-pencil" severity="secondary" variant="text" size="small" (onClick)="openEditRound(rnd)" pTooltip="Editar" />
+                      <p-button icon="pi pi-trash" severity="danger" variant="text" size="small" (onClick)="confirmDeleteRound(rnd)" pTooltip="Eliminar" />
+                    </div>
+                  </td>
+                </tr>
+              </ng-template>
+
+              <ng-template #emptymessage>
+                <tr>
+                  <td colspan="7" class="text-center py-6 text-gray-400">No se encontraron rondas de inversión.</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </p-tabpanel>
+
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+
+  <!-- Diálogos Modales -->
+  <app-category-dialog
+    [(visible)]="categoryDialogVisible"
+    [category]="selectedCategory()"
+    [mode]="categoryMode()"
+    (saved)="onCategorySaved()" />
+
+  <app-channel-dialog
+    [(visible)]="channelDialogVisible"
+    [channel]="selectedChannel()"
+    [mode]="channelMode()"
+    (saved)="onChannelSaved()" />
+
+  <app-live-basket-dialog
+    [(visible)]="basketDialogVisible"
+    [basket]="selectedBasket()"
+    [mode]="basketMode()"
+    (saved)="onBasketSaved()" />
+
+  <app-round-dialog
+    [(visible)]="roundDialogVisible"
+    [round]="selectedRound()"
+    [mode]="roundMode()"
+    (saved)="onRoundSaved()" />
+
+</div>

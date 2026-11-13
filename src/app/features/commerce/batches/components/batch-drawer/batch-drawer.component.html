@@ -1,0 +1,416 @@
+<p-drawer
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  position="right"
+  [modal]="true"
+  [style]="{ width: '44rem', maxWidth: '100vw' }">
+
+  <!-- Header del Drawer -->
+  <ng-template #header>
+    <div class="flex items-center justify-between w-full pr-2">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-700 dark:text-amber-300">
+          <svg lucideBoxes size="18"></svg>
+        </div>
+        <div>
+          <h2 class="text-base font-bold text-gray-900 dark:text-gray-100 m-0 flex items-center gap-2">
+            <span>{{ mode() === 'create' ? 'Nueva Caja / Lote' : 'Lote / Caja' }}</span>
+            @if (mode() === 'edit' && currentDisplayBatch()?.code) {
+              <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200">
+                {{ currentDisplayBatch()?.code }}
+              </span>
+            }
+          </h2>
+          <span class="block text-xs text-gray-500 dark:text-gray-400 m-0">
+            {{ mode() === 'create' ? 'Alta de contenedor o lote de mercadería adquirida' : (currentDisplayBatch()?.name || 'Administración de caja de importación') }}
+          </span>
+        </div>
+      </div>
+
+      @if (mode() === 'edit' && currentDisplayBatch()?.id) {
+        <button
+          type="button"
+          class="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          pTooltip="Copiar ID Universal (UUID)"
+          tooltipPosition="left"
+          (click)="copyToClipboard(currentDisplayBatch()!.id, 'ID de Lote')">
+          <svg lucideCopy size="15"></svg>
+        </button>
+      }
+    </div>
+  </ng-template>
+
+  <!-- Contenido con Tabs -->
+  <div class="py-2">
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+      <p-tablist class="text-xs border-b border-gray-200 dark:border-gray-700">
+        <p-tab value="0">
+          <div class="flex items-center gap-1.5 py-1">
+            <svg lucideTag size="14"></svg>
+            <span>Identificación y Compra</span>
+          </div>
+        </p-tab>
+        <p-tab value="1">
+          <div class="flex items-center gap-1.5 py-1">
+            <svg lucideDollarSign size="14"></svg>
+            <span>Costos y Rendimiento</span>
+          </div>
+        </p-tab>
+        <p-tab value="2">
+          <div class="flex items-center gap-1.5 py-1">
+            <svg lucideShieldCheck size="14"></svg>
+            <span>Estado y Sincronización</span>
+          </div>
+        </p-tab>
+      </p-tablist>
+
+      <p-tabpanels class="pt-4">
+        <!-- TAB 0: IDENTIFICACIÓN Y COMPRA -->
+        <p-tabpanel value="0">
+          <div class="flex flex-col gap-4 text-sm">
+
+            <!-- Fila 1: Código y Nombre -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="batch_code" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Código de Caja / Lote <span class="text-red-500">*</span>
+                </label>
+                <input
+                  pInputText
+                  id="batch_code"
+                  type="text"
+                  class="w-full text-xs uppercase"
+                  placeholder="Ej: ATAUD-01, LIQ-2024"
+                  [ngModel]="code()"
+                  (ngModelChange)="code.set($event)" />
+                @if (!codeValidation().isValid) {
+                  <span class="block text-xs text-red-500 mt-1">{{ codeValidation().error }}</span>
+                }
+              </div>
+
+              <div>
+                <label for="batch_name" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Nombre Descriptivo <span class="text-red-500">*</span>
+                </label>
+                <input
+                  pInputText
+                  id="batch_name"
+                  type="text"
+                  class="w-full text-xs"
+                  placeholder="Ej: Caja Ataúd 2 - Mixto Electrónicos"
+                  [ngModel]="name()"
+                  (ngModelChange)="name.set($event)" />
+                @if (!nameValidation().isValid) {
+                  <span class="block text-xs text-red-500 mt-1">{{ nameValidation().error }}</span>
+                }
+              </div>
+            </div>
+
+            <!-- Fila 2: Ronda de Inversión y Proveedor -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="batch_round" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Ronda de Inversión
+                </label>
+                <p-select
+                  inputId="batch_round"
+                  [options]="investmentRounds()"
+                  [ngModel]="investmentRoundId()"
+                  (ngModelChange)="investmentRoundId.set($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Seleccione Ronda (Opcional)"
+                  [showClear]="true"
+                  class="w-full text-xs" />
+                <span class="block text-[11px] text-gray-400 mt-1">Asocia los costos a una ronda de capital</span>
+              </div>
+
+              <div>
+                <label for="batch_provider" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Proveedor / Fuente
+                </label>
+                <input
+                  pInputText
+                  id="batch_provider"
+                  type="text"
+                  class="w-full text-xs"
+                  placeholder="Ej: Amazon Liquidation, B-Stock"
+                  [ngModel]="provider()"
+                  (ngModelChange)="provider.set($event)" />
+              </div>
+            </div>
+
+            <!-- Fila 3: Tipo de Lote y Fecha de Compra -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="batch_type" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Tipo o Categoría del Lote
+                </label>
+                <input
+                  pInputText
+                  id="batch_type"
+                  type="text"
+                  class="w-full text-xs"
+                  placeholder="Ej: Liquidación Electrónicos, Ataúd"
+                  [ngModel]="batchType()"
+                  (ngModelChange)="batchType.set($event)" />
+              </div>
+
+              <div>
+                <label for="batch_date" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Fecha de Adquisición / Compra
+                </label>
+                <input
+                  pInputText
+                  id="batch_date"
+                  type="date"
+                  class="w-full text-xs"
+                  [ngModel]="purchaseDate()"
+                  (ngModelChange)="purchaseDate.set($event)" />
+              </div>
+            </div>
+
+            <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300 flex items-start gap-2">
+              <svg lucideInfo size="16" class="shrink-0 text-amber-500 mt-0.5"></svg>
+              <span>El código identifica de forma unívoca cada caja o lote en el inventario y se vincula con los códigos de SKU de los productos contenidos.</span>
+            </div>
+
+          </div>
+        </p-tabpanel>
+
+        <!-- TAB 1: COSTOS Y RENDIMIENTO -->
+        <p-tabpanel value="1">
+          <div class="flex flex-col gap-4 text-sm">
+
+            <!-- Fila 1: Precio de Compra, Flete y Moneda -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label for="batch_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Precio de Compra <span class="text-red-500">*</span>
+                </label>
+                <p-inputnumber
+                  inputId="batch_price"
+                  [ngModel]="purchasePrice()"
+                  (ngModelChange)="purchasePrice.set($event || 0)"
+                  mode="decimal"
+                  [minFractionDigits]="2"
+                  [maxFractionDigits]="2"
+                  [min]="0"
+                  class="w-full text-xs" />
+              </div>
+
+              <div>
+                <label for="batch_freight" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Costo de Flete / Envío
+                </label>
+                <p-inputnumber
+                  inputId="batch_freight"
+                  [ngModel]="freightCost()"
+                  (ngModelChange)="freightCost.set($event || 0)"
+                  mode="decimal"
+                  [minFractionDigits]="2"
+                  [maxFractionDigits]="2"
+                  [min]="0"
+                  class="w-full text-xs" />
+              </div>
+
+              <div>
+                <label for="batch_currency" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Moneda
+                </label>
+                <input
+                  pInputText
+                  id="batch_currency"
+                  type="text"
+                  class="w-full text-xs uppercase"
+                  placeholder="BOB"
+                  [ngModel]="currency()"
+                  (ngModelChange)="currency.set($event)" />
+              </div>
+            </div>
+
+            <!-- Tarjeta de Costo Total Calculado -->
+            <div class="p-3 rounded-lg bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 flex items-center justify-between">
+              <div>
+                <span class="block text-xs font-semibold text-amber-900 dark:text-amber-200">Costo Total Puesto Almacén</span>
+                <span class="block text-[11px] text-amber-700 dark:text-amber-400">Precio Compra + Flete y Aduana</span>
+              </div>
+              <div class="text-base font-bold text-amber-900 dark:text-amber-100">
+                {{ calculatedTotalCost() | number:'1.2-2' }} {{ currency() }}
+              </div>
+            </div>
+
+            <!-- Fila 2: Unidades Iniciales y Merma -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="batch_initial" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Unidades Iniciales Totales
+                </label>
+                <p-inputnumber
+                  inputId="batch_initial"
+                  [ngModel]="initialItemsCount()"
+                  (ngModelChange)="initialItemsCount.set($event || 0)"
+                  [min]="0"
+                  class="w-full text-xs" />
+                <span class="block text-[11px] text-gray-400 mt-1">Conteo bruto recibido al abrir la caja</span>
+              </div>
+
+              <div>
+                <label for="batch_merma" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Unidades Dañadas / Merma
+                </label>
+                <p-inputnumber
+                  inputId="batch_merma"
+                  [ngModel]="mermaItemsCount()"
+                  (ngModelChange)="mermaItemsCount.set($event || 0)"
+                  [min]="0"
+                  class="w-full text-xs" />
+                <span class="block text-[11px] text-gray-400 mt-1">Ítems inservibles o descartados</span>
+              </div>
+            </div>
+
+            @if (!countsValidation().isValid) {
+              <span class="block text-xs text-red-500 font-medium">{{ countsValidation().error }}</span>
+            }
+
+            <!-- Tarjeta de Rendimiento Unitario -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
+                <span class="block text-[11px] text-gray-500 dark:text-gray-400">Unidades Vendibles</span>
+                <span class="block text-sm font-bold text-gray-900 dark:text-gray-100">
+                  {{ calculatedSellableItems() }} unid.
+                </span>
+              </div>
+
+              <div class="p-2.5 rounded-lg bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40">
+                <span class="block text-[11px] text-emerald-800 dark:text-emerald-300">Costo Promedio Unitario</span>
+                <span class="block text-sm font-bold text-emerald-900 dark:text-emerald-100">
+                  {{ calculatedUnitCost() | number:'1.2-2' }} {{ currency() }}
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </p-tabpanel>
+
+        <!-- TAB 2: ESTADO Y SINCRONIZACIÓN -->
+        <p-tabpanel value="2">
+          <div class="flex flex-col gap-4 text-sm">
+
+            <!-- Fila 1: Estado Operativo y Estado Financiero -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="batch_status" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Estado Operativo
+                </label>
+                <p-select
+                  inputId="batch_status"
+                  [options]="statuses()"
+                  [ngModel]="status()"
+                  (ngModelChange)="status.set($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full text-xs" />
+              </div>
+
+              <div>
+                <label for="batch_financial" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Estado Financiero
+                </label>
+                <p-select
+                  inputId="batch_financial"
+                  [options]="financialStatuses()"
+                  [ngModel]="financialStatus()"
+                  (ngModelChange)="financialStatus.set($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full text-xs" />
+              </div>
+            </div>
+
+            <!-- Observaciones -->
+            <div>
+              <label for="batch_obs" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Observaciones y Notas de Control
+              </label>
+              <textarea
+                pTextarea
+                id="batch_obs"
+                rows="3"
+                class="w-full text-xs"
+                placeholder="Detalles sobre empaque, faltantes, precintos de seguridad, etc."
+                [ngModel]="observations()"
+                (ngModelChange)="observations.set($event)"></textarea>
+            </div>
+
+            <!-- Acciones Avanzadas en Edición -->
+            @if (mode() === 'edit' && currentDisplayBatch()?.id) {
+              <div class="pt-3 border-t border-gray-200 dark:border-gray-700 flex flex-col gap-2">
+                <span class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  Acciones de Inventario y Auditoría
+                </span>
+
+                <div class="flex items-center justify-between p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30">
+                  <div>
+                    <span class="block text-xs font-medium text-gray-900 dark:text-gray-100">
+                      Sincronizar Conteos con Productos Físicos
+                    </span>
+                    <span class="block text-[11px] text-gray-500 dark:text-gray-400">
+                      Recalcula ítems iniciales, mermas y revalúa costos de ventas automáticamente.
+                    </span>
+                  </div>
+                  <p-button
+                    label="Recalcular"
+                    icon="pi pi-refresh"
+                    [loading]="isRecalculating()"
+                    (onClick)="recalculateFromProducts()"
+                    severity="secondary"
+                    size="small" />
+                </div>
+              </div>
+            }
+
+          </div>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+
+  <!-- Footer con Botones de Acción -->
+  <ng-template #footer>
+    <div class="flex items-center justify-between w-full pt-2 border-t border-gray-200 dark:border-gray-700">
+      <div>
+        @if (mode() === 'edit') {
+          <p-button
+            label="Eliminar Caja"
+            icon="pi pi-trash"
+            severity="danger"
+            variant="text"
+            size="small"
+            (onClick)="confirmDelete()"
+            [disabled]="isSubmitting() || isRecalculating()" />
+        }
+      </div>
+
+      <div class="flex items-center gap-2">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          variant="text"
+          size="small"
+          (onClick)="visible.set(false)"
+          [disabled]="isSubmitting() || isRecalculating()" />
+
+        <p-button
+          [label]="mode() === 'create' ? 'Crear Caja' : 'Guardar Cambios'"
+          icon="pi pi-check"
+          size="small"
+          (onClick)="saveBatch()"
+          [loading]="isSubmitting()"
+          [disabled]="!isFormValid() || isRecalculating()" />
+      </div>
+    </div>
+  </ng-template>
+
+</p-drawer>
+

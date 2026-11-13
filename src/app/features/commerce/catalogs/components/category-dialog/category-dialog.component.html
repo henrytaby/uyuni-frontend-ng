@@ -1,0 +1,103 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [header]="mode() === 'create' ? 'Nueva Categoría de Producto' : 'Editar Categoría'"
+  [style]="{ width: '28rem', maxWidth: '95vw' }">
+
+  <div class="flex flex-col gap-3 py-2 text-xs">
+    <div class="grid grid-cols-3 gap-2">
+      <div class="col-span-1">
+        <label for="cat_code" class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+          Código <span class="text-red-500">*</span>
+        </label>
+        <input
+          pInputText
+          id="cat_code"
+          type="text"
+          class="w-full text-xs uppercase"
+          placeholder="ELEC"
+          [ngModel]="code()"
+          (ngModelChange)="code.set($event)" />
+      </div>
+
+      <div class="col-span-2">
+        <label for="cat_name" class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+          Nombre de Categoría <span class="text-red-500">*</span>
+        </label>
+        <input
+          pInputText
+          id="cat_name"
+          type="text"
+          class="w-full text-xs"
+          placeholder="Ej: Electrónica y Audio"
+          [ngModel]="name()"
+          (ngModelChange)="name.set($event)" />
+      </div>
+    </div>
+
+    <div>
+      <label for="cat_icon" class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+        Ícono o Emoji Representativo
+      </label>
+      <input
+        pInputText
+        id="cat_icon"
+        type="text"
+        class="w-full text-xs"
+        placeholder="Ej: 🎧, 💡, 🚗, 🍳"
+        [ngModel]="icon()"
+        (ngModelChange)="icon.set($event)" />
+    </div>
+
+    <div>
+      <label for="cat_desc" class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+        Descripción
+      </label>
+      <textarea
+        pTextarea
+        id="cat_desc"
+        rows="2"
+        class="w-full text-xs"
+        placeholder="Breve detalle del rubro"
+        [ngModel]="description()"
+        (ngModelChange)="description.set($event)"></textarea>
+    </div>
+
+    <div>
+      <label for="cat_typ_prod" class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+        Productos Típicos / Ejemplos
+      </label>
+      <input
+        pInputText
+        id="cat_typ_prod"
+        type="text"
+        class="w-full text-xs"
+        placeholder="Ej: Auriculares, micrófonos, parlantes"
+        [ngModel]="typicalProducts()"
+        (ngModelChange)="typicalProducts.set($event)" />
+    </div>
+  </div>
+
+  <ng-template #footer>
+    <div class="flex items-center justify-end gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+      <p-button
+        label="Cancelar"
+        severity="secondary"
+        variant="text"
+        size="small"
+        (onClick)="visible.set(false)"
+        [disabled]="isSubmitting()" />
+
+      <p-button
+        [label]="mode() === 'create' ? 'Crear' : 'Guardar'"
+        icon="pi pi-check"
+        size="small"
+        (onClick)="saveCategory()"
+        [loading]="isSubmitting()"
+        [disabled]="!isFormValid()" />
+    </div>
+  </ng-template>
+
+</p-dialog>
+

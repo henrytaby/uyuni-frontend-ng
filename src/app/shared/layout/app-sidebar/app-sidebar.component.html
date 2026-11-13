@@ -58,7 +58,7 @@
           <div class="overflow-hidden transition-all duration-200" [id]="'main-' + i"
             [style.display]="isVisible() ? 'block' : 'none'" [ngStyle]="{
             height: openSubmenu() === 'main-' + i
-              ? (subMenuHeights()['main-' + i] || 0) + 'px'
+              ? (subMenuHeights()['main-' + i] ? subMenuHeights()['main-' + i] + 'px' : 'auto')
               : '0px'
           }">
             <ul class="my-0.5 flex flex-col gap-0.5">

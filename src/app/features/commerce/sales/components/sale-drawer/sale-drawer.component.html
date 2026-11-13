@@ -1,0 +1,551 @@
+<p-drawer
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  position="right"
+  [modal]="true"
+  [style]="{ width: '48rem', maxWidth: '100vw' }">
+
+  <!-- Header del Drawer -->
+  <ng-template #header>
+    <div class="flex items-center justify-between w-full pr-2">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center text-emerald-700 dark:text-emerald-300">
+          <svg lucideShoppingCart size="18"></svg>
+        </div>
+        <div>
+          <h2 class="text-base font-bold text-gray-900 dark:text-gray-100 m-0 flex items-center gap-2">
+            <span>{{ mode() === 'create' ? 'Nueva Venta' : 'Detalle de Transacción' }}</span>
+            @if (mode() === 'edit' && currentDisplaySale()?.sale_number) {
+              <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-200">
+                {{ currentDisplaySale()?.sale_number }}
+              </span>
+            }
+          </h2>
+          <span class="block text-xs text-gray-500 dark:text-gray-400 m-0">
+            {{ mode() === 'create' ? 'Registro comercial con descuento automático de inventario físico' : (currentDisplaySale()?.customer_name || 'Venta Comercial') }}
+          </span>
+        </div>
+      </div>
+
+      @if (mode() === 'edit' && currentDisplaySale()?.id) {
+        <button
+          type="button"
+          class="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          pTooltip="Copiar ID Universal (UUID)"
+          tooltipPosition="left"
+          (click)="copyToClipboard(currentDisplaySale()!.id, 'ID de Venta')">
+          <svg lucideCopy size="15"></svg>
+        </button>
+      }
+    </div>
+  </ng-template>
+
+  <!-- Contenido con Tabs -->
+  <div class="py-2">
+    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
+      <p-tablist class="text-xs border-b border-gray-200 dark:border-gray-700">
+        <p-tab value="0">
+          <div class="flex items-center gap-1.5 py-1">
+            <svg lucideUser size="14"></svg>
+            <span>Cliente y Canal</span>
+          </div>
+        </p-tab>
+        <p-tab value="1">
+          <div class="flex items-center gap-1.5 py-1">
+            <svg lucideDollarSign size="14"></svg>
+            <span>Ítems y Precios</span>
+          </div>
+        </p-tab>
+        <p-tab value="2">
+          <div class="flex items-center gap-1.5 py-1">
+            <svg lucideTruck size="14"></svg>
+            <span>Pago y Logística</span>
+          </div>
+        </p-tab>
+      </p-tablist>
+
+      <p-tabpanels class="pt-4">
+        <!-- TAB 0: CLIENTE Y CANAL -->
+        <p-tabpanel value="0">
+          <div class="flex flex-col gap-4 text-sm">
+
+            <!-- Fila 1: Nombre del Cliente y Teléfono -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="sale_customer" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Nombre del Cliente <span class="text-red-500">*</span>
+                </label>
+                <input
+                  pInputText
+                  id="sale_customer"
+                  type="text"
+                  class="w-full text-xs"
+                  placeholder="Ej: Gonzalo Morales, Cliente Casual"
+                  [ngModel]="customerName()"
+                  (ngModelChange)="customerName.set($event)" />
+                @if (!customerValidation().isValid) {
+                  <span class="block text-xs text-red-500 mt-1">{{ customerValidation().error }}</span>
+                }
+              </div>
+
+              <div>
+                <label for="sale_phone" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Teléfono / WhatsApp de Contacto
+                </label>
+                <input
+                  pInputText
+                  id="sale_phone"
+                  type="text"
+                  class="w-full text-xs"
+                  placeholder="Ej: 79712345"
+                  [ngModel]="customerPhone()"
+                  (ngModelChange)="customerPhone.set($event)" />
+              </div>
+            </div>
+
+            <!-- Fila 2: Canal de Venta y Fecha -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="sale_channel" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Canal de Venta <span class="text-red-500">*</span>
+                </label>
+                @if (salesChannels().length > 0) {
+                  <p-select
+                    inputId="sale_channel"
+                    [options]="salesChannels()"
+                    [ngModel]="channelId()"
+                    (ngModelChange)="channelId.set($event)"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Seleccione Canal de Venta"
+                    class="w-full text-xs" />
+                } @else {
+                  <input
+                    pInputText
+                    id="sale_channel"
+                    type="text"
+                    class="w-full text-xs"
+                    placeholder="Ej: Marketplace, TikTok Live, WhatsApp"
+                    [ngModel]="channelName()"
+                    (ngModelChange)="channelName.set($event)" />
+                }
+              </div>
+
+              <div>
+                <label for="sale_date_input" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Fecha y Hora de la Transacción
+                </label>
+                <input
+                  pInputText
+                  id="sale_date_input"
+                  type="datetime-local"
+                  class="w-full text-xs"
+                  [ngModel]="saleDate()"
+                  (ngModelChange)="saleDate.set($event)" />
+              </div>
+            </div>
+
+            <!-- Tarjeta Informativa de Canal -->
+            <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300 flex items-start gap-2">
+              <svg lucideInfo size="16" class="shrink-0 text-emerald-500 mt-0.5"></svg>
+              <span>El canal permite segmentar reportes de conversión y rentabilidad entre transmisiones en vivo (TikTok Live), redes sociales o puntos presenciales.</span>
+            </div>
+
+          </div>
+        </p-tabpanel>
+
+        <!-- TAB 1: ÍTEMS Y PRECIOS -->
+        <p-tabpanel value="1">
+          <div class="flex flex-col gap-4 text-sm">
+
+            <!-- Modo Creación: Selector de Producto para Agregar -->
+            @if (mode() === 'create') {
+              <div class="p-3 rounded-lg border border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/30 dark:bg-emerald-950/20 flex flex-col gap-3">
+                <span class="block text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                  Agregar Producto Físico del Inventario
+                </span>
+
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-end">
+                  <!-- Selector de Producto -->
+                  <div class="sm:col-span-6">
+                    <label for="item_prod_select" class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                      Producto en Stock
+                    </label>
+                    <select
+                      id="item_prod_select"
+                      class="w-full text-xs p-2 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                      [ngModel]="selectedProductIdToAdd()"
+                      (ngModelChange)="onProductSelectedForAdd($event)">
+                      <option [ngValue]="null">-- Seleccione Producto --</option>
+                      @for (p of availableProducts(); track p.id) {
+                        <option [value]="p.id">
+                          {{ p.name }} {{ p.variant_name ? '(' + p.variant_name + ')' : '' }} - Disp: {{ p.available_quantity }} - Ofic: {{ p.official_price }} Bs
+                        </option>
+                      }
+                    </select>
+                  </div>
+
+                  <!-- Cantidad -->
+                  <div class="sm:col-span-2">
+                    <label for="item_qty" class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                      Cantidad
+                    </label>
+                    <p-inputnumber
+                      inputId="item_qty"
+                      [ngModel]="itemQuantityToAdd()"
+                      (ngModelChange)="itemQuantityToAdd.set($event || 1)"
+                      [min]="1"
+                      class="w-full text-xs" />
+                  </div>
+
+                  <!-- Precio Pactado -->
+                  <div class="sm:col-span-2">
+                    <label for="item_price" class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                      Precio Unit. (Bs)
+                    </label>
+                    <p-inputnumber
+                      inputId="item_price"
+                      [ngModel]="itemPriceToAdd()"
+                      (ngModelChange)="itemPriceToAdd.set($event || 0)"
+                      mode="decimal"
+                      [minFractionDigits]="2"
+                      [maxFractionDigits]="2"
+                      [min]="0"
+                      class="w-full text-xs" />
+                  </div>
+
+                  <!-- Botón Agregar -->
+                  <div class="sm:col-span-2">
+                    <p-button
+                      label="Agregar"
+                      icon="pi pi-plus"
+                      size="small"
+                      class="w-full"
+                      [disabled]="!selectedProductIdToAdd()"
+                      (onClick)="addItemToSale()" />
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- Tabla de Ítems de la Venta -->
+            <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+              <table class="w-full text-xs text-left">
+                <thead class="bg-gray-50 dark:bg-gray-800/60 text-gray-700 dark:text-gray-300 font-semibold border-b border-gray-200 dark:border-gray-700">
+                  <tr>
+                    <th class="p-2">Producto</th>
+                    <th class="p-2 text-center w-16">Cant.</th>
+                    <th class="p-2 text-right w-24">Precio Unit.</th>
+                    <th class="p-2 text-right w-24">Subtotal</th>
+                    @if (mode() === 'create') {
+                      <th class="p-2 text-center w-12"></th>
+                    }
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                  @for (it of saleItems(); track $index) {
+                    <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/30">
+                      <td class="p-2">
+                        <span class="font-medium text-gray-900 dark:text-gray-100 block">{{ it.product_name }}</span>
+                        @if (it.variant_name) {
+                          <span class="text-[11px] text-gray-500 dark:text-gray-400 block">{{ it.variant_name }}</span>
+                        }
+                        @if (it.minimum_price > 0 && it.unit_price < it.minimum_price) {
+                          <span class="inline-flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-0.5">
+                            <svg lucideAlertTriangle size="12"></svg>
+                            Bajo mínimo (Min: {{ it.minimum_price }} Bs)
+                          </span>
+                        }
+                      </td>
+                      <td class="p-2 text-center font-bold">{{ it.quantity }}</td>
+                      <td class="p-2 text-right font-mono">{{ it.unit_price | number:'1.2-2' }} Bs</td>
+                      <td class="p-2 text-right font-mono font-bold text-gray-900 dark:text-gray-100">
+                        {{ it.total_price | number:'1.2-2' }} Bs
+                      </td>
+                      @if (mode() === 'create') {
+                        <td class="p-2 text-center">
+                          <button
+                            type="button"
+                            class="text-red-500 hover:text-red-700 p-1 rounded"
+                            pTooltip="Quitar ítem"
+                            (click)="removeItemFromSale($index)">
+                            <svg lucideTrash2 size="14"></svg>
+                          </button>
+                        </td>
+                      }
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="5" class="p-4 text-center text-gray-400">
+                        No hay productos agregados a esta venta.
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            @if (!itemsValidation().isValid) {
+              <span class="block text-xs text-red-500 font-medium">{{ itemsValidation().error }}</span>
+            }
+
+            <!-- Alerta y Toggle de Precio Menor al Mínimo -->
+            @if (hasBelowMinimumItem() && mode() === 'create') {
+              <div class="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 flex items-center justify-between gap-3">
+                <div class="flex items-start gap-2">
+                  <svg lucideAlertTriangle size="16" class="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5"></svg>
+                  <div>
+                    <span class="block text-xs font-bold text-amber-900 dark:text-amber-200">
+                      Precio pactado menor al mínimo de venta
+                    </span>
+                    <span class="block text-[11px] text-amber-700 dark:text-amber-400">
+                      Requiere confirmación explícita para registrar la venta por debajo del precio base.
+                    </span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <label for="allow_min_switch" class="text-xs font-medium text-amber-900 dark:text-amber-200 cursor-pointer">
+                    Autorizar
+                  </label>
+                  <p-toggleswitch
+                    inputId="allow_min_switch"
+                    [ngModel]="allowBelowMinimum()"
+                    (ngModelChange)="allowBelowMinimum.set($event)" />
+                </div>
+              </div>
+            }
+
+            <!-- Resumen Financiero de Cobro -->
+            <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div>
+                <span class="block text-xs text-gray-500 dark:text-gray-400">Subtotal de Ítems:</span>
+                <span class="block text-sm font-bold text-gray-900 dark:text-gray-100 font-mono">
+                  {{ totalItemsPrice() | number:'1.2-2' }} {{ currency() }}
+                </span>
+              </div>
+
+              @if (mode() === 'create') {
+                <div class="w-full sm:w-56">
+                  <label for="sale_collected" class="block text-[11px] font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    Monto Total Cobrado (Bs)
+                  </label>
+                  <p-inputnumber
+                    inputId="sale_collected"
+                    [ngModel]="customTotalCollected() !== null ? customTotalCollected() : totalItemsPrice()"
+                    (ngModelChange)="customTotalCollected.set($event)"
+                    mode="decimal"
+                    [minFractionDigits]="2"
+                    [maxFractionDigits]="2"
+                    [min]="0"
+                    class="w-full text-xs" />
+                </div>
+              } @else {
+                <div class="text-right">
+                  <span class="block text-xs text-gray-500 dark:text-gray-400">Total Efectivamente Cobrado:</span>
+                  <span class="block text-base font-bold text-emerald-700 dark:text-emerald-400 font-mono">
+                    {{ currentDisplaySale()?.total_collected | number:'1.2-2' }} {{ currency() }}
+                  </span>
+                </div>
+              }
+            </div>
+
+            <!-- En Modo Edición: Resumen de Rentabilidad Neta -->
+            @if (mode() === 'edit' && currentDisplaySale()?.id) {
+              <div class="grid grid-cols-3 gap-3 text-center">
+                <div class="p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
+                  <span class="block text-[11px] text-gray-400">Cobrado al Cliente</span>
+                  <span class="block text-sm font-bold text-gray-900 dark:text-gray-100 font-mono">
+                    {{ currentDisplaySale()?.total_collected | number:'1.2-2' }} Bs
+                  </span>
+                </div>
+
+                <div class="p-2.5 rounded-lg bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40">
+                  <span class="block text-[11px] text-amber-700 dark:text-amber-400">Costo Total Productos</span>
+                  <span class="block text-sm font-bold text-amber-900 dark:text-amber-100 font-mono">
+                    {{ currentDisplaySale()?.total_cost | number:'1.2-2' }} Bs
+                  </span>
+                </div>
+
+                <div class="p-2.5 rounded-lg bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40">
+                  <span class="block text-[11px] text-emerald-800 dark:text-emerald-300">Ganancia Neta Real</span>
+                  <span class="block text-sm font-bold text-emerald-700 dark:text-emerald-300 font-mono">
+                    {{ currentDisplaySale()?.net_profit | number:'1.2-2' }} Bs
+                  </span>
+                </div>
+              </div>
+            }
+
+          </div>
+        </p-tabpanel>
+
+        <!-- TAB 2: PAGO Y LOGÍSTICA -->
+        <p-tabpanel value="2">
+          <div class="flex flex-col gap-4 text-sm">
+
+            <!-- Fila 1: Medio de Pago y Estado de Pago -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="sale_pay_method" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Medio de Pago <span class="text-red-500">*</span>
+                </label>
+                <p-select
+                  inputId="sale_pay_method"
+                  [options]="paymentMethods()"
+                  [ngModel]="paymentMethod()"
+                  (ngModelChange)="paymentMethod.set($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full text-xs" />
+              </div>
+
+              <div>
+                <label for="sale_pay_status" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Estado del Pago <span class="text-red-500">*</span>
+                </label>
+                <p-select
+                  inputId="sale_pay_status"
+                  [options]="paymentStatuses()"
+                  [ngModel]="paymentStatus()"
+                  (ngModelChange)="paymentStatus.set($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full text-xs" />
+              </div>
+            </div>
+
+            <!-- Fila 2: Modalidad de Entrega y Estado de Entrega -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="sale_delivery_mod" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Modalidad de Entrega / Envío
+                </label>
+                <p-select
+                  inputId="sale_delivery_mod"
+                  [options]="deliveryModalities()"
+                  [ngModel]="deliveryModality()"
+                  (ngModelChange)="deliveryModality.set($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full text-xs" />
+              </div>
+
+              <div>
+                <label for="sale_delivery_stat" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Estado de la Entrega
+                </label>
+                <p-select
+                  inputId="sale_delivery_stat"
+                  [options]="deliveryStatuses()"
+                  [ngModel]="deliveryStatus()"
+                  (ngModelChange)="deliveryStatus.set($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full text-xs" />
+              </div>
+            </div>
+
+            <!-- Fila 3: Dirección / Punto de Encuentro -->
+            <div>
+              <label for="sale_delivery_address" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Dirección / Destino / Punto de Entrega
+              </label>
+              <input
+                pInputText
+                id="sale_delivery_address"
+                type="text"
+                class="w-full text-xs"
+                placeholder="Ej: Terminal de Buses CBB - Flota Trans Copacabana a La Paz"
+                [ngModel]="deliveryAddress()"
+                (ngModelChange)="deliveryAddress.set($event)" />
+            </div>
+
+            <!-- Fila 4: Costo de Entrega y Flete Pagado Por -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="sale_delivery_cost" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Costo de Transporte / Envío (Bs)
+                </label>
+                <p-inputnumber
+                  inputId="sale_delivery_cost"
+                  [ngModel]="deliveryCost()"
+                  (ngModelChange)="deliveryCost.set($event || 0)"
+                  mode="decimal"
+                  [minFractionDigits]="2"
+                  [maxFractionDigits]="2"
+                  [min]="0"
+                  class="w-full text-xs" />
+              </div>
+
+              <div>
+                <label for="sale_delivery_paid_by" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Flete Pagado Por
+                </label>
+                <p-select
+                  inputId="sale_delivery_paid_by"
+                  [options]="deliveryPaidBy()"
+                  [ngModel]="deliveryCostPaidBy()"
+                  (ngModelChange)="deliveryCostPaidBy.set($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full text-xs" />
+              </div>
+            </div>
+
+            <!-- Observaciones -->
+            <div>
+              <label for="sale_obs" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Observaciones y Notas de Envío
+              </label>
+              <textarea
+                pTextarea
+                id="sale_obs"
+                rows="3"
+                class="w-full text-xs"
+                placeholder="Datos de encomienda, nombre de destinatario, CI, notas de cobro, etc."
+                [ngModel]="observations()"
+                (ngModelChange)="observations.set($event)"></textarea>
+            </div>
+
+          </div>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+
+  <!-- Footer con Botones de Acción -->
+  <ng-template #footer>
+    <div class="flex items-center justify-between w-full pt-2 border-t border-gray-200 dark:border-gray-700">
+      <div>
+        @if (mode() === 'edit') {
+          <p-button
+            label="Eliminar Venta"
+            icon="pi pi-trash"
+            severity="danger"
+            variant="text"
+            size="small"
+            (onClick)="confirmDelete()"
+            [disabled]="isSubmitting()" />
+        }
+      </div>
+
+      <div class="flex items-center gap-2">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          variant="text"
+          size="small"
+          (onClick)="visible.set(false)"
+          [disabled]="isSubmitting()" />
+
+        <p-button
+          [label]="mode() === 'create' ? 'Registrar Venta' : 'Guardar Cambios'"
+          icon="pi pi-check"
+          size="small"
+          (onClick)="saveSale()"
+          [loading]="isSubmitting()"
+          [disabled]="!isFormValid()" />
+      </div>
+    </div>
+  </ng-template>
+
+</p-drawer>

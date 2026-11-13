@@ -1,0 +1,88 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [header]="mode() === 'create' ? 'Nuevo Canal de Venta' : 'Editar Canal de Venta'"
+  [style]="{ width: '28rem', maxWidth: '95vw' }">
+
+  <div class="flex flex-col gap-3 py-2 text-xs">
+    <div class="grid grid-cols-3 gap-2">
+      <div class="col-span-1">
+        <label for="ch_code" class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+          Código <span class="text-red-500">*</span>
+        </label>
+        <input
+          pInputText
+          id="ch_code"
+          type="text"
+          class="w-full text-xs uppercase"
+          placeholder="TIKTOK"
+          [ngModel]="code()"
+          (ngModelChange)="code.set($event)" />
+      </div>
+
+      <div class="col-span-2">
+        <label for="ch_name" class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+          Nombre del Canal <span class="text-red-500">*</span>
+        </label>
+        <input
+          pInputText
+          id="ch_name"
+          type="text"
+          class="w-full text-xs"
+          placeholder="Ej: TikTok Live, Marketplace"
+          [ngModel]="name()"
+          (ngModelChange)="name.set($event)" />
+      </div>
+    </div>
+
+    <div>
+      <label for="ch_desc" class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+        Descripción del Canal
+      </label>
+      <textarea
+        pTextarea
+        id="ch_desc"
+        rows="2"
+        class="w-full text-xs"
+        placeholder="Ej: Ventas directas en transmisiones de remate"
+        [ngModel]="description()"
+        (ngModelChange)="description.set($event)"></textarea>
+    </div>
+
+    <div class="flex items-center justify-between p-2 rounded bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
+      <div>
+        <label for="ch_active_switch" class="block font-semibold text-gray-800 dark:text-gray-200 cursor-pointer">
+          Canal Activo
+        </label>
+        <span class="block text-[11px] text-gray-400">Disponible para selección en nuevas ventas</span>
+      </div>
+      <p-toggleswitch
+        inputId="ch_active_switch"
+        [ngModel]="isActive()"
+        (ngModelChange)="isActive.set($event)" />
+    </div>
+  </div>
+
+  <ng-template #footer>
+    <div class="flex items-center justify-end gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+      <p-button
+        label="Cancelar"
+        severity="secondary"
+        variant="text"
+        size="small"
+        (onClick)="visible.set(false)"
+        [disabled]="isSubmitting()" />
+
+      <p-button
+        [label]="mode() === 'create' ? 'Crear Canal' : 'Guardar'"
+        icon="pi pi-check"
+        size="small"
+        (onClick)="saveChannel()"
+        [loading]="isSubmitting()"
+        [disabled]="!isFormValid()" />
+    </div>
+  </ng-template>
+
+</p-dialog>
+

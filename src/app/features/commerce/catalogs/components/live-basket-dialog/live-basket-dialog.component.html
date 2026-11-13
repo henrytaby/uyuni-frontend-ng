@@ -1,0 +1,119 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [header]="mode() === 'create' ? 'Nueva Canasta de Remate Live' : 'Editar Canasta Live'"
+  [style]="{ width: '30rem', maxWidth: '95vw' }">
+
+  <div class="flex flex-col gap-3 py-2 text-xs">
+    <div class="grid grid-cols-3 gap-2">
+      <div class="col-span-1">
+        <label for="lb_code" class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+          Código <span class="text-red-500">*</span>
+        </label>
+        <input
+          pInputText
+          id="lb_code"
+          type="text"
+          class="w-full text-xs uppercase"
+          placeholder="C1, C+1"
+          [ngModel]="code()"
+          (ngModelChange)="code.set($event)" />
+      </div>
+
+      <div class="col-span-2">
+        <label for="lb_name" class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+          Nombre Temático <span class="text-red-500">*</span>
+        </label>
+        <input
+          pInputText
+          id="lb_name"
+          type="text"
+          class="w-full text-xs"
+          placeholder="Ej: Taller & Auto"
+          [ngModel]="name()"
+          (ngModelChange)="name.set($event)" />
+      </div>
+    </div>
+
+    <div>
+      <label for="lb_label" class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+        Etiqueta Visual de Transmisión
+      </label>
+      <input
+        pInputText
+        id="lb_label"
+        type="text"
+        class="w-full text-xs"
+        placeholder="Ej: Canasta 1 - Taller & Auto"
+        [ngModel]="label()"
+        (ngModelChange)="label.set($event)" />
+    </div>
+
+    <div class="grid grid-cols-2 gap-2">
+      <div>
+        <label for="lb_price_range" class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+          Rango de Precio
+        </label>
+        <input
+          pInputText
+          id="lb_price_range"
+          type="text"
+          class="w-full text-xs"
+          placeholder="Ej: Bs. 40 - 200"
+          [ngModel]="priceRange()"
+          (ngModelChange)="priceRange.set($event)" />
+      </div>
+
+      <div>
+        <label for="lb_target" class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+          Audiencia Objetivo
+        </label>
+        <input
+          pInputText
+          id="lb_target"
+          type="text"
+          class="w-full text-xs"
+          placeholder="Ej: Mecánicos, hobbistas"
+          [ngModel]="targetAudience()"
+          (ngModelChange)="targetAudience.set($event)" />
+      </div>
+    </div>
+
+    <div>
+      <label for="lb_desc" class="block font-semibold text-gray-700 dark:text-gray-300 mb-1">
+        Descripción del Lote de Live
+      </label>
+      <textarea
+        pTextarea
+        id="lb_desc"
+        rows="2"
+        class="w-full text-xs"
+        placeholder="Herramientas y accesorios para remate flash"
+        [ngModel]="description()"
+        (ngModelChange)="description.set($event)"></textarea>
+    </div>
+  </div>
+
+  <ng-template #footer>
+    <div class="flex items-center justify-end gap-2 pt-2 border-t border-gray-100 dark:border-gray-800">
+      <p-button
+        label="Cancelar"
+        severity="secondary"
+        variant="text"
+        size="small"
+        (onClick)="visible.set(false)"
+        [disabled]="isSubmitting()" />
+
+      <p-button
+        [label]="mode() === 'create' ? 'Crear Canasta' : 'Guardar'"
+        icon="pi pi-check"
+        size="small"
+        (onClick)="saveBasket()"
+        [loading]="isSubmitting()"
+        [disabled]="!isFormValid()" />
+    </div>
+  </ng-template>
+
+</p-dialog>
+

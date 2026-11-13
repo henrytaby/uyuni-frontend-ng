@@ -1,0 +1,226 @@
+<p-drawer
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  position="right"
+  [modal]="true"
+  class="w-full sm:w-105 max-w-full"
+  [style]="{ width: '100%', maxWidth: '420px' }">
+
+  <!-- Header del Drawer de Filtros (Compacto y Elegante) -->
+  <ng-template #header>
+    <div class="flex items-center gap-2.5 w-full pr-1">
+      <div class="w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-800 flex items-center justify-center text-brand-700 dark:text-brand-300 shrink-0 shadow-2xs">
+        <svg lucideSlidersHorizontal size="16"></svg>
+      </div>
+      <div class="flex flex-col min-w-0 flex-1">
+        <div class="flex items-center gap-2">
+          <h2 class="text-sm font-bold text-gray-900 dark:text-gray-100 m-0 leading-tight">
+            Filtros de Catálogo
+          </h2>
+          @if (activeDraftCount() > 0) {
+            <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded-full bg-brand-100 dark:bg-brand-900/60 text-brand-800 dark:text-brand-300 border border-brand-200 dark:border-brand-800 shrink-0">
+              {{ activeDraftCount() }} activo{{ activeDraftCount() === 1 ? '' : 's' }}
+            </span>
+          }
+        </div>
+        <span class="block text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+          Refina y segmenta el catálogo maestro
+        </span>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- Contenido de Filtros de Alta Densidad (Compacto Verticalmente) -->
+  <div class="flex-1 overflow-y-auto px-4 sm:px-5 py-3.5 flex flex-col gap-2.5 text-xs">
+
+    <!-- Banner Compacto de Filtros Activos (solo si hay filtros) -->
+    @if (activeDraftCount() > 0) {
+      <div class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-brand-50/70 dark:bg-brand-950/40 border border-brand-200/80 dark:border-brand-800/80 text-brand-900 dark:text-brand-200 animate-fadeIn">
+        <div class="flex items-center gap-1.5 min-w-0">
+          <svg lucideSparkles size="13" class="text-brand-600 dark:text-brand-400 shrink-0"></svg>
+          <span class="text-[11px] font-medium truncate">
+            {{ activeDraftCount() }} criterio{{ activeDraftCount() === 1 ? '' : 's' }} seleccionado{{ activeDraftCount() === 1 ? '' : 's' }}
+          </span>
+        </div>
+        <button
+          type="button"
+          (click)="resetDraft()"
+          class="text-[11px] font-semibold text-brand-700 dark:text-brand-300 hover:text-brand-900 dark:hover:text-brand-100 underline cursor-pointer shrink-0">
+          Restablecer
+        </button>
+      </div>
+    }
+
+    <!-- Filtro 1: Categoría de Producto -->
+    <div
+      class="p-3 rounded-lg border transition-all duration-150 flex flex-col gap-1.5"
+      [class]="draftCategory() ? 'border-brand-300 dark:border-brand-800 bg-brand-50/20 dark:bg-brand-950/20' : 'border-gray-200 dark:border-gray-800 bg-gray-50/40 dark:bg-gray-900/30'">
+      
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1.5">
+          <svg lucideTag size="13" class="text-gray-500 dark:text-gray-400"></svg>
+          <label for="filter_category" class="font-semibold text-gray-800 dark:text-gray-200 text-xs cursor-pointer">
+            Categoría de Producto
+          </label>
+        </div>
+        @if (draftCategory()) {
+          <button
+            type="button"
+            class="text-[11px] text-gray-400 hover:text-red-600 dark:hover:text-red-400 flex items-center gap-0.5 cursor-pointer transition-colors"
+            (click)="draftCategory.set(null)"
+            title="Quitar categoría">
+            <svg lucideX size="11"></svg>
+            <span>Quitar</span>
+          </button>
+        }
+      </div>
+
+      <p-select
+        inputId="filter_category"
+        [options]="categories()"
+        [ngModel]="draftCategory()"
+        (ngModelChange)="draftCategory.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todas las Categorías"
+        [showClear]="true"
+        appendTo="body"
+        class="w-full text-xs" />
+    </div>
+
+    <!-- Filtro 2: Canasta de Subasta Live -->
+    <div
+      class="p-3 rounded-lg border transition-all duration-150 flex flex-col gap-1.5"
+      [class]="draftLiveBasket() ? 'border-brand-300 dark:border-brand-800 bg-brand-50/20 dark:bg-brand-950/20' : 'border-gray-200 dark:border-gray-800 bg-gray-50/40 dark:bg-gray-900/30'">
+      
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1.5">
+          <svg lucideTv size="13" class="text-gray-500 dark:text-gray-400"></svg>
+          <label for="filter_live_basket" class="font-semibold text-gray-800 dark:text-gray-200 text-xs cursor-pointer">
+            Canasta Live (TikTok / Subastas)
+          </label>
+        </div>
+        @if (draftLiveBasket()) {
+          <button
+            type="button"
+            class="text-[11px] text-gray-400 hover:text-red-600 dark:hover:text-red-400 flex items-center gap-0.5 cursor-pointer transition-colors"
+            (click)="draftLiveBasket.set(null)"
+            title="Quitar canasta">
+            <svg lucideX size="11"></svg>
+            <span>Quitar</span>
+          </button>
+        }
+      </div>
+
+      <p-select
+        inputId="filter_live_basket"
+        [options]="liveBaskets()"
+        [ngModel]="draftLiveBasket()"
+        (ngModelChange)="draftLiveBasket.set($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Todas las Canastas"
+        [showClear]="true"
+        appendTo="body"
+        class="w-full text-xs" />
+    </div>
+
+    <!-- Filtro 3: Estado de la Ficha (Botones tipo Pill: Verde Activo / Rojo Inactivo) -->
+    <div
+      class="p-3 rounded-lg border transition-all duration-150 flex flex-col gap-2"
+      [class]="draftActivo() !== null ? 'border-brand-300 dark:border-brand-800 bg-brand-50/20 dark:bg-brand-950/20' : 'border-gray-200 dark:border-gray-800 bg-gray-50/40 dark:bg-gray-900/30'">
+      
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-1.5">
+          <svg lucideCircleCheck size="13" class="text-gray-500 dark:text-gray-400"></svg>
+          <span class="font-semibold text-gray-800 dark:text-gray-200 text-xs">
+            Estado de la Ficha
+          </span>
+        </div>
+        @if (draftActivo() !== null) {
+          <button
+            type="button"
+            class="text-[11px] text-gray-400 hover:text-red-600 dark:hover:text-red-400 flex items-center gap-0.5 cursor-pointer transition-colors"
+            (click)="draftActivo.set(null)"
+            title="Quitar estado">
+            <svg lucideX size="11"></svg>
+            <span>Quitar</span>
+          </button>
+        }
+      </div>
+
+      <!-- Barra de Botones Pills Compactos -->
+      <div class="flex items-center gap-1.5 w-full">
+        <!-- Opción: Todos -->
+        <button
+          type="button"
+          (click)="draftActivo.set(null)"
+          class="flex-1 inline-flex items-center justify-center h-7.5 px-2.5 text-xs rounded-lg transition-all cursor-pointer font-medium"
+          [class]="draftActivo() === null
+            ? 'bg-gray-800 text-white dark:bg-gray-100 dark:text-gray-900 shadow-2xs font-semibold'
+            : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-750'">
+          <span>Todos</span>
+        </button>
+
+        <!-- Opción: Activos (Verde) -->
+        <button
+          type="button"
+          (click)="draftActivo.set(true)"
+          class="flex-1 inline-flex items-center justify-center gap-1.5 h-7.5 px-2.5 text-xs rounded-lg transition-all cursor-pointer font-medium"
+          [class]="draftActivo() === true
+            ? 'bg-emerald-600 text-white font-semibold shadow-2xs border border-emerald-600'
+            : 'bg-white dark:bg-gray-800 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30'">
+          <span
+            class="w-1.5 h-1.5 rounded-full"
+            [class]="draftActivo() === true ? 'bg-white' : 'bg-emerald-500'"></span>
+          <span>Activos</span>
+        </button>
+
+        <!-- Opción: Inactivos (Rojo) -->
+        <button
+          type="button"
+          (click)="draftActivo.set(false)"
+          class="flex-1 inline-flex items-center justify-center gap-1.5 h-7.5 px-2.5 text-xs rounded-lg transition-all cursor-pointer font-medium"
+          [class]="draftActivo() === false
+            ? 'bg-rose-600 text-white font-semibold shadow-2xs border border-rose-600'
+            : 'bg-white dark:bg-gray-800 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60 hover:bg-rose-50/60 dark:hover:bg-rose-950/30'">
+          <span
+            class="w-1.5 h-1.5 rounded-full"
+            [class]="draftActivo() === false ? 'bg-white' : 'bg-rose-500'"></span>
+          <span>Inactivos</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer con Botones de Acción (Compacto) -->
+  <ng-template #footer>
+    <div class="flex items-center justify-between w-full">
+      <p-button
+        label="Limpiar Todo"
+        icon="pi pi-filter-slash"
+        severity="secondary"
+        variant="text"
+        size="small"
+        [disabled]="activeDraftCount() === 0"
+        (onClick)="clearAll()" />
+
+      <div class="flex items-center gap-2">
+        <p-button
+          label="Cancelar"
+          severity="secondary"
+          variant="outlined"
+          size="small"
+          (onClick)="visible.set(false)" />
+
+        <p-button
+          label="Aplicar Filtros"
+          icon="pi pi-check"
+          size="small"
+          (onClick)="applyFilters()" />
+      </div>
+    </div>
+  </ng-template>
+
+</p-drawer>
