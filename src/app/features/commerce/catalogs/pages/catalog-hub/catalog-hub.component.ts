@@ -25,7 +25,6 @@ import {
   LucideShare2,
   LucideSlidersHorizontal,
   LucideTag,
-  LucideTrendingUp,
   LucideVideo
 } from '@lucide/angular';
 
@@ -34,12 +33,10 @@ import { LoggerService } from '@core/services/logger.service';
 import { CategoryDialogComponent } from '../../components/category-dialog/category-dialog.component';
 import { ChannelDialogComponent } from '../../components/channel-dialog/channel-dialog.component';
 import { LiveBasketDialogComponent } from '../../components/live-basket-dialog/live-basket-dialog.component';
-import { RoundDialogComponent } from '../../components/round-dialog/round-dialog.component';
 import {
   CommerceCategory,
   CommerceChannel,
-  CommerceLiveBasket,
-  CommerceRound
+  CommerceLiveBasket
 } from '../../models/commerce-catalog.model';
 import { CommerceCatalogService } from '../../services/commerce-catalog.service';
 
@@ -65,12 +62,10 @@ import { CommerceCatalogService } from '../../services/commerce-catalog.service'
     LucideTag,
     LucideShare2,
     LucideVideo,
-    LucideTrendingUp,
     LucideSearch,
     CategoryDialogComponent,
     ChannelDialogComponent,
-    LiveBasketDialogComponent,
-    RoundDialogComponent
+    LiveBasketDialogComponent
   ],
   templateUrl: './catalog-hub.component.html',
   styleUrls: ['./catalog-hub.component.css'],
@@ -93,9 +88,6 @@ export class CatalogHubComponent implements OnInit {
 
   private readonly basketSearch$ = new Subject<string>();
   readonly basketSearch = signal<string>('');
-
-  private readonly roundSearch$ = new Subject<string>();
-  readonly roundSearch = signal<string>('');
 
   // 1. Categories State
   readonly categories = signal<CommerceCategory[]>([]);
@@ -121,14 +113,6 @@ export class CatalogHubComponent implements OnInit {
   readonly selectedBasket = signal<CommerceLiveBasket | null>(null);
   readonly basketMode = signal<'create' | 'edit'>('create');
 
-  // 4. Rounds State
-  readonly rounds = signal<CommerceRound[]>([]);
-  readonly totalRounds = signal<number>(0);
-  readonly isLoadingRounds = signal<boolean>(false);
-  readonly roundDialogVisible = signal<boolean>(false);
-  readonly selectedRound = signal<CommerceRound | null>(null);
-  readonly roundMode = signal<'create' | 'edit'>('create');
-
   constructor() {
     this.categorySearch$
       .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed())
@@ -141,17 +125,12 @@ export class CatalogHubComponent implements OnInit {
     this.basketSearch$
       .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed())
       .subscribe(term => this.fetchLiveBaskets(term));
-
-    this.roundSearch$
-      .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed())
-      .subscribe(term => this.fetchRounds(term));
   }
 
   ngOnInit(): void {
     this.fetchCategories();
     this.fetchChannels();
     this.fetchLiveBaskets();
-    this.fetchRounds();
   }
 
   onTabChange(tab: string | number | undefined): void {
@@ -266,7 +245,7 @@ export class CatalogHubComponent implements OnInit {
 
   confirmDeleteChannel(ch: CommerceChannel): void {
     this.confirmationService.confirm({
-      message: `¿Eliminar el canal de venta "${ch.name}"?`,
+      message: `¿Eliminar el canal comercial "${ch.name}"?`,
       header: 'Confirmar Eliminación de Canal',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Sí, Eliminar',
@@ -345,70 +324,6 @@ export class CatalogHubComponent implements OnInit {
           },
           error: err => {
             this.logger.error('Error deleting live basket', err, 'CatalogHubComponent');
-            this.messageService.add({ severity: 'error', summary: 'Error al Eliminar', detail: err?.error?.detail || 'No se pudo eliminar.' });
-          }
-        });
-      }
-    });
-  }
-
-  // =========================================================================
-  // 4. RONDAS DE INVERSIÓN
-  // =========================================================================
-
-  fetchRounds(search = this.roundSearch()): void {
-    this.isLoadingRounds.set(true);
-    this.catalogService.loadRoundsPage({ offset: 0, limit: 100, search }).subscribe({
-      next: res => {
-        this.rounds.set(res.data);
-        this.totalRounds.set(res.total);
-        this.isLoadingRounds.set(false);
-      },
-      error: err => {
-        this.logger.error('Error fetching rounds', err, 'CatalogHubComponent');
-        this.isLoadingRounds.set(false);
-      }
-    });
-  }
-
-  onRoundSearch(term: string): void {
-    this.roundSearch.set(term);
-    this.roundSearch$.next(term);
-  }
-
-  openCreateRound(): void {
-    this.selectedRound.set(null);
-    this.roundMode.set('create');
-    this.roundDialogVisible.set(true);
-  }
-
-  openEditRound(rnd: CommerceRound): void {
-    this.selectedRound.set(rnd);
-    this.roundMode.set('edit');
-    this.roundDialogVisible.set(true);
-  }
-
-  onRoundSaved(): void {
-    this.fetchRounds();
-  }
-
-  confirmDeleteRound(rnd: CommerceRound): void {
-    this.confirmationService.confirm({
-      message: `¿Eliminar la ronda de inversión "${rnd.name}" (${rnd.code})?`,
-      header: 'Confirmar Eliminación de Ronda',
-      icon: 'pi pi-exclamation-triangle',
-      acceptLabel: 'Sí, Eliminar',
-      rejectLabel: 'Cancelar',
-      acceptButtonStyleClass: 'p-button-danger p-button-sm',
-      rejectButtonStyleClass: 'p-button-text p-button-secondary p-button-sm',
-      accept: () => {
-        this.catalogService.deleteRound(rnd.id).subscribe({
-          next: () => {
-            this.messageService.add({ severity: 'success', summary: 'Ronda Eliminada', detail: `Ronda "${rnd.name}" eliminada.` });
-            this.fetchRounds();
-          },
-          error: err => {
-            this.logger.error('Error deleting round', err, 'CatalogHubComponent');
             this.messageService.add({ severity: 'error', summary: 'Error al Eliminar', detail: err?.error?.detail || 'No se pudo eliminar.' });
           }
         });

@@ -12,9 +12,7 @@ import {
   CommerceCategory,
   CommerceChannel,
   CommerceLiveBasket,
-  CommerceRound,
-  LiveBasketCreatePayload,
-  RoundCreatePayload
+  LiveBasketCreatePayload
 } from '../models/commerce-catalog.model';
 import { CommerceCatalogService } from './commerce-catalog.service';
 
@@ -195,55 +193,6 @@ describe('CommerceCatalogService', () => {
       });
 
       const req = httpMock.expectOne('http://localhost:8000/api/commerce/live-baskets/lb-1');
-      expect(req.request.method).toBe('DELETE');
-      req.flush({ message: 'Deleted' });
-    });
-  });
-
-  // 4. Rounds
-  describe('Investment Rounds', () => {
-    const sampleRound: CommerceRound = {
-      id: 'rnd-1',
-      code: 'RONDA-1',
-      name: 'Ronda Semilla',
-      disbursement_date: '2026-01-15',
-      capital_invested: 50000.0,
-      currency: 'BOB',
-      status: 'active',
-      observations: 'Primera inyección'
-    };
-
-    it('should fetch investment rounds', () => {
-      service.getRounds({ offset: 0, limit: 10 }).subscribe(res => {
-        expect(res).toEqual([sampleRound]);
-      });
-
-      const req = httpMock.expectOne('http://localhost:8000/api/commerce/rounds/?offset=0&limit=10');
-      expect(req.request.method).toBe('GET');
-      req.flush([sampleRound]);
-    });
-
-    it('should create a round', () => {
-      const payload: RoundCreatePayload = {
-        code: 'RONDA-1',
-        name: 'Ronda Semilla',
-        capital_invested: 50000.0
-      };
-      service.createRound(payload).subscribe(res => {
-        expect(res).toEqual(sampleRound);
-      });
-
-      const req = httpMock.expectOne('http://localhost:8000/api/commerce/rounds/');
-      expect(req.request.method).toBe('POST');
-      req.flush(sampleRound);
-    });
-
-    it('should delete a round', () => {
-      service.deleteRound('rnd-1').subscribe(res => {
-        expect(res.message).toBe('Deleted');
-      });
-
-      const req = httpMock.expectOne('http://localhost:8000/api/commerce/rounds/rnd-1');
       expect(req.request.method).toBe('DELETE');
       req.flush({ message: 'Deleted' });
     });

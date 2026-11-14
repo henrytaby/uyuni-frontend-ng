@@ -1,0 +1,195 @@
+<div class="p-4 flex flex-col gap-4">
+
+  <!-- Header de Página -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-lg bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 flex items-center justify-center text-teal-700 dark:text-teal-300">
+        <svg lucideTrendingUp size="20"></svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 m-0">Rondas de Inversión</h1>
+        <span class="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+          Administración del ciclo comercial de compras, punto de equilibrio y control de aportes de capital.
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI Summary Cards Enterprise -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+    <!-- Card 1: Total Rondas -->
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-3 flex items-center justify-between shadow-xs">
+      <div>
+        <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400 block">Total Rondas Registradas</span>
+        <span class="text-base font-bold text-gray-900 dark:text-gray-100">{{ totalRounds() }} rondas</span>
+      </div>
+      <div class="w-8 h-8 rounded-md bg-blue-100/60 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+        <svg lucideTrendingUp size="16"></svg>
+      </div>
+    </div>
+
+    <!-- Card 2: Capital Total Comprometido -->
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-3 flex items-center justify-between shadow-xs">
+      <div>
+        <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400 block">Capital Total Comprometido</span>
+        <span class="text-base font-bold text-gray-900 dark:text-gray-100 font-mono">
+          Bs {{ totalCapitalInvested() | number:'1.2-2' }}
+        </span>
+      </div>
+      <div class="w-8 h-8 rounded-md bg-emerald-100/60 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+        <svg lucideCoins size="16"></svg>
+      </div>
+    </div>
+
+    <!-- Card 3: Estado de Rentabilidad -->
+    <div class="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-3 flex items-center justify-between shadow-xs">
+      <div>
+        <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400 block">Salud Financiera</span>
+        <div class="flex items-center gap-2 mt-0.5 text-xs font-semibold">
+          <span class="text-emerald-600 dark:text-emerald-400">{{ roundsRecovered() }} Break-Even</span>
+          <span class="text-gray-300 dark:text-gray-600">|</span>
+          <span class="text-sky-600 dark:text-sky-400">{{ roundsInRecovery() }} En Recuperación</span>
+        </div>
+      </div>
+      <div class="w-8 h-8 rounded-md bg-amber-100/60 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+        <svg lucideShieldCheck size="16"></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contenedor Principal: Tabla y Filtros -->
+  <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 shadow-xs p-4 flex flex-col gap-3">
+
+    <!-- Toolbar Rondas -->
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <p-iconfield class="w-full sm:w-72">
+        <p-inputicon>
+          <svg lucideSearch size="14" class="text-gray-400"></svg>
+        </p-inputicon>
+        <input
+          pInputText
+          type="text"
+          placeholder="Buscar por código, nombre o socio..."
+          class="w-full text-xs"
+          [ngModel]="search()"
+          (ngModelChange)="onSearch($event)" />
+      </p-iconfield>
+
+      <div class="flex items-center gap-2">
+        <p-button
+          icon="pi pi-refresh"
+          severity="secondary"
+          variant="text"
+          size="small"
+          pTooltip="Actualizar rondas"
+          [loading]="isLoading()"
+          (onClick)="fetchRounds()" />
+
+        <p-button
+          label="Nueva Ronda"
+          icon="pi pi-plus"
+          size="small"
+          (onClick)="openCreateRound()" />
+      </div>
+    </div>
+
+    <!-- Tabla Rondas -->
+    <p-table
+      class="dense-table"
+      [value]="rounds()"
+      [loading]="isLoading()"
+      [paginator]="true"
+      [rows]="10"
+      responsiveLayout="scroll">
+      <ng-template #header>
+        <tr class="text-xs text-gray-600 dark:text-gray-300 border-b border-gray-200 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/30">
+          <th style="width: 7.5rem;">Código</th>
+          <th style="min-width: 14rem;">Ronda de Inversión</th>
+          <th style="width: 8.5rem;">Desembolso</th>
+          <th style="min-width: 9.5rem;" class="text-right">Capital Invertido</th>
+          <th style="width: 14rem;" class="text-center">Estado Financiero</th>
+          <th style="min-width: 13rem;">Observaciones y Acuerdos</th>
+          <th style="width: 6.5rem;" class="text-center">Acciones</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-rnd>
+        <tr class="text-xs hover:bg-gray-50/80 dark:hover:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800/60">
+          <td>
+            <span class="font-mono font-bold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 px-2 py-0.5 rounded text-[11px] tracking-wide inline-block">
+              {{ rnd.code }}
+            </span>
+          </td>
+          <td>
+            <div class="font-semibold text-gray-900 dark:text-gray-100 text-xs">{{ rnd.name }}</div>
+            <div class="text-[10px] text-gray-400 dark:text-gray-500 flex items-center gap-1 mt-0.5">
+              <svg lucideCalendar size="11"></svg>
+              <span>Apertura: {{ rnd.disbursement_date || 'Sin fecha' }}</span>
+            </div>
+          </td>
+          <td class="font-mono text-gray-500 text-[11px]">
+            {{ rnd.disbursement_date || '—' }}
+          </td>
+          <td class="text-right">
+            <div class="font-mono font-bold text-gray-900 dark:text-gray-100 text-xs">
+              Bs {{ rnd.capital_invested | number:'1.2-2' }}
+            </div>
+            <span class="block text-[10px] text-gray-400 font-normal">Suma de Lotes</span>
+          </td>
+          <td class="text-center">
+            @let st = getStatusInfo(rnd.status);
+            <div class="flex items-center justify-center">
+              <span
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border cursor-help shadow-2xs"
+                [ngClass]="st.badgeClass"
+                [pTooltip]="st.description"
+                tooltipPosition="top">
+                <span class="w-1.5 h-1.5 rounded-full" [ngClass]="st.dotClass"></span>
+                {{ st.label }}
+              </span>
+            </div>
+          </td>
+          <td>
+            <div class="text-gray-600 dark:text-gray-400 text-[11px] max-w-xs line-clamp-2" [pTooltip]="rnd.observations" tooltipPosition="left">
+              {{ rnd.observations || '—' }}
+            </div>
+          </td>
+          <td class="text-center">
+            <div class="flex items-center justify-center gap-1">
+              <p-button
+                icon="pi pi-refresh"
+                severity="secondary"
+                variant="text"
+                size="small"
+                (onClick)="recalculateRound(rnd)"
+                pTooltip="Recalcular Break-Even" />
+              <p-button
+                icon="pi pi-pencil"
+                severity="secondary"
+                variant="text"
+                size="small"
+                (onClick)="openEditRound(rnd)"
+                pTooltip="Ver o Editar Ronda"
+                tooltipPosition="left" />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7" class="text-center py-6 text-gray-400">No se encontraron rondas de inversión.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Drawer Lateral de Rondas -->
+  <app-round-drawer
+    [(visible)]="dialogVisible"
+    [round]="selectedRound()"
+    [mode]="dialogMode()"
+    (saved)="onRoundSaved()"
+    (deleted)="onRoundDeleted()" />
+
+</div>

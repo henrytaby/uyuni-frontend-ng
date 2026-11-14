@@ -90,37 +90,3 @@ export interface LiveBasketUpdatePayload {
   target_audience?: string | null;
 }
 
-// 4. Rondas de Inversión
-export interface CommerceRound {
-  id: string;
-  code: string;
-  name: string;
-  disbursement_date?: string | null;
-  capital_invested: number;
-  currency: string;
-  status: string;
-  observations?: string | null;
-  created_at?: string | null;
-  updated_at?: string | null;
-}
-
-export interface RoundCreatePayload {
-  code: string;
-  name: string;
-  disbursement_date?: string | null;
-  capital_invested?: number;
-  currency?: string;
-  status?: string;
-  observations?: string | null;
-}
-
-export interface RoundUpdatePayload {
-  code?: string;
-  name?: string;
-  disbursement_date?: string | null;
-  capital_invested?: number;
-  currency?: string;
-  status?: string;
-  observations?: string | null;
-}
-

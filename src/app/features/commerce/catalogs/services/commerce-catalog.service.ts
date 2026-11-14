@@ -15,11 +15,8 @@ import {
   CommerceCategory,
   CommerceChannel,
   CommerceLiveBasket,
-  CommerceRound,
   LiveBasketCreatePayload,
-  LiveBasketUpdatePayload,
-  RoundCreatePayload,
-  RoundUpdatePayload
+  LiveBasketUpdatePayload
 } from '../models/commerce-catalog.model';
 
 @Injectable({
@@ -162,46 +159,6 @@ export class CommerceCatalogService {
   deleteLiveBasket(id: string): Observable<{ message: string }> {
     this.logger.info('Deleting live basket', { id }, 'CommerceCatalogService');
     return this.http.delete<{ message: string }>(`${this.baseCommerceUrl}/live-baskets/${id}`);
-  }
-
-  // =========================================================================
-  // 4. RONDAS DE INVERSIÓN
-  // =========================================================================
-
-  getRounds(params: CatalogQueryParams): Observable<CommerceRound[]> {
-    const httpParams = this.buildHttpParams(params);
-    this.logger.debug('Fetching investment rounds', { params }, 'CommerceCatalogService');
-    return this.http.get<CommerceRound[]>(`${this.baseCommerceUrl}/rounds/`, { params: httpParams });
-  }
-
-  getRoundsCount(search?: string): Observable<number> {
-    let httpParams = new HttpParams();
-    if (search) httpParams = httpParams.set('search', search);
-    return this.http.get<{ total: number }>(`${this.baseCommerceUrl}/rounds/count`, { params: httpParams }).pipe(
-      map(res => res.total)
-    );
-  }
-
-  loadRoundsPage(params: CatalogQueryParams): Observable<{ data: CommerceRound[]; total: number }> {
-    return forkJoin({
-      data: this.getRounds(params),
-      total: this.getRoundsCount(params.search)
-    });
-  }
-
-  createRound(payload: RoundCreatePayload): Observable<CommerceRound> {
-    this.logger.info('Creating investment round', { code: payload.code, name: payload.name }, 'CommerceCatalogService');
-    return this.http.post<CommerceRound>(`${this.baseCommerceUrl}/rounds/`, payload);
-  }
-
-  updateRound(id: string, payload: RoundUpdatePayload): Observable<CommerceRound> {
-    this.logger.info('Updating investment round', { id, payload }, 'CommerceCatalogService');
-    return this.http.put<CommerceRound>(`${this.baseCommerceUrl}/rounds/${id}`, payload);
-  }
-
-  deleteRound(id: string): Observable<{ message: string }> {
-    this.logger.info('Deleting investment round', { id }, 'CommerceCatalogService');
-    return this.http.delete<{ message: string }>(`${this.baseCommerceUrl}/rounds/${id}`);
   }
 }
 

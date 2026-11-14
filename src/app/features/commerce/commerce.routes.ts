@@ -7,6 +7,16 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
   {
+    path: 'rounds',
+    loadChildren: () =>
+      import('./rounds/rounds.routes').then(m => m.routes)
+  },
+  {
+    path: 'batches',
+    loadChildren: () =>
+      import('./batches/batches.routes').then(m => m.routes)
+  },
+  {
     path: 'products',
     loadChildren: () =>
       import('./products/products.routes').then(m => m.routes)
@@ -15,11 +25,6 @@ export const routes: Routes = [
     path: 'product-masters',
     loadChildren: () =>
       import('./product-masters/product-masters.routes').then(m => m.routes)
-  },
-  {
-    path: 'batches',
-    loadChildren: () =>
-      import('./batches/batches.routes').then(m => m.routes)
   },
   {
     path: 'sales',
@@ -32,4 +37,3 @@ export const routes: Routes = [
       import('./catalogs/catalogs.routes').then(m => m.routes)
   }
 ];
-

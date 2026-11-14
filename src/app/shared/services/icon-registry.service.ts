@@ -13,6 +13,7 @@ import {
   LucideShoppingCart,
   LucideSlidersHorizontal,
   LucideTag,
+  LucideTrendingUp,
   LucideUser,
   LucideUsers,
 } from '@lucide/angular';
@@ -47,6 +48,10 @@ export class IconRegistryService {
     ['live-baskets', LucideShoppingBasket.icon],
     ['product-masters', LucideDatabase.icon],
     ['commerce-catalogs', LucideSlidersHorizontal.icon],
+    ['catalogs', LucideSlidersHorizontal.icon],
+    ['rounds', LucideTrendingUp.icon],
+    ['investment-rounds', LucideTrendingUp.icon],
+    ['commerce-rounds', LucideTrendingUp.icon],
   ]);
 
   private readonly FALLBACK = LucideCircleDot.icon;
