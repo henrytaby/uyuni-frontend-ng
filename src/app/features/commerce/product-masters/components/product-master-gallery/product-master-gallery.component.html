@@ -1,0 +1,441 @@
+<div class="flex flex-col gap-4 text-sm">
+
+  @if (mode() === 'create') {
+    <!-- Estado en Modo Creación: Requiere guardar primero -->
+    <div class="p-8 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 text-center flex flex-col items-center justify-center gap-3">
+      <div class="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-800 text-brand-600 dark:text-brand-400 flex items-center justify-center shadow-xs">
+        <svg lucideImages size="24"></svg>
+      </div>
+      <div class="max-w-md">
+        <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">
+          Gestión de Galería Habilitada tras Guardar
+        </h3>
+        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+          Para arrastrar y subir fotografías de alta calidad (WebP) y configurar la portada oficial, primero debe registrar los datos iniciales de la ficha maestra.
+        </p>
+      </div>
+      <p-button
+        label="Completar Ficha Comercial"
+        icon="pi pi-arrow-left"
+        [outlined]="true"
+        size="small"
+        (click)="requestCreateProduct.emit()">
+      </p-button>
+    </div>
+  } @else {
+    <!-- Estado en Modo Edición: Galería Completa -->
+    
+    <!-- Cabecera de la Sección con Contador y Refrescar -->
+    <div class="flex items-center justify-between pb-1 border-b border-gray-100 dark:border-gray-800">
+      <div>
+        <h3 class="text-xs font-bold text-gray-900 dark:text-gray-100 m-0 flex items-center gap-2">
+          <span>Fotografías de Catálogo (CATALOG)</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-800">
+            {{ images().length }} {{ images().length === 1 ? 'imagen' : 'imágenes' }}
+          </span>
+        </h3>
+        <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">
+          Subidas en alta resolución y procesadas automáticamente en formato WebP optimizado.
+        </span>
+      </div>
+
+      <div class="flex items-center gap-1.5">
+        @if (images().length > 0 && selectedCount() === 0) {
+          <p-button
+            label="Descargar Álbum (.ZIP)"
+            icon="pi pi-download"
+            size="small"
+            severity="primary"
+            [loading]="isDownloadingZip()"
+            (click)="downloadImagesZip(false)"
+            pTooltip="Descargar todas las fotos originales en un comprimido ZIP"
+            tooltipPosition="left">
+          </p-button>
+        }
+
+        @if (masterId(); as prodId) {
+          <button
+            type="button"
+            class="p-1.5 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors flex items-center gap-1 text-xs cursor-pointer"
+            pTooltip="Refrescar galería"
+            tooltipPosition="left"
+            [disabled]="isLoadingImages() || isUploadingImages()"
+            (click)="loadGallery(prodId)">
+            <svg lucideRefreshCw size="13" [class.animate-spin]="isLoadingImages()"></svg>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Enterprise Dropzone (Arrastrar y Soltar / Clic) -->
+    <div
+      role="button"
+      tabindex="0"
+      aria-label="Zona para arrastrar o seleccionar fotografías"
+      (keydown.enter)="fileInput.click()"
+      (keydown.space)="fileInput.click(); $event.preventDefault()"
+      class="relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2"
+      [class.border-brand-500]="isDragOver()"
+      [class.bg-brand-50]="isDragOver()"
+      [class.dark:bg-brand-950]="isDragOver()"
+      [class.ring-4]="isDragOver()"
+      [class.ring-brand-500]="isDragOver()"
+      [class.border-gray-300]="!isDragOver()"
+      [class.dark:border-gray-700]="!isDragOver()"
+      [class.bg-gray-50]="!isDragOver()"
+      [class.dark:bg-gray-800]="!isDragOver()"
+      [class.hover:bg-gray-100]="!isDragOver()"
+      [class.dark:hover:bg-gray-800]="!isDragOver()"
+      [class.hover:border-brand-400]="!isDragOver()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+      (click)="fileInput.click()">
+
+      <input
+        #fileInput
+        type="file"
+        multiple
+        accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+        (change)="onFileInputChange($event)"
+        class="hidden" />
+
+      <div class="w-12 h-12 rounded-full bg-brand-100/70 dark:bg-brand-950/70 text-brand-700 dark:text-brand-300 flex items-center justify-center shadow-xs">
+        <svg lucideCloudUpload size="24"></svg>
+      </div>
+
+      <div>
+        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
+          Arrastra y suelta tus fotografías aquí o <span class="text-brand-600 dark:text-brand-400 underline font-bold">haz clic para examinar</span>
+        </span>
+        <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-1">
+          Puedes subir 1 o más imágenes a la vez · JPG, PNG, WEBP, AVIF hasta 10 MB por foto
+        </span>
+      </div>
+    </div>
+
+    <!-- Barra de Progreso de Subida en Tiempo Real -->
+    @if (isUploadingImages()) {
+      <div class="p-3.5 rounded-xl border border-brand-200 dark:border-brand-800 bg-brand-50/50 dark:bg-brand-950/30 flex flex-col gap-2">
+        <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2 font-semibold text-brand-900 dark:text-brand-200">
+            <span class="inline-block w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
+            <span>Subiendo y optimizando fotografías en el servidor...</span>
+          </div>
+          <span class="font-mono font-bold text-brand-700 dark:text-brand-300">{{ uploadProgress() }}%</span>
+        </div>
+        <p-progressbar [value]="uploadProgress()" [showValue]="false" class="w-full h-2 rounded-full overflow-hidden"></p-progressbar>
+        <span class="text-[11px] text-gray-500 dark:text-gray-400">
+          Convirtiendo a WebP de alta fidelidad y vinculando con la ficha maestra...
+        </span>
+      </div>
+    }
+
+    <!-- Indicador de Carga de Galería -->
+    @if (isLoadingImages() && !isUploadingImages()) {
+      <div class="p-6 text-center text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2">
+        <svg lucideRefreshCw size="16" class="animate-spin text-brand-600 dark:text-brand-400"></svg>
+        <span>Sincronizando galería multimedia...</span>
+      </div>
+    }
+
+    <!-- Estado Vacío -->
+    @if (images().length === 0 && !isLoadingImages() && !isUploadingImages()) {
+      <div class="p-8 text-center rounded-xl border border-dashed border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20">
+        <svg lucideImage size="28" class="text-gray-400 dark:text-gray-500 mx-auto mb-2"></svg>
+        <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 block">Sin fotografías aún</span>
+        <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">
+          Arrastra tus fotos arriba para armar el book comercial del producto.
+        </span>
+      </div>
+    }
+
+    <!-- Barra Contextual de Acciones Masivas (Aparece cuando hay 1 o más seleccionadas) -->
+    @if (selectedCount() > 0) {
+      <div class="p-2 sm:p-2.5 rounded-xl bg-brand-50/90 dark:bg-brand-950/70 border border-brand-200 dark:border-brand-800 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-brand-600 text-white shadow-2xs">
+            {{ selectedCount() }} de {{ images().length }} seleccionadas
+          </span>
+          <button
+            type="button"
+            class="text-xs font-semibold text-brand-700 dark:text-brand-300 hover:underline cursor-pointer"
+            (click)="toggleSelectAll()">
+            {{ isAllSelected() ? 'Deseleccionar todas' : 'Seleccionar todas' }}
+          </button>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <p-button
+            [label]="isDownloadingZip() ? (zipProgress() || 'Descargando...') : 'Descargar (' + selectedCount() + ') ZIP'"
+            icon="pi pi-download"
+            size="small"
+            severity="primary"
+            [loading]="isDownloadingZip()"
+            (click)="downloadImagesZip(true)"
+            pTooltip="Descargar únicamente las fotos seleccionadas en un archivo .ZIP">
+          </p-button>
+
+          <p-button
+            [label]="'Eliminar (' + selectedCount() + ')'"
+            icon="pi pi-trash"
+            size="small"
+            severity="danger"
+            [outlined]="true"
+            [loading]="isBulkDeleting()"
+            (click)="confirmBulkDelete()"
+            pTooltip="Eliminar permanentemente las fotografías seleccionadas">
+          </p-button>
+
+          <button
+            type="button"
+            (click)="clearSelection()"
+            class="p-1.5 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+            pTooltip="Cancelar selección">
+            <svg lucideX size="15"></svg>
+          </button>
+        </div>
+      </div>
+    } @else if (images().length > 0) {
+      <!-- Barra de Selección Rápida cuando hay fotos pero ninguna seleccionada aún -->
+      <div class="flex items-center justify-between p-2 px-3 rounded-xl bg-gray-50/90 dark:bg-gray-855 border border-gray-200/80 dark:border-gray-700/70 shadow-2xs">
+        <button
+          type="button"
+          (click)="toggleSelectAll()"
+          class="inline-flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:text-brand-600 dark:hover:text-brand-400 cursor-pointer transition-colors group">
+          <span class="w-4 h-4 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 flex items-center justify-center group-hover:border-brand-500 shadow-2xs transition-colors">
+          </span>
+          <span>Seleccionar todas para descargar o eliminar</span>
+        </button>
+        <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+          {{ images().length }} {{ images().length === 1 ? 'foto en catálogo' : 'fotos en catálogo' }}
+        </span>
+      </div>
+    }
+
+    <!-- Grid de Tarjetas de Galería con Reordenamiento Drag & Drop -->
+    @if (images().length > 0) {
+      <div
+        cdkDropList
+        cdkDropListOrientation="mixed"
+        (cdkDropListDropped)="onImageDrop($event)"
+        class="grid grid-cols-2 sm:grid-cols-3 gap-3"
+        [class.md:grid-cols-4]="isMaximized()"
+        [class.lg:grid-cols-5]="isMaximized()"
+        [class.xl:grid-cols-6]="isMaximized()">
+        @for (img of images(); track img.id) {
+          <div
+            cdkDrag
+            class="group relative rounded-xl border overflow-hidden bg-white dark:bg-gray-900 shadow-xs transition flex flex-col"
+            [class.border-brand-500]="selectedImageIds().has(img.id)"
+            [class.ring-2]="selectedImageIds().has(img.id) || img.is_cover"
+            [class.ring-brand-500]="selectedImageIds().has(img.id)"
+            [class.border-amber-400]="img.is_cover && !selectedImageIds().has(img.id)"
+            [class.dark:border-amber-500]="img.is_cover && !selectedImageIds().has(img.id)"
+            [class.ring-amber-400]="img.is_cover && !selectedImageIds().has(img.id)"
+            [class.border-gray-200]="!img.is_cover && !selectedImageIds().has(img.id)"
+            [class.dark:border-gray-700]="!img.is_cover && !selectedImageIds().has(img.id)">
+
+            <!-- Preview Personalizado de Alto Rendimiento 1:1 con el Cursor -->
+            <ng-template cdkDragPreview [matchSize]="true">
+              <div class="w-full h-full rounded-xl overflow-hidden bg-white dark:bg-gray-900 border-2 border-brand-500 shadow-2xl flex flex-col pointer-events-none select-none">
+                <div class="relative aspect-square bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
+                  <img
+                    [src]="img.url | clUrl:'card'"
+                    [alt]="img.title || 'Foto de catálogo'"
+                    class="w-full h-full object-cover" />
+                  @if (img.is_cover) {
+                    <div class="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500 text-white shadow-xs flex items-center gap-1">
+                      <svg lucideStar size="11" class="fill-white"></svg>
+                      <span>Portada Oficial</span>
+                    </div>
+                  }
+                </div>
+                <div class="px-2.5 py-1.5 bg-white dark:bg-gray-900 flex items-center justify-between text-xs border-t border-gray-100 dark:border-gray-800">
+                  <span class="font-bold text-brand-600 dark:text-brand-400">#{{ $index + 1 }}</span>
+                  <span class="text-gray-500 dark:text-gray-400 text-[11px]">{{ img.width }}x{{ img.height }} px</span>
+                </div>
+              </div>
+            </ng-template>
+
+            <!-- Contenedor de la Imagen con Aspect Ratio Cuadrado -->
+            <div
+              role="button"
+              tabindex="0"
+              aria-label="Ver imagen ampliada"
+              (keydown.enter)="openPreview(img)"
+              (keydown.space)="openPreview(img); $event.preventDefault()"
+              class="relative aspect-square bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden cursor-pointer"
+              (click)="openPreview(img)">
+              <img
+                [src]="img.url | clUrl:'card'"
+                [alt]="img.title || 'Foto de catálogo'"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                loading="lazy" />
+
+              <!-- Checkbox de Selección en Esquina Superior Izquierda -->
+              <button
+                type="button"
+                (click)="toggleSelectImage(img.id, $event)"
+                [attr.aria-label]="selectedImageIds().has(img.id) ? 'Deseleccionar fotografía' : 'Seleccionar fotografía'"
+                class="absolute top-2 left-2 z-20 w-6 h-6 rounded-md flex items-center justify-center transition-all cursor-pointer shadow-xs"
+                [class.bg-brand-600]="selectedImageIds().has(img.id)"
+                [class.text-white]="selectedImageIds().has(img.id)"
+                [class.border-brand-600]="selectedImageIds().has(img.id)"
+                [class.bg-white]="!selectedImageIds().has(img.id)"
+                [class.dark:bg-gray-900]="!selectedImageIds().has(img.id)"
+                [class.border]="!selectedImageIds().has(img.id)"
+                [class.border-gray-300]="!selectedImageIds().has(img.id)"
+                [class.dark:border-gray-600]="!selectedImageIds().has(img.id)"
+                [class.opacity-0]="!selectedImageIds().has(img.id) && selectedCount() === 0"
+                [class.group-hover:opacity-100]="!selectedImageIds().has(img.id)"
+                pTooltip="Seleccionar foto"
+                tooltipPosition="top">
+                @if (selectedImageIds().has(img.id)) {
+                  <svg lucideCheck size="13" class="stroke-3"></svg>
+                }
+              </button>
+
+              <!-- Badge de Portada Oficial (desplazado a la derecha del checkbox) -->
+              @if (img.is_cover) {
+                <div class="absolute top-2 left-10 z-10 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500 text-white shadow-xs flex items-center gap-1">
+                  <svg lucideStar size="11" class="fill-white"></svg>
+                  <span>Portada Oficial</span>
+                </div>
+              }
+
+              <!-- Botones de Acción en Hover (Grip Reordenar + Zoom + Eliminar) -->
+              <div class="absolute top-2 right-2 flex items-center gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  type="button"
+                  cdkDragHandle
+                  aria-label="Arrastrar para reordenar fotografía"
+                  class="w-7 h-7 rounded-md bg-black/60 hover:bg-black/80 text-white flex items-center justify-center cursor-grab active:cursor-grabbing transition-colors"
+                  pTooltip="Arrastrar para reordenar"
+                  tooltipPosition="bottom"
+                  (click)="$event.stopPropagation()">
+                  <svg lucideGripVertical size="13"></svg>
+                </button>
+                <button
+                  type="button"
+                  class="w-7 h-7 rounded-md bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors cursor-pointer"
+                  pTooltip="Ampliar imagen"
+                  tooltipPosition="bottom"
+                  (click)="$event.stopPropagation(); openPreview(img)">
+                  <svg lucideEye size="13"></svg>
+                </button>
+                <button
+                  type="button"
+                  class="w-7 h-7 rounded-md bg-red-600/80 hover:bg-red-600 text-white flex items-center justify-center transition-colors cursor-pointer"
+                  pTooltip="Eliminar fotografía"
+                  tooltipPosition="bottom"
+                  (click)="$event.stopPropagation(); confirmDeleteImage(img)">
+                  <svg lucideTrash2 size="13"></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Footer de la Tarjeta: Posición (#1, #2...), Dimensiones y Selector de Portada -->
+            <div class="p-2 border-t border-gray-100 dark:border-gray-800 flex flex-col gap-1.5 flex-1 justify-between bg-white dark:bg-gray-900">
+              <div class="flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400 font-mono">
+                <div class="flex items-center gap-1.5 font-medium text-gray-600 dark:text-gray-300">
+                  <span class="px-1.5 py-0.2 rounded bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-mono text-[10px] font-bold text-gray-600 dark:text-gray-400">
+                    #{{ $index + 1 }}
+                  </span>
+                  <span>
+                    {{ img.width && img.height ? (img.width + 'x' + img.height) : (img.format ? (img.format | uppercase) : 'WEBP') }}
+                  </span>
+                </div>
+                <span>{{ formatBytes(img.file_size_bytes) }}</span>
+              </div>
+
+              <!-- Selector Exclusivo de Portada -->
+              @if (img.is_cover) {
+                <div class="w-full py-1 text-center text-[11px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 rounded flex items-center justify-center gap-1">
+                  <svg lucideCheck size="12" class="text-amber-600 dark:text-amber-400"></svg>
+                  <span>Portada Activa</span>
+                </div>
+              } @else {
+                <button
+                  type="button"
+                  (click)="setAsCover(img)"
+                  class="w-full py-1 text-[11px] font-medium text-gray-600 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 rounded border border-gray-200 dark:border-gray-700 transition-colors flex items-center justify-center gap-1">
+                  <svg lucideStar size="12"></svg>
+                  <span>Fijar como Portada</span>
+                </button>
+              }
+            </div>
+
+          </div>
+        }
+      </div>
+    }
+  }
+
+</div>
+
+<!-- Diálogo Modal de Vista Previa en Alta Resolución (centrado en la pantalla de escritorio) -->
+<p-dialog
+  appendTo="body"
+  [visible]="previewImage() !== null"
+  (visibleChange)="onPreviewVisibleChange($event)"
+  [modal]="true"
+  [dismissableMask]="true"
+  [style]="{ width: '48rem', maxWidth: '95vw' }"
+  header="Vista Previa de Fotografía">
+  
+  @if (previewImage(); as pImg) {
+    <div class="flex flex-col gap-3">
+      <div class="w-full max-h-[70vh] bg-black/5 dark:bg-black/40 rounded-xl overflow-hidden flex items-center justify-center p-2">
+        <img
+          [src]="pImg.url | clUrl:'modal'"
+          [alt]="pImg.title || 'Vista previa'"
+          class="max-h-[65vh] max-w-full object-contain rounded-lg" />
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-xs">
+        <div class="flex items-center gap-2">
+          @if (pImg.is_cover) {
+            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500 text-white flex items-center gap-1 shadow-xs">
+              <svg lucideStar size="11" class="fill-white"></svg> Portada Oficial
+            </span>
+          }
+          <span class="text-gray-500 dark:text-gray-400 font-mono">
+            {{ pImg.width }}x{{ pImg.height }} px · {{ (pImg.format || 'webp') | uppercase }} · {{ formatBytes(pImg.file_size_bytes) }}
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          @if (!pImg.is_cover) {
+            <p-button
+              label="Definir como Portada"
+              icon="pi pi-star"
+              size="small"
+              severity="warn"
+              [outlined]="true"
+              (click)="setAsCover(pImg)">
+            </p-button>
+          }
+          <p-button
+            label="Descargar"
+            icon="pi pi-download"
+            size="small"
+            severity="secondary"
+            [outlined]="true"
+            [loading]="isDownloadingImage()"
+            (click)="downloadImage(pImg)">
+          </p-button>
+          <a
+            [href]="pImg.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 flex items-center transition-colors"
+            pTooltip="Abrir original en pestaña nueva"
+            tooltipPosition="bottom">
+            <svg lucideExternalLink size="14"></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  }
+</p-dialog>

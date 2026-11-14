@@ -1,0 +1,170 @@
+<div class="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden shadow-2xs">
+  <!-- Cabecera con Botón de Modo Visual / Raw -->
+  <div class="flex items-center justify-between px-3 py-2 bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700">
+    <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">
+      {{ label() }}
+    </span>
+
+    <div class="inline-flex rounded-lg p-0.5 bg-gray-200/70 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs">
+      <button
+        type="button"
+        (click)="switchMode('visual')"
+        class="px-2 py-0.5 rounded text-[11px] font-medium transition-all cursor-pointer flex items-center gap-1"
+        [class.bg-white]="mode() === 'visual'"
+        [class.dark:bg-gray-900]="mode() === 'visual'"
+        [class.text-brand-700]="mode() === 'visual'"
+        [class.dark:text-brand-300]="mode() === 'visual'"
+        [class.shadow-2xs]="mode() === 'visual'"
+        [class.text-gray-600]="mode() !== 'visual'"
+        [class.dark:text-gray-400]="mode() !== 'visual'">
+        <svg lucideEye size="12"></svg>
+        <span>Visual</span>
+      </button>
+      <button
+        type="button"
+        (click)="switchMode('raw')"
+        class="px-2 py-0.5 rounded text-[11px] font-medium transition-all cursor-pointer flex items-center gap-1"
+        [class.bg-white]="mode() === 'raw'"
+        [class.dark:bg-gray-900]="mode() === 'raw'"
+        [class.text-brand-700]="mode() === 'raw'"
+        [class.dark:text-brand-300]="mode() === 'raw'"
+        [class.shadow-2xs]="mode() === 'raw'"
+        [class.text-gray-600]="mode() !== 'raw'"
+        [class.dark:text-gray-400]="mode() !== 'raw'">
+        <svg lucideCode size="12"></svg>
+        <span>Markdown</span>
+      </button>
+    </div>
+  </div>
+
+  @if (mode() === 'visual') {
+    <!-- Barra de Herramientas WYSIWYG Visual -->
+    <div class="flex flex-wrap items-center gap-1 px-3 py-1.5 bg-gray-50/70 dark:bg-gray-850 border-b border-gray-100 dark:border-gray-800 text-xs">
+      <button
+        type="button"
+        (mousedown)="$event.preventDefault()"
+        (click)="execFormat('bold')"
+        pTooltip="Negrita (Ctrl+B)"
+        tooltipPosition="bottom"
+        class="p-1 px-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-bold transition-colors cursor-pointer text-xs">
+        B
+      </button>
+      <button
+        type="button"
+        (mousedown)="$event.preventDefault()"
+        (click)="execFormat('italic')"
+        pTooltip="Cursiva (Ctrl+I)"
+        tooltipPosition="bottom"
+        class="p-1 px-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 italic font-serif transition-colors cursor-pointer text-xs">
+        I
+      </button>
+      <div class="h-3.5 w-px bg-gray-300 dark:bg-gray-700 mx-0.5"></div>
+      <button
+        type="button"
+        (mousedown)="$event.preventDefault()"
+        (click)="execFormat('insertUnorderedList')"
+        pTooltip="Lista con viñetas"
+        tooltipPosition="bottom"
+        class="p-1 px-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors cursor-pointer text-xs flex items-center gap-1">
+        <span>•</span> <span>Viñeta</span>
+      </button>
+      <button
+        type="button"
+        (mousedown)="$event.preventDefault()"
+        (click)="execFormat('insertOrderedList')"
+        pTooltip="Lista numerada"
+        tooltipPosition="bottom"
+        class="p-1 px-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors cursor-pointer text-xs">
+        1. Lista
+      </button>
+      <button
+        type="button"
+        (mousedown)="$event.preventDefault()"
+        (click)="execFormat('formatBlock', 'h4')"
+        pTooltip="Subtítulo de sección"
+        tooltipPosition="bottom"
+        class="p-1 px-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold transition-colors cursor-pointer text-xs">
+        H Subtítulo
+      </button>
+      <button
+        type="button"
+        (mousedown)="$event.preventDefault()"
+        (click)="execFormat('formatBlock', 'p')"
+        pTooltip="Texto normal o párrafo"
+        tooltipPosition="bottom"
+        class="p-1 px-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors cursor-pointer text-xs">
+        P Párrafo
+      </button>
+    </div>
+
+    <!-- Contenedor Visual WYSIWYG Editable Directamente -->
+    <div
+      #visualEditor
+      contenteditable="true"
+      (input)="onVisualEditorInput()"
+      (blur)="onVisualEditorInput()"
+      class="rich-editor-content p-3.5 min-h-42.5 max-h-87.5 overflow-y-auto bg-white dark:bg-gray-900 text-xs text-gray-800 dark:text-gray-200 leading-relaxed outline-none focus:ring-0 cursor-text select-text">
+    </div>
+
+    <div class="px-3 py-1.5 bg-gray-50/50 dark:bg-gray-850/60 border-t border-gray-100 dark:border-gray-800 text-[10px] text-gray-400 dark:text-gray-500 flex items-center justify-between">
+      <span>Edición visual directa: escribe y formatea como en Word. Presiona Enter para agregar viñetas.</span>
+      <span class="font-mono text-gray-400">Guarda en Markdown automáticamente</span>
+    </div>
+  } @else {
+    <!-- Modo Markdown Raw (Avanzado) -->
+    <div class="flex flex-wrap items-center gap-1 px-3 py-1.5 bg-gray-50/50 dark:bg-gray-850 border-b border-gray-100 dark:border-gray-800 text-xs">
+      <button
+        type="button"
+        (click)="insertMarkdownSnippet('bold')"
+        pTooltip="Negrita (**texto**)"
+        tooltipPosition="bottom"
+        class="p-1 px-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold transition-colors cursor-pointer text-xs">
+        B
+      </button>
+      <button
+        type="button"
+        (click)="insertMarkdownSnippet('italic')"
+        pTooltip="Cursiva (*texto*)"
+        tooltipPosition="bottom"
+        class="p-1 px-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 italic font-serif transition-colors cursor-pointer text-xs">
+        I
+      </button>
+      <div class="h-3.5 w-px bg-gray-300 dark:bg-gray-700 mx-0.5"></div>
+      <button
+        type="button"
+        (click)="insertMarkdownSnippet('bullet')"
+        pTooltip="Viñeta (• item)"
+        tooltipPosition="bottom"
+        class="p-1 px-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors cursor-pointer text-xs flex items-center gap-1">
+        <span>•</span> <span>Viñeta</span>
+      </button>
+      <button
+        type="button"
+        (click)="insertMarkdownSnippet('number')"
+        pTooltip="Lista numerada (1. item)"
+        tooltipPosition="bottom"
+        class="p-1 px-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors cursor-pointer text-xs">
+        1. Lista
+      </button>
+      <button
+        type="button"
+        (click)="insertMarkdownSnippet('heading')"
+        pTooltip="Subtítulo (### Título)"
+        tooltipPosition="bottom"
+        class="p-1 px-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold transition-colors cursor-pointer text-xs">
+        H Título
+      </button>
+    </div>
+
+    <div class="p-2">
+      <textarea
+        pTextarea
+        [ngModel]="value()"
+        (ngModelChange)="value.set($event)"
+        [rows]="rows()"
+        [placeholder]="placeholder()"
+        class="w-full text-sm font-mono border-0 focus:ring-0 resize-y">
+      </textarea>
+    </div>
+  }
+</div>

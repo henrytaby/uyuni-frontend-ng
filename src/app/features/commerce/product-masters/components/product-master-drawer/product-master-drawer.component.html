@@ -1,6 +1,6 @@
 <p-drawer
   [visible]="visible()"
-  (visibleChange)="visible.set($event)"
+  (visibleChange)="onVisibleChange($event)"
   position="right"
   [modal]="true"
   [fullScreen]="isMaximized()"
@@ -43,7 +43,7 @@
         @if (mode() === 'edit' && currentDisplayProduct()?.id) {
           <button
             type="button"
-            class="w-[30px] h-[30px] rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
+            class="w-7.5 h-7.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
             pTooltip="Copiar ID Universal (UUID)"
             tooltipPosition="bottom"
             (click)="copyToClipboard(currentDisplayProduct()!.id, 'ID de Ficha')">
@@ -54,7 +54,7 @@
         <!-- Botón Maximizar / Restaurar Pantalla Completa (Estilo Ventana) -->
         <button
           type="button"
-          class="w-[30px] h-[30px] rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
+          class="w-7.5 h-7.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
           [pTooltip]="isMaximized() ? 'Restaurar tamaño normal' : 'Maximizar a pantalla completa'"
           tooltipPosition="bottom"
           (click)="toggleMaximize()">
@@ -76,12 +76,17 @@
           <div class="flex items-center gap-1.5 py-1">
             <svg lucideTag size="14"></svg>
             <span>Ficha Comercial</span>
+            @if (referenceLinks().length > 0) {
+              <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-brand-500/10 text-brand-600 dark:text-brand-400">
+                {{ referenceLinks().length }}
+              </span>
+            }
           </div>
         </p-tab>
         <p-tab value="1">
           <div class="flex items-center gap-1.5 py-1">
             <svg lucideDollarSign size="14"></svg>
-            <span>Precios y Regateo</span>
+            <span>Precios y Stock</span>
           </div>
         </p-tab>
         <p-tab value="2">
@@ -97,18 +102,15 @@
         </p-tab>
         <p-tab value="3">
           <div class="flex items-center gap-1.5 py-1">
-            <svg lucideImage size="14"></svg>
+            <svg lucideShare2 size="14"></svg>
             <span>Marketing y Redes</span>
+            @if (marketplaceLinks().length > 0) {
+              <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                {{ marketplaceLinks().length }}
+              </span>
+            }
           </div>
         </p-tab>
-        @if (mode() === 'edit') {
-          <p-tab value="4">
-            <div class="flex items-center gap-1.5 py-1">
-              <svg lucidePackage size="14"></svg>
-              <span>Stock Consolidado</span>
-            </div>
-          </p-tab>
-        }
       </p-tablist>
 
       <p-tabpanels cdkScrollable class="flex-1 overflow-y-auto p-3 sm:p-4!">
@@ -249,23 +251,42 @@
               </div>
             </div>
 
-            <!-- Fila 5: Descripción -->
+            <!-- Fila 5: Descripción Corta (Catálogo Web / PWA) -->
             <div>
-              <label for="pm_description" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Descripción Detallada
-              </label>
+              <div class="flex items-center justify-between mb-1">
+                <label for="pm_description" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  Descripción Corta (Catálogo Web / PWA)
+                </label>
+                <span
+                  class="text-[11px] font-mono font-medium transition-colors"
+                  [class.text-gray-400]="description().length < 800"
+                  [class.text-amber-600]="description().length >= 800 && description().length < 1000"
+                  [class.text-red-500]="description().length >= 1000">
+                  {{ description().length || 0 }} / 1000 caracteres
+                </span>
+              </div>
               <textarea
                 id="pm_description"
                 pTextarea
                 [ngModel]="description()"
                 (ngModelChange)="description.set($event)"
                 rows="3"
-                placeholder="Descripción para catálogo web, PWA y publicaciones comerciales..."
+                maxlength="1000"
+                placeholder="Resumen comercial conciso para la tarjeta de producto en el catálogo público, PWA móvil y vista previa de WhatsApp..."
                 class="w-full text-sm">
               </textarea>
+              <span class="block text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
+                Resumen comercial visible en el catálogo público, PWA móvil y vistas previas de WhatsApp (máx. 1000 caracteres).
+              </span>
             </div>
 
-            <!-- Fila 6: Estado Activo -->
+            <!-- Fila 6: Características Técnicas (Editor Visual Markdown Reutilizable) -->
+            <app-markdown-editor
+              label="Características Técnicas"
+              placeholder="• **Resolución**: 1080p Nativo (Decodifica 8K)&#10;• **Sistema Operativo**: Android 14.0 con WiFi Dual Band&#10;• **Brillo**: 350 ANSI Lúmenes&#10;• **Conectividad**: HDMI, USB y Bluetooth 5.2"
+              [(value)]="features" />
+
+            <!-- Fila 7: Estado Activo -->
             <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700">
               <div>
                 <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 block">Ficha Activa en Catálogo</span>
@@ -274,619 +295,262 @@
               <p-toggleswitch [ngModel]="isActive()" (ngModelChange)="isActive.set($event)"></p-toggleswitch>
             </div>
 
+            <!-- Fila 8: Fuentes de Referencia & Proveedores Mayoristas (Multi-link REFERENCE) -->
+            <app-product-master-links
+              [masterId]="currentDisplayProduct()?.id ?? null"
+              linkType="REFERENCE"
+              title="Fuentes de Referencia & Proveedores Mayoristas"
+              subtitle="Fichas de Amazon, AliExpress, Alibaba o fabricante para consulta de especificaciones"
+              [mode]="mode()"
+              [links]="referenceLinks()"
+              (linksChange)="referenceLinks.set($event)"
+              [initialUrl]="externalInfoUrl()"
+              (initialUrlChange)="externalInfoUrl.set($event)"
+              (primaryChanged)="onLinkPrimaryChanged($event)">
+            </app-product-master-links>
+
           </div>
         </p-tabpanel>
 
-        <!-- TAB 1: PRECIOS Y REGATEO -->
+        <!-- TAB 1: PRECIOS Y STOCK CONSOLIDADO -->
         <p-tabpanel value="1" class="p-0!">
           <div class="flex flex-col gap-4 text-sm">
-            
-            <!-- Banner Informativo de Regla de Negocio -->
-            <div class="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-lg text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
-              <svg lucideInfo size="16" class="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400"></svg>
-              <div>
-                <span class="font-bold">Protección de Margen y Piso de Regateo:</span>
-                El sistema bloquea automáticamente cualquier intento de venta en streaming o WhatsApp por debajo del <strong>Precio Mínimo Protegido</strong>, salvo autorización explícita del administrador.
-              </div>
-            </div>
 
-            <!-- Precios Principales -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <label for="pm_official_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Precio Oficial (Lista)
-                </label>
-                <p-inputnumber
-                  inputId="pm_official_price"
-                  [ngModel]="officialPrice()"
-                  (ngModelChange)="officialPrice.set($event)"
-                  mode="currency"
-                  currency="BOB"
-                  locale="es-BO"
-                  [minFractionDigits]="2"
-                  class="w-full">
-                </p-inputnumber>
-                <span class="text-xs text-gray-400 block mt-0.5">Precio de referencia comercial</span>
-              </div>
+            <!-- Bloque 1: Resumen de Stock Físico Consolidado -->
+            @if (mode() === 'edit') {
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                    <svg lucidePackage size="14" class="text-brand-600 dark:text-brand-400"></svg>
+                    <span>Inventario Físico Consolidado</span>
+                  </span>
+                  <span class="text-[11px] text-gray-400 dark:text-gray-500 font-mono">
+                    Stock real unificado
+                  </span>
+                </div>
 
-              <div>
-                <label for="pm_published_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Precio Publicado (Marketplace)
-                </label>
-                <p-inputnumber
-                  inputId="pm_published_price"
-                  [ngModel]="publishedPrice()"
-                  (ngModelChange)="publishedPrice.set($event)"
-                  mode="currency"
-                  currency="BOB"
-                  locale="es-BO"
-                  [minFractionDigits]="2"
-                  class="w-full">
-                </p-inputnumber>
-                <span class="text-xs text-gray-400 block mt-0.5">Mostrado en artes y redes</span>
-              </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div class="p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-center shadow-2xs">
+                    <span class="text-xs text-green-700 dark:text-green-300 block font-medium">Disponible para Venta</span>
+                    <span class="text-2xl font-bold text-green-900 dark:text-green-100 font-mono mt-0.5 block">
+                      {{ totalAvailableStock() }}
+                    </span>
+                    <span class="text-[11px] text-green-600 dark:text-green-400 block">unidades físicas</span>
+                  </div>
 
-              <div>
-                <label for="pm_minimum_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Precio Mínimo Protegido <span class="text-red-500">*</span>
-                </label>
-                <p-inputnumber
-                  inputId="pm_minimum_price"
-                  [ngModel]="minimumPrice()"
-                  (ngModelChange)="minimumPrice.set($event)"
-                  mode="currency"
-                  currency="BOB"
-                  locale="es-BO"
-                  [minFractionDigits]="2"
-                  class="w-full">
-                </p-inputnumber>
-                <span class="text-xs text-red-500 font-medium block mt-0.5">Límite infranqueable</span>
-              </div>
-            </div>
+                  <div class="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-center shadow-2xs">
+                    <span class="text-xs text-blue-700 dark:text-blue-300 block font-medium">Unidades Vendidas</span>
+                    <span class="text-2xl font-bold text-blue-900 dark:text-blue-100 font-mono mt-0.5 block">
+                      {{ totalSoldStock() }}
+                    </span>
+                    <span class="text-[11px] text-blue-600 dark:text-blue-400 block">despachadas</span>
+                  </div>
 
-            <!-- Advertencia si precio mínimo > oficial -->
-            @if (priceValidation().warning) {
-              <div class="p-2.5 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-md text-xs text-yellow-800 dark:text-yellow-300 flex items-center gap-2">
-                <svg lucideCircleAlert size="14" class="shrink-0"></svg>
-                <span>{{ priceValidation().warning }}</span>
+                  <div class="p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-center shadow-2xs">
+                    <span class="text-xs text-red-700 dark:text-red-300 block font-medium">Mermas / Defectuosos</span>
+                    <span class="text-2xl font-bold text-red-900 dark:text-red-100 font-mono mt-0.5 block">
+                      {{ totalMermaStock() }}
+                    </span>
+                    <span class="text-[11px] text-red-600 dark:text-red-400 block">unidades de baja</span>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <!-- Estado informativo en Modo Creación -->
+              <div class="p-3 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-600 dark:text-gray-300 flex items-start gap-2">
+                <svg lucidePackage size="16" class="shrink-0 text-gray-400 mt-0.5"></svg>
+                <div>
+                  <span class="font-bold">Inventario Inicial:</span>
+                  El registro de existencias físicas se gestiona automáticamente al desempacar e ingresar cajas en el submódulo de <strong>Lotes y Cajas</strong> (`/commerce/batches`).
+                </div>
               </div>
             }
 
-            <!-- Resumen de Margen de Negociación -->
-            <div class="p-3 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-2">Simulador de Margen de Regateo</span>
-              <div class="flex items-center justify-between text-xs">
-                <span class="text-gray-500 dark:text-gray-400">Margen máximo de descuento para Live:</span>
-                <span class="font-bold text-gray-900 dark:text-gray-100 font-mono text-sm">
-                  Bs. {{ (officialPrice() - minimumPrice()) > 0 ? (officialPrice() - minimumPrice()).toFixed(2) : '0.00' }}
-                </span>
+            <!-- Bloque 2: Precios Principales y Regateo -->
+            <div class="flex flex-col gap-2">
+              <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+                <svg lucideDollarSign size="14" class="text-brand-600 dark:text-brand-400"></svg>
+                <span>Estrategia de Precios y Regateo</span>
+              </span>
+
+              <!-- Banner Informativo de Regla de Negocio -->
+              <div class="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-lg text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
+                <svg lucideInfo size="16" class="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400"></svg>
+                <div>
+                  <span class="font-bold">Protección de Margen y Piso de Regateo:</span>
+                  El sistema bloquea automáticamente cualquier intento de venta en streaming o WhatsApp por debajo del <strong>Precio Mínimo Protegido</strong>, salvo autorización explícita del administrador.
+                </div>
+              </div>
+
+              <!-- Inputs de Precios -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label for="pm_official_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    Precio Oficial (Lista)
+                  </label>
+                  <p-inputnumber
+                    inputId="pm_official_price"
+                    [ngModel]="officialPrice()"
+                    (ngModelChange)="officialPrice.set($event)"
+                    mode="currency"
+                    currency="BOB"
+                    locale="es-BO"
+                    [minFractionDigits]="2"
+                    class="w-full">
+                  </p-inputnumber>
+                  <span class="text-xs text-gray-400 block mt-0.5">Precio de referencia comercial</span>
+                </div>
+
+                <div>
+                  <label for="pm_published_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    Precio Publicado (Marketplace)
+                  </label>
+                  <p-inputnumber
+                    inputId="pm_published_price"
+                    [ngModel]="publishedPrice()"
+                    (ngModelChange)="publishedPrice.set($event)"
+                    mode="currency"
+                    currency="BOB"
+                    locale="es-BO"
+                    [minFractionDigits]="2"
+                    class="w-full">
+                  </p-inputnumber>
+                  <span class="text-xs text-gray-400 block mt-0.5">Mostrado en artes y redes</span>
+                </div>
+
+                <div>
+                  <label for="pm_minimum_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    Precio Mínimo Protegido <span class="text-red-500">*</span>
+                  </label>
+                  <p-inputnumber
+                    inputId="pm_minimum_price"
+                    [ngModel]="minimumPrice()"
+                    (ngModelChange)="minimumPrice.set($event)"
+                    mode="currency"
+                    currency="BOB"
+                    locale="es-BO"
+                    [minFractionDigits]="2"
+                    class="w-full">
+                  </p-inputnumber>
+                  <span class="text-xs text-red-500 font-medium block mt-0.5">Límite infranqueable</span>
+                </div>
+              </div>
+
+              <!-- Advertencia si precio mínimo > oficial -->
+              @if (priceValidation().warning) {
+                <div class="p-2.5 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-md text-xs text-yellow-800 dark:text-yellow-300 flex items-center gap-2">
+                  <svg lucideCircleAlert size="14" class="shrink-0"></svg>
+                  <span>{{ priceValidation().warning }}</span>
+                </div>
+              }
+
+              <!-- Resumen de Margen de Negociación con % de descuento -->
+              <div class="p-3 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 block mb-2">Simulador de Margen de Regateo</span>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-gray-500 dark:text-gray-400">Margen máximo de descuento para Live:</span>
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-gray-900 dark:text-gray-100 font-mono text-sm">
+                      Bs. {{ (officialPrice() - minimumPrice()) > 0 ? (officialPrice() - minimumPrice()).toFixed(2) : '0.00' }}
+                    </span>
+                    @if (officialPrice() > 0 && officialPrice() > minimumPrice()) {
+                      <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded">
+                        {{ (((officialPrice() - minimumPrice()) / officialPrice()) * 100).toFixed(0) }}% máx.
+                      </span>
+                    }
+                  </div>
+                </div>
               </div>
             </div>
+
+            <!-- Bloque 3: Separación Conceptual Informativa -->
+            @if (mode() === 'edit') {
+              <div class="p-3 bg-gray-50/70 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-600 dark:text-gray-300 flex items-start gap-2">
+                <svg lucideLayers size="16" class="shrink-0 text-gray-400 mt-0.5"></svg>
+                <div>
+                  <span class="font-bold">Separación de Ficha Maestra vs. Lote Físico:</span>
+                  Las unidades físicas reales se administran a través del desempaque e inspección de cajas importadas en el submódulo de <strong>Lotes y Cajas</strong> (`/commerce/batches`) y el inventario específico en <strong>Productos</strong> (`/commerce/products`).
+                </div>
+              </div>
+            }
 
           </div>
         </p-tabpanel>
 
-        <!-- TAB 2: GALERÍA MULTIMEDIA Y CLOUDINARY -->
+        <!-- TAB 2: GALERÍA MULTIMEDIA -->
         <p-tabpanel value="2" class="p-0!">
-          <div class="flex flex-col gap-4 text-sm">
-
-            @if (mode() === 'create') {
-              <!-- Estado en Modo Creación: Requiere guardar primero -->
-              <div class="p-8 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 text-center flex flex-col items-center justify-center gap-3">
-                <div class="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-800 text-brand-600 dark:text-brand-400 flex items-center justify-center shadow-xs">
-                  <svg lucideImages size="24"></svg>
-                </div>
-                <div class="max-w-md">
-                  <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">
-                    Gestión de Galería Habilitada tras Guardar
-                  </h3>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-                    Para arrastrar y subir fotografías de alta calidad (WebP) y configurar la portada oficial, primero debe registrar los datos iniciales de la ficha maestra.
-                  </p>
-                </div>
-                <p-button
-                  label="Completar Ficha Comercial"
-                  icon="pi pi-arrow-left"
-                  [outlined]="true"
-                  size="small"
-                  (click)="activeTab.set('0')">
-                </p-button>
-              </div>
-            } @else {
-              <!-- Estado en Modo Edición: Galería Completa -->
-              
-              <!-- Cabecera de la Sección con Contador y Refrescar -->
-              <div class="flex items-center justify-between pb-1 border-b border-gray-100 dark:border-gray-800">
-                <div>
-                  <h3 class="text-xs font-bold text-gray-900 dark:text-gray-100 m-0 flex items-center gap-2">
-                    <span>Fotografías de Catálogo (CATALOG)</span>
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-800">
-                      {{ images().length }} {{ images().length === 1 ? 'imagen' : 'imágenes' }}
-                    </span>
-                  </h3>
-                  <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">
-                    Subidas en alta resolución y procesadas automáticamente en formato WebP optimizado.
-                  </span>
-                </div>
-
-                <div class="flex items-center gap-1.5">
-                  @if (images().length > 0 && selectedCount() === 0) {
-                    <p-button
-                      label="Descargar Álbum (.ZIP)"
-                      icon="pi pi-download"
-                      size="small"
-                      severity="primary"
-                      [loading]="isDownloadingZip()"
-                      (click)="downloadImagesZip(false)"
-                      pTooltip="Descargar todas las fotos originales en un comprimido ZIP"
-                      tooltipPosition="left">
-                    </p-button>
-                  }
-
-                  @if (currentDisplayProduct()?.id; as prodId) {
-                    <button
-                      type="button"
-                      class="p-1.5 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors flex items-center gap-1 text-xs cursor-pointer"
-                      pTooltip="Refrescar galería"
-                      tooltipPosition="left"
-                      [disabled]="isLoadingImages() || isUploadingImages()"
-                      (click)="loadGallery(prodId)">
-                      <svg lucideRefreshCw size="13" [class.animate-spin]="isLoadingImages()"></svg>
-                    </button>
-                  }
-                </div>
-              </div>
-
-              <!-- Enterprise Dropzone (Arrastrar y Soltar / Clic) -->
-              <div
-                role="button"
-                tabindex="0"
-                aria-label="Zona para arrastrar o seleccionar fotografías"
-                (keydown.enter)="fileInput.click()"
-                (keydown.space)="fileInput.click(); $event.preventDefault()"
-                class="relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-2"
-                [class.border-brand-500]="isDragOver()"
-                [class.bg-brand-50]="isDragOver()"
-                [class.dark:bg-brand-950]="isDragOver()"
-                [class.ring-4]="isDragOver()"
-                [class.ring-brand-500]="isDragOver()"
-                [class.border-gray-300]="!isDragOver()"
-                [class.dark:border-gray-700]="!isDragOver()"
-                [class.bg-gray-50]="!isDragOver()"
-                [class.dark:bg-gray-800]="!isDragOver()"
-                [class.hover:bg-gray-100]="!isDragOver()"
-                [class.dark:hover:bg-gray-800]="!isDragOver()"
-                [class.hover:border-brand-400]="!isDragOver()"
-                (dragover)="onDragOver($event)"
-                (dragleave)="onDragLeave($event)"
-                (drop)="onDrop($event)"
-                (click)="fileInput.click()">
-
-                <input
-                  #fileInput
-                  type="file"
-                  multiple
-                  accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-                  (change)="onFileInputChange($event)"
-                  class="hidden" />
-
-                <div class="w-12 h-12 rounded-full bg-brand-100/70 dark:bg-brand-950/70 text-brand-700 dark:text-brand-300 flex items-center justify-center shadow-xs">
-                  <svg lucideCloudUpload size="24"></svg>
-                </div>
-
-                <div>
-                  <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
-                    Arrastra y suelta tus fotografías aquí o <span class="text-brand-600 dark:text-brand-400 underline font-bold">haz clic para examinar</span>
-                  </span>
-                  <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-1">
-                    Puedes subir 1 o más imágenes a la vez · JPG, PNG, WEBP, AVIF hasta 10 MB por foto
-                  </span>
-                </div>
-              </div>
-
-              <!-- Barra de Progreso de Subida en Tiempo Real -->
-              @if (isUploadingImages()) {
-                <div class="p-3.5 rounded-xl border border-brand-200 dark:border-brand-800 bg-brand-50/50 dark:bg-brand-950/30 flex flex-col gap-2">
-                  <div class="flex items-center justify-between text-xs">
-                    <div class="flex items-center gap-2 font-semibold text-brand-900 dark:text-brand-200">
-                      <span class="inline-block w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
-                      <span>Subiendo y optimizando fotografías en el servidor...</span>
-                    </div>
-                    <span class="font-mono font-bold text-brand-700 dark:text-brand-300">{{ uploadProgress() }}%</span>
-                  </div>
-                  <p-progressbar [value]="uploadProgress()" [showValue]="false" class="w-full h-2 rounded-full overflow-hidden"></p-progressbar>
-                  <span class="text-[11px] text-gray-500 dark:text-gray-400">
-                    Convirtiendo a WebP de alta fidelidad y vinculando con la ficha maestra...
-                  </span>
-                </div>
-              }
-
-              <!-- Indicador de Carga de Galería -->
-              @if (isLoadingImages() && !isUploadingImages()) {
-                <div class="p-6 text-center text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2">
-                  <svg lucideRefreshCw size="16" class="animate-spin text-brand-600 dark:text-brand-400"></svg>
-                  <span>Sincronizando galería multimedia...</span>
-                </div>
-              }
-
-              <!-- Estado Vacío -->
-              @if (images().length === 0 && !isLoadingImages() && !isUploadingImages()) {
-                <div class="p-8 text-center rounded-xl border border-dashed border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20">
-                  <svg lucideImage size="28" class="text-gray-400 dark:text-gray-500 mx-auto mb-2"></svg>
-                  <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 block">Sin fotografías aún</span>
-                  <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">
-                    Arrastra tus fotos arriba para armar el book comercial del producto.
-                  </span>
-                </div>
-              }
-
-              <!-- Barra Contextual de Acciones Masivas (Aparece cuando hay 1 o más seleccionadas) -->
-              @if (selectedCount() > 0) {
-                <div class="p-2 sm:p-2.5 rounded-xl bg-brand-50/90 dark:bg-brand-950/70 border border-brand-200 dark:border-brand-800 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
-                  <div class="flex items-center gap-2">
-                    <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-brand-600 text-white shadow-2xs">
-                      {{ selectedCount() }} de {{ images().length }} seleccionadas
-                    </span>
-                    <button
-                      type="button"
-                      class="text-xs font-semibold text-brand-700 dark:text-brand-300 hover:underline cursor-pointer"
-                      (click)="toggleSelectAll()">
-                      {{ isAllSelected() ? 'Deseleccionar todas' : 'Seleccionar todas' }}
-                    </button>
-                  </div>
-
-                  <div class="flex items-center gap-2">
-                    <p-button
-                      [label]="isDownloadingZip() ? (zipProgress() || 'Descargando...') : 'Descargar (' + selectedCount() + ') ZIP'"
-                      icon="pi pi-download"
-                      size="small"
-                      severity="primary"
-                      [loading]="isDownloadingZip()"
-                      (click)="downloadImagesZip(true)"
-                      pTooltip="Descargar únicamente las fotos seleccionadas en un archivo .ZIP">
-                    </p-button>
-
-                    <p-button
-                      [label]="'Eliminar (' + selectedCount() + ')'"
-                      icon="pi pi-trash"
-                      size="small"
-                      severity="danger"
-                      [outlined]="true"
-                      [loading]="isBulkDeleting()"
-                      (click)="confirmBulkDelete()"
-                      pTooltip="Eliminar permanentemente las fotografías seleccionadas">
-                    </p-button>
-
-                    <button
-                      type="button"
-                      (click)="clearSelection()"
-                      class="p-1.5 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
-                      pTooltip="Cancelar selección">
-                      <svg lucideX size="15"></svg>
-                    </button>
-                  </div>
-                </div>
-              } @else if (images().length > 0) {
-                <!-- Barra de Selección Rápida cuando hay fotos pero ninguna seleccionada aún -->
-                <div class="flex items-center justify-between p-2 px-3 rounded-xl bg-gray-50/90 dark:bg-gray-850 border border-gray-200/80 dark:border-gray-700/70 shadow-2xs">
-                  <button
-                    type="button"
-                    (click)="toggleSelectAll()"
-                    class="inline-flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:text-brand-600 dark:hover:text-brand-400 cursor-pointer transition-colors group">
-                    <span class="w-4 h-4 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 flex items-center justify-center group-hover:border-brand-500 shadow-2xs transition-colors">
-                    </span>
-                    <span>Seleccionar todas para descargar o eliminar</span>
-                  </button>
-                  <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400">
-                    {{ images().length }} {{ images().length === 1 ? 'foto en catálogo' : 'fotos en catálogo' }}
-                  </span>
-                </div>
-              }
-
-              <!-- Grid de Tarjetas de Galería con Reordenamiento Drag & Drop -->
-              @if (images().length > 0) {
-                <div
-                  cdkDropList
-                  cdkDropListOrientation="mixed"
-                  (cdkDropListDropped)="onImageDrop($event)"
-                  class="grid grid-cols-2 sm:grid-cols-3 gap-3"
-                  [class.md:grid-cols-4]="isMaximized()"
-                  [class.lg:grid-cols-5]="isMaximized()"
-                  [class.xl:grid-cols-6]="isMaximized()">
-                  @for (img of images(); track img.id) {
-                    <div
-                      cdkDrag
-                      class="group relative rounded-xl border overflow-hidden bg-white dark:bg-gray-900 shadow-xs transition-colors transition-shadow flex flex-col"
-                      [class.border-brand-500]="selectedImageIds().has(img.id)"
-                      [class.ring-2]="selectedImageIds().has(img.id) || img.is_cover"
-                      [class.ring-brand-500]="selectedImageIds().has(img.id)"
-                      [class.border-amber-400]="img.is_cover && !selectedImageIds().has(img.id)"
-                      [class.dark:border-amber-500]="img.is_cover && !selectedImageIds().has(img.id)"
-                      [class.ring-amber-400]="img.is_cover && !selectedImageIds().has(img.id)"
-                      [class.border-gray-200]="!img.is_cover && !selectedImageIds().has(img.id)"
-                      [class.dark:border-gray-700]="!img.is_cover && !selectedImageIds().has(img.id)">
-
-                      <!-- Preview Personalizado de Alto Rendimiento 1:1 con el Cursor -->
-                      <ng-template cdkDragPreview [matchSize]="true">
-                        <div class="w-full h-full rounded-xl overflow-hidden bg-white dark:bg-gray-900 border-2 border-brand-500 shadow-2xl flex flex-col pointer-events-none select-none">
-                          <div class="relative aspect-square bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
-                            <img
-                              [src]="img.url | clUrl:'card'"
-                              [alt]="img.title || 'Foto de catálogo'"
-                              class="w-full h-full object-cover" />
-                            @if (img.is_cover) {
-                              <div class="absolute top-2 left-2 z-10 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500 text-white shadow-xs flex items-center gap-1">
-                                <svg lucideStar size="11" class="fill-white"></svg>
-                                <span>Portada Oficial</span>
-                              </div>
-                            }
-                          </div>
-                          <div class="px-2.5 py-1.5 bg-white dark:bg-gray-900 flex items-center justify-between text-xs border-t border-gray-100 dark:border-gray-800">
-                            <span class="font-bold text-brand-600 dark:text-brand-400">#{{ $index + 1 }}</span>
-                            <span class="text-gray-500 dark:text-gray-400 text-[11px]">{{ img.width }}x{{ img.height }} px</span>
-                          </div>
-                        </div>
-                      </ng-template>
-
-                      <!-- Contenedor de la Imagen con Aspect Ratio Cuadrado -->
-                      <div
-                        role="button"
-                        tabindex="0"
-                        aria-label="Ver imagen ampliada"
-                        (keydown.enter)="openPreview(img)"
-                        (keydown.space)="openPreview(img); $event.preventDefault()"
-                        class="relative aspect-square bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden cursor-pointer"
-                        (click)="openPreview(img)">
-                        <img
-                          [src]="img.url | clUrl:'card'"
-                          [alt]="img.title || 'Foto de catálogo'"
-                          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                          loading="lazy" />
-
-                        <!-- Checkbox de Selección en Esquina Superior Izquierda -->
-                        <button
-                          type="button"
-                          (click)="toggleSelectImage(img.id, $event)"
-                          [attr.aria-label]="selectedImageIds().has(img.id) ? 'Deseleccionar fotografía' : 'Seleccionar fotografía'"
-                          class="absolute top-2 left-2 z-20 w-6 h-6 rounded-md flex items-center justify-center transition-all cursor-pointer shadow-xs"
-                          [class.bg-brand-600]="selectedImageIds().has(img.id)"
-                          [class.text-white]="selectedImageIds().has(img.id)"
-                          [class.border-brand-600]="selectedImageIds().has(img.id)"
-                          [class.bg-white]="!selectedImageIds().has(img.id)"
-                          [class.dark:bg-gray-900]="!selectedImageIds().has(img.id)"
-                          [class.border]="!selectedImageIds().has(img.id)"
-                          [class.border-gray-300]="!selectedImageIds().has(img.id)"
-                          [class.dark:border-gray-600]="!selectedImageIds().has(img.id)"
-                          [class.opacity-0]="!selectedImageIds().has(img.id) && selectedCount() === 0"
-                          [class.group-hover:opacity-100]="!selectedImageIds().has(img.id)"
-                          pTooltip="Seleccionar foto"
-                          tooltipPosition="top">
-                          @if (selectedImageIds().has(img.id)) {
-                            <svg lucideCheck size="13" class="stroke-[3]"></svg>
-                          }
-                        </button>
-
-                        <!-- Badge de Portada Oficial (desplazado a la derecha del checkbox) -->
-                        @if (img.is_cover) {
-                          <div class="absolute top-2 left-10 z-10 px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500 text-white shadow-xs flex items-center gap-1">
-                            <svg lucideStar size="11" class="fill-white"></svg>
-                            <span>Portada Oficial</span>
-                          </div>
-                        }
-
-                        <!-- Botones de Acción en Hover (Grip Reordenar + Zoom + Eliminar) -->
-                        <div class="absolute top-2 right-2 flex items-center gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            type="button"
-                            cdkDragHandle
-                            aria-label="Arrastrar para reordenar fotografía"
-                            class="w-7 h-7 rounded-md bg-black/60 hover:bg-black/80 text-white flex items-center justify-center cursor-grab active:cursor-grabbing transition-colors"
-                            pTooltip="Arrastrar para reordenar"
-                            tooltipPosition="bottom"
-                            (click)="$event.stopPropagation()">
-                            <svg lucideGripVertical size="13"></svg>
-                          </button>
-                          <button
-                            type="button"
-                            class="w-7 h-7 rounded-md bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors cursor-pointer"
-                            pTooltip="Ampliar imagen"
-                            tooltipPosition="bottom"
-                            (click)="$event.stopPropagation(); openPreview(img)">
-                            <svg lucideEye size="13"></svg>
-                          </button>
-                          <button
-                            type="button"
-                            class="w-7 h-7 rounded-md bg-red-600/80 hover:bg-red-600 text-white flex items-center justify-center transition-colors cursor-pointer"
-                            pTooltip="Eliminar fotografía"
-                            tooltipPosition="bottom"
-                            (click)="$event.stopPropagation(); confirmDeleteImage(img)">
-                            <svg lucideTrash2 size="13"></svg>
-                          </button>
-                        </div>
-                      </div>
-
-                      <!-- Footer de la Tarjeta: Posición (#1, #2...), Dimensiones y Selector de Portada -->
-                      <div class="p-2 border-t border-gray-100 dark:border-gray-800 flex flex-col gap-1.5 flex-1 justify-between bg-white dark:bg-gray-900">
-                        <div class="flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400 font-mono">
-                          <div class="flex items-center gap-1.5 font-medium text-gray-600 dark:text-gray-300">
-                            <span class="px-1.5 py-0.2 rounded bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-mono text-[10px] font-bold text-gray-600 dark:text-gray-400">
-                              #{{ $index + 1 }}
-                            </span>
-                            <span>
-                              {{ img.width && img.height ? (img.width + 'x' + img.height) : (img.format ? (img.format | uppercase) : 'WEBP') }}
-                            </span>
-                          </div>
-                          <span>{{ formatBytes(img.file_size_bytes) }}</span>
-                        </div>
-
-                        <!-- Selector Exclusivo de Portada -->
-                        @if (img.is_cover) {
-                          <div class="w-full py-1 text-center text-[11px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 rounded flex items-center justify-center gap-1">
-                            <svg lucideCheck size="12" class="text-amber-600 dark:text-amber-400"></svg>
-                            <span>Portada Activa</span>
-                          </div>
-                        } @else {
-                          <button
-                            type="button"
-                            (click)="setAsCover(img)"
-                            class="w-full py-1 text-[11px] font-medium text-gray-600 dark:text-gray-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 rounded border border-gray-200 dark:border-gray-700 transition-colors flex items-center justify-center gap-1">
-                            <svg lucideStar size="12"></svg>
-                            <span>Fijar como Portada</span>
-                          </button>
-                        }
-                      </div>
-
-                    </div>
-                  }
-                </div>
-              }
-            }
-
-          </div>
+          <app-product-master-gallery
+            [masterId]="currentDisplayProduct()?.id ?? null"
+            [productName]="name()"
+            [mode]="mode()"
+            [isMaximized]="isMaximized()"
+            [(images)]="images"
+            (coverImageChanged)="onCoverImageChanged($event)"
+            (requestCreateProduct)="activeTab.set('0')" />
         </p-tabpanel>
 
         <!-- TAB 3: MARKETING Y REDES -->
         <p-tabpanel value="3" class="p-0!">
           <div class="flex flex-col gap-4 text-sm">
             
-            <!-- Imagen de Portada con Preview en Vivo y Enlace a Galería -->
+            <!-- Publicaciones Activas en Marketplace & Redes (Multi-link MARKETPLACE) -->
+            <app-product-master-links
+              [masterId]="currentDisplayProduct()?.id ?? null"
+              linkType="MARKETPLACE"
+              title="Publicaciones Activas en Marketplace & Redes"
+              subtitle="Control de publicaciones activas en Facebook Marketplace, MercadoLibre y enlaces comerciales del equipo"
+              [mode]="mode()"
+              [links]="marketplaceLinks()"
+              (linksChange)="marketplaceLinks.set($event)"
+              [initialUrl]="marketplaceUrl()"
+              (initialUrlChange)="marketplaceUrl.set($event)"
+              (primaryChanged)="onLinkPrimaryChanged($event)">
+            </app-product-master-links>
+
+            <!-- Guion de Venta Rápida (TikTok Live / Streaming) -->
             <div>
               <div class="flex items-center justify-between mb-1">
-                <label for="pm_cover_image" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
-                  URL de Foto Principal (WebP)
+                <label for="pm_marketing" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  Guion de Venta Rápida (TikTok Live / Streaming)
                 </label>
-                <button
-                  type="button"
-                  class="text-[11px] text-brand-600 dark:text-brand-400 hover:underline flex items-center gap-1 font-medium"
-                  (click)="activeTab.set('2')">
-                  <svg lucideImages size="12"></svg>
-                  <span>Gestionar en Galería Multimedia</span>
-                </button>
+                <span class="text-[11px] text-gray-400 dark:text-gray-500">
+                  Herramienta de pitch comercial
+                </span>
               </div>
-              <div class="flex gap-2">
-                <input
-                  id="pm_cover_image"
-                  type="text"
-                  pInputText
-                  [ngModel]="coverImageUrl()"
-                  (ngModelChange)="coverImageUrl.set($event)"
-                  placeholder="https://pub-cdn.empresa.com/products/053/cover.webp"
-                  class="w-full text-sm" />
-                @if (coverImageUrl()) {
-                  <a
-                    [href]="coverImageUrl()"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 flex items-center shrink-0"
-                    pTooltip="Abrir imagen en nueva pestaña">
-                    <svg lucideExternalLink size="16"></svg>
-                  </a>
-                }
-              </div>
-
-              @if (coverImageUrl()) {
-                <div class="mt-2 p-2 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-center">
-                  <img
-                    [src]="coverImageUrl() | clUrl:'card'"
-                    alt="Vista previa de portada"
-                    class="max-h-36 object-contain rounded" />
-                </div>
-              }
+              <textarea
+                id="pm_marketing"
+                pTextarea
+                [ngModel]="marketingDetails()"
+                (ngModelChange)="marketingDetails.set($event)"
+                rows="6"
+                placeholder="Ganchos de remate para streaming, respuestas a objeciones frecuentes del cliente, comparativas con modelos similares y cierres de venta rápida..."
+                class="w-full text-sm">
+              </textarea>
+              <span class="block text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
+                Utilizado por el equipo comercial durante transmisiones en vivo y atención personalizada de prospectos.
+              </span>
             </div>
 
-            <!-- Enlaces de Marketplace y Referencia Externa -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label for="pm_marketplace_url" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Enlace de Facebook Marketplace
-                </label>
-                <input
-                  id="pm_marketplace_url"
-                  type="text"
-                  pInputText
-                  [ngModel]="marketplaceUrl()"
-                  (ngModelChange)="marketplaceUrl.set($event)"
-                  placeholder="https://facebook.com/marketplace/item/..."
-                  class="w-full text-sm" />
-              </div>
-
-              <div>
-                <label for="pm_external_url" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Enlace de Referencia Externa (Amazon / Manual)
-                </label>
-                <input
-                  id="pm_external_url"
-                  type="text"
-                  pInputText
-                  [ngModel]="externalInfoUrl()"
-                  (ngModelChange)="externalInfoUrl.set($event)"
-                  placeholder="https://amazon.com/dp/..."
-                  class="w-full text-sm" />
-              </div>
-            </div>
-
-            <!-- Viñetas y Guion de Venta -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label for="pm_features" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Características Técnicas Viñeteadas
-                </label>
-                <textarea
-                  id="pm_features"
-                  pTextarea
-                  [ngModel]="features()"
-                  (ngModelChange)="features.set($event)"
-                  rows="3"
-                  placeholder="• 6 niveles de temperatura&#10;• Auto-apagado a las 2 horas&#10;• Cable de 2.5 metros"
-                  class="w-full text-sm">
-                </textarea>
-              </div>
-
-              <div>
-                <label for="pm_marketing" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Guion de Venta Rápida (TikTok Live)
-                </label>
-                <textarea
-                  id="pm_marketing"
-                  pTextarea
-                  [ngModel]="marketingDetails()"
-                  (ngModelChange)="marketingDetails.set($event)"
-                  rows="3"
-                  placeholder="Ganchos de remate, respuestas a objeciones frecuentes y puntos de dolor del cliente..."
-                  class="w-full text-sm">
-                </textarea>
-              </div>
-            </div>
-
-            <!-- Checkboxes / Switches de Verificación y Canales -->
-            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50/50 dark:bg-gray-800/40">
+            <!-- Checklist de Calidad Comercial y Publicación -->
+            <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50/50 dark:bg-gray-800/40">
               <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 block mb-2.5">
                 Checklist de Calidad Comercial y Publicación
               </span>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 
-                <div class="flex items-center justify-between p-2 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                  <span class="text-gray-700 dark:text-gray-300">Ficha Investigada & Aprobada</span>
+                <div class="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                  <div>
+                    <span class="font-medium text-gray-800 dark:text-gray-200 block">Ficha Investigada & Aprobada</span>
+                    <span class="text-[11px] text-gray-400">Verificada por el catalogador comercial</span>
+                  </div>
                   <p-toggleswitch [ngModel]="isReviewed()" (ngModelChange)="isReviewed.set($event)"></p-toggleswitch>
                 </div>
 
-                <div class="flex items-center justify-between p-2 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                  <span class="text-gray-700 dark:text-gray-300">Creativos Verificados en FB</span>
-                  <p-toggleswitch [ngModel]="isFbVerified()" (ngModelChange)="isFbVerified.set($event)"></p-toggleswitch>
-                </div>
-
-                <div class="flex items-center justify-between p-2 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                  <span class="text-gray-700 dark:text-gray-300">Video Demostrativo Grabado</span>
-                  <p-toggleswitch [ngModel]="hasVideo()" (ngModelChange)="hasVideo.set($event)"></p-toggleswitch>
-                </div>
-
-                <div class="flex items-center justify-between p-2 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                  <span class="text-gray-700 dark:text-gray-300">Publicado en Marketplace</span>
-                  <p-toggleswitch [ngModel]="isPublishedMarketplace()" (ngModelChange)="isPublishedMarketplace.set($event)"></p-toggleswitch>
-                </div>
-
-                <div class="flex items-center justify-between p-2 rounded bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 col-span-1 sm:col-span-2">
-                  <span class="text-gray-700 dark:text-gray-300">Publicado en Catálogo WhatsApp</span>
+                <div class="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                  <div>
+                    <span class="font-medium text-gray-800 dark:text-gray-200 block">Publicado en Catálogo WhatsApp</span>
+                    <span class="text-[11px] text-gray-400">Habilitado para catálogo y chatbot comercial</span>
+                  </div>
                   <p-toggleswitch [ngModel]="isWhatsappPublished()" (ngModelChange)="isWhatsappPublished.set($event)"></p-toggleswitch>
                 </div>
 
@@ -896,48 +560,6 @@
           </div>
         </p-tabpanel>
 
-        <!-- TAB 4: STOCK CONSOLIDADO (SOLO EDICIÓN) -->
-        <p-tabpanel value="4" class="p-0!">
-          @if (mode() === 'edit') {
-            <div class="flex flex-col gap-4 text-sm">
-              
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div class="p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-center">
-                  <span class="text-xs text-green-700 dark:text-green-300 block font-medium">Disponible para Venta</span>
-                  <span class="text-2xl font-bold text-green-900 dark:text-green-100 font-mono mt-1 block">
-                    {{ totalAvailableStock() }}
-                  </span>
-                  <span class="text-xs text-green-600 dark:text-green-400 mt-0.5 block">unidades físicas</span>
-                </div>
-
-                <div class="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-center">
-                  <span class="text-xs text-blue-700 dark:text-blue-300 block font-medium">Unidades Vendidas</span>
-                  <span class="text-2xl font-bold text-blue-900 dark:text-blue-100 font-mono mt-1 block">
-                    {{ totalSoldStock() }}
-                  </span>
-                  <span class="text-xs text-blue-600 dark:text-blue-400 mt-0.5 block">despachadas</span>
-                </div>
-
-                <div class="p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-center">
-                  <span class="text-xs text-red-700 dark:text-red-300 block font-medium">Mermas / Defectuosos</span>
-                  <span class="text-2xl font-bold text-red-900 dark:text-red-100 font-mono mt-1 block">
-                    {{ totalMermaStock() }}
-                  </span>
-                  <span class="text-xs text-red-600 dark:text-red-400 mt-0.5 block">unidades de baja</span>
-                </div>
-              </div>
-
-              <div class="p-3 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-600 dark:text-gray-300 flex items-start gap-2">
-                <svg lucideLayers size="16" class="shrink-0 text-gray-400 mt-0.5"></svg>
-                <div>
-                  <span class="font-bold">Separación de Ficha Maestra vs. Lote Físico:</span>
-                  Las unidades físicas reales se administran a través del desempaque e inspección de cajas importadas en el submódulo de <strong>Lotes y Cajas</strong> (`/commerce/batches`) y el inventario específico en <strong>Productos</strong> (`/commerce/products`).
-                </div>
-              </div>
-
-            </div>
-          }
-        </p-tabpanel>
       </p-tabpanels>
     </p-tabs>
   </div>
@@ -945,7 +567,7 @@
   <!-- Footer del Drawer -->
   <ng-template #footer>
     <div class="flex items-center justify-between w-full">
-      <div>
+      <div class="flex items-center gap-3">
         @if (mode() === 'edit') {
           <p-button
             label="Eliminar Ficha"
@@ -957,20 +579,33 @@
             (click)="confirmDelete()">
           </p-button>
         }
+
+        <!-- Indicador de Cambios sin Guardar -->
+        @if (isDirty()) {
+          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+            <span>Cambios sin guardar</span>
+          </span>
+        } @else if (mode() === 'edit') {
+          <span class="text-[11px] text-gray-400 dark:text-gray-500 hidden sm:inline-flex items-center gap-1">
+            <svg lucideCheck size="12" class="text-emerald-500"></svg>
+            <span>Todo guardado</span>
+          </span>
+        }
       </div>
 
       <div class="flex items-center gap-2">
         <p-button
-          label="Cancelar"
+          label="Cerrar"
           severity="secondary"
           [outlined]="true"
           size="small"
           [disabled]="isSubmitting()"
-          (click)="visible.set(false)">
+          (click)="requestClose()">
         </p-button>
 
         <p-button
-          [label]="mode() === 'create' ? 'Guardar Ficha' : 'Actualizar Ficha'"
+          [label]="mode() === 'create' ? 'Guardar Ficha' : 'Guardar Cambios'"
           icon="pi pi-check"
           severity="primary"
           size="small"
@@ -983,69 +618,3 @@
   </ng-template>
 
 </p-drawer>
-
-<!-- Diálogo Modal de Vista Previa en Alta Resolución (centrado en la pantalla de escritorio) -->
-<p-dialog
-  appendTo="body"
-  [visible]="previewImage() !== null"
-  (visibleChange)="onPreviewVisibleChange($event)"
-  [modal]="true"
-  [dismissableMask]="true"
-  [style]="{ width: '48rem', maxWidth: '95vw' }"
-  header="Vista Previa de Fotografía">
-  
-  @if (previewImage(); as pImg) {
-    <div class="flex flex-col gap-3">
-      <div class="w-full max-h-[70vh] bg-black/5 dark:bg-black/40 rounded-xl overflow-hidden flex items-center justify-center p-2">
-        <img
-          [src]="pImg.url | clUrl:'modal'"
-          [alt]="pImg.title || 'Vista previa'"
-          class="max-h-[65vh] max-w-full object-contain rounded-lg" />
-      </div>
-
-      <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-xs">
-        <div class="flex items-center gap-2">
-          @if (pImg.is_cover) {
-            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500 text-white flex items-center gap-1 shadow-xs">
-              <svg lucideStar size="11" class="fill-white"></svg> Portada Oficial
-            </span>
-          }
-          <span class="text-gray-500 dark:text-gray-400 font-mono">
-            {{ pImg.width }}x{{ pImg.height }} px · {{ (pImg.format || 'webp') | uppercase }} · {{ formatBytes(pImg.file_size_bytes) }}
-          </span>
-        </div>
-
-        <div class="flex items-center gap-2">
-          @if (!pImg.is_cover) {
-            <p-button
-              label="Definir como Portada"
-              icon="pi pi-star"
-              size="small"
-              severity="warn"
-              [outlined]="true"
-              (click)="setAsCover(pImg)">
-            </p-button>
-          }
-          <p-button
-            label="Descargar"
-            icon="pi pi-download"
-            size="small"
-            severity="secondary"
-            [outlined]="true"
-            [loading]="isDownloadingImage()"
-            (click)="downloadImage(pImg)">
-          </p-button>
-          <a
-            [href]="pImg.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 flex items-center transition-colors"
-            pTooltip="Abrir original en pestaña nueva"
-            tooltipPosition="bottom">
-            <svg lucideExternalLink size="14"></svg>
-          </a>
-        </div>
-      </div>
-    </div>
-  }
-</p-dialog>

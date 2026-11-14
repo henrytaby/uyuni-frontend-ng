@@ -41,6 +41,7 @@ import { LoggerService } from '@core/services/logger.service';
 
 import { CloudinaryUrlPipe } from '@shared/pipe/cloudinary-url.pipe';
 
+import { CommerceAssistantDrawerComponent } from '../../../assistant/components/commerce-assistant-drawer/commerce-assistant-drawer.component';
 import { ProductMasterDrawerComponent } from '../../components/product-master-drawer/product-master-drawer.component';
 import { ProductMasterFilterDrawerComponent } from '../../components/product-master-filter-drawer/product-master-filter-drawer.component';
 import { ProductMaster } from '../../models/product-master.model';
@@ -75,7 +76,8 @@ import { ProductMasterFilterService, ProductMasterFilterState } from '../../serv
     LucideTv,
     CloudinaryUrlPipe,
     ProductMasterDrawerComponent,
-    ProductMasterFilterDrawerComponent
+    ProductMasterFilterDrawerComponent,
+    CommerceAssistantDrawerComponent
   ],
   templateUrl: './product-master-list.component.html',
   styleUrls: ['./product-master-list.component.css'],
@@ -138,6 +140,7 @@ export class ProductMasterListComponent implements OnInit {
   readonly drawerVisible = signal<boolean>(false);
   readonly selectedProduct = signal<ProductMaster | null>(null);
   readonly drawerMode = signal<'create' | 'edit'>('create');
+  readonly isAssistantVisible = signal<boolean>(false);
 
   readonly activoOptions: { label: string; value: boolean }[] = [
     { label: 'Activos', value: true },
@@ -215,6 +218,27 @@ export class ProductMasterListComponent implements OnInit {
     this.selectedProduct.set(product);
     this.drawerMode.set('edit');
     this.drawerVisible.set(true);
+  }
+
+  openAssistant(): void {
+    this.isAssistantVisible.set(true);
+  }
+
+  onOpenProductFromAssistant(itemNumber: number): void {
+    this.logger.info('Opening product master from AI assistant', { itemNumber }, 'ProductMasterListComponent');
+    this.productMasterService.getProductMasterByNumber(itemNumber).subscribe({
+      next: product => {
+        this.openEditProduct(product);
+      },
+      error: err => {
+        this.logger.error('Error fetching product master from assistant', err, 'ProductMasterListComponent');
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: `No se pudo abrir la Ficha Maestra #${itemNumber}.`
+        });
+      }
+    });
   }
 
   onProductSaved(saved: ProductMaster): void {

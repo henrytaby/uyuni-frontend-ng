@@ -1,0 +1,4 @@
+/* Estilos específicos para ProductMasterLinksComponent si se requieren adiciones a Tailwind */
+:host {
+  display: block;
+}

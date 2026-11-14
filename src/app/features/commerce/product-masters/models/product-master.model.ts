@@ -30,6 +30,12 @@ export interface ProductMaster {
   total_merma_stock: number;
   images?: ProductImage[];
   images_count?: number;
+  external_links?: ProductMasterExternalLink[];
+  external_links_count?: number;
+  reference_links?: ProductMasterExternalLink[];
+  reference_links_count?: number;
+  marketplace_links?: ProductMasterExternalLink[];
+  marketplace_links_count?: number;
   created_at?: string | null;
   updated_at?: string | null;
   created_by_id?: string | null;
@@ -127,5 +133,61 @@ export interface ProductImageReorderItem {
   id: string;
   sort_order: number;
 }
+
+export type ProductLinkPortal =
+  | 'FACEBOOK'
+  | 'AMAZON'
+  | 'EBAY'
+  | 'ALIBABA'
+  | 'ALIEXPRESS'
+  | 'WALMART'
+  | 'MERCADOLIBRE'
+  | 'YOUTUBE'
+  | 'TIKTOK'
+  | 'INSTAGRAM'
+  | 'WHATSAPP'
+  | 'SHEIN'
+  | 'TEMU'
+  | 'OTHER'
+  | string;
+
+export type ProductLinkType = 'REFERENCE' | 'MARKETPLACE' | string;
+
+export interface ProductMasterExternalLink {
+  id: string;
+  product_master_id: string;
+  url: string;
+  portal: ProductLinkPortal;
+  link_type: ProductLinkType;
+  label?: string | null;
+  is_primary: boolean;
+  is_public: boolean;
+  sort_order: number;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface ProductMasterExternalLinkCreate {
+  url: string;
+  link_type?: ProductLinkType;
+  label?: string | null;
+  is_primary?: boolean;
+  is_public?: boolean;
+}
+
+export interface ProductMasterExternalLinkUpdate {
+  url?: string;
+  link_type?: ProductLinkType;
+  label?: string | null;
+  is_primary?: boolean;
+  is_public?: boolean;
+  sort_order?: number;
+}
+
+export interface ProductMasterExternalLinkReorderItem {
+  id: string;
+  sort_order: number;
+}
+
 
 

@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+
+:host ::ng-deep .p-drawer-content {
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+:host ::ng-deep .p-drawer-header {
+  padding: 0.875rem 1.25rem !important;
+  border-bottom: 1px solid var(--p-content-border-color, #e5e7eb) !important;
+}

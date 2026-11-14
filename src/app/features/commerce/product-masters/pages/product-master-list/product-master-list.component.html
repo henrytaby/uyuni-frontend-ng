@@ -53,6 +53,17 @@
         pTooltip="Filtros avanzados de catálogo">
       </p-button>
 
+      <!-- Botón Copiloto IA (Feature Estrella) -->
+      <p-button
+        label="Copiloto IA"
+        icon="pi pi-sparkles"
+        size="small"
+        severity="help"
+        class="shrink-0"
+        (onClick)="openAssistant()"
+        pTooltip="Consultas de inventario, márgenes y catálogo con IA en tiempo real">
+      </p-button>
+
       <!-- Botón Nueva Ficha -->
       <p-button label="Nueva Ficha" icon="pi pi-plus" size="small" severity="primary" class="shrink-0"
         (click)="openCreateProduct()">
@@ -522,5 +533,11 @@
     [liveBaskets]="liveBaskets()" [filterState]="currentFilterState()" (filterApplied)="onFilterApplied($event)"
     (filterCleared)="onFilterCleared()">
   </app-product-master-filter-drawer>
+
+  <!-- Slide-Over Drawer para Asistente Comercial IA (Copiloto) -->
+  <app-commerce-assistant-drawer
+    [(visible)]="isAssistantVisible"
+    (openProduct)="onOpenProductFromAssistant($event)">
+  </app-commerce-assistant-drawer>
 
 </div>

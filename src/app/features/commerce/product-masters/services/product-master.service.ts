@@ -11,8 +11,13 @@ import {
   CommerceCatalogs,
   ProductImage,
   ProductImageReorderItem,
+  ProductLinkType,
   ProductMaster,
   ProductMasterCreatePayload,
+  ProductMasterExternalLink,
+  ProductMasterExternalLinkCreate,
+  ProductMasterExternalLinkReorderItem,
+  ProductMasterExternalLinkUpdate,
   ProductMasterParams,
   ProductMasterUpdatePayload
 } from '../models/product-master.model';
@@ -217,4 +222,74 @@ export class ProductMasterService {
     this.logger.info('Reordering product master images', { masterId, count: items.length }, 'ProductMasterService');
     return this.http.put<ProductImage[]>(`${this.baseUrl}/${masterId}/images/reorder`, items);
   }
+
+  // ===========================================================================
+  // ENLACES EXTERNOS MULTI-PORTAL Y MARKETPLACE (/links)
+  // ===========================================================================
+
+  /**
+   * Obtiene la lista de enlaces externos asociados a una ficha maestra
+   */
+  getExternalLinks(
+    masterId: string,
+    options?: { link_type?: ProductLinkType; only_public?: boolean }
+  ): Observable<ProductMasterExternalLink[]> {
+    let httpParams = new HttpParams();
+    if (options?.link_type) httpParams = httpParams.set('link_type', options.link_type);
+    if (options?.only_public !== undefined) httpParams = httpParams.set('only_public', options.only_public.toString());
+
+    this.logger.debug('Fetching product master external links', { masterId, options }, 'ProductMasterService');
+    return this.http.get<ProductMasterExternalLink[]>(`${this.baseUrl}/${masterId}/links`, { params: httpParams });
+  }
+
+  /**
+   * Agrega un nuevo enlace externo o publicación de Marketplace a la ficha maestra
+   */
+  addExternalLink(
+    masterId: string,
+    payload: ProductMasterExternalLinkCreate
+  ): Observable<ProductMasterExternalLink> {
+    this.logger.info('Adding external link to product master', { masterId, payload }, 'ProductMasterService');
+    return this.http.post<ProductMasterExternalLink>(`${this.baseUrl}/${masterId}/links`, payload);
+  }
+
+  /**
+   * Actualiza metadatos de un enlace externo (etiqueta, url, visibilidad pública)
+   */
+  updateExternalLink(
+    masterId: string,
+    linkId: string,
+    payload: ProductMasterExternalLinkUpdate
+  ): Observable<ProductMasterExternalLink> {
+    this.logger.info('Updating external link', { masterId, linkId, payload }, 'ProductMasterService');
+    return this.http.patch<ProductMasterExternalLink>(`${this.baseUrl}/${masterId}/links/${linkId}`, payload);
+  }
+
+  /**
+   * Designa un enlace como principal de su categoría ('REFERENCE' o 'MARKETPLACE')
+   */
+  setPrimaryExternalLink(masterId: string, linkId: string): Observable<ProductMasterExternalLink> {
+    this.logger.info('Setting primary external link', { masterId, linkId }, 'ProductMasterService');
+    return this.http.patch<ProductMasterExternalLink>(`${this.baseUrl}/${masterId}/links/${linkId}/primary`, {});
+  }
+
+  /**
+   * Reordena la secuencia de enlaces externos
+   */
+  reorderExternalLinks(
+    masterId: string,
+    items: ProductMasterExternalLinkReorderItem[]
+  ): Observable<ProductMasterExternalLink[]> {
+    this.logger.info('Reordering external links', { masterId, count: items.length }, 'ProductMasterService');
+    return this.http.put<ProductMasterExternalLink[]>(`${this.baseUrl}/${masterId}/links/reorder`, items);
+  }
+
+  /**
+   * Elimina un enlace externo de la ficha maestra
+   */
+  deleteExternalLink(masterId: string, linkId: string): Observable<{ message: string }> {
+    this.logger.info('Deleting external link', { masterId, linkId }, 'ProductMasterService');
+    return this.http.delete<{ message: string }>(`${this.baseUrl}/${masterId}/links/${linkId}`);
+  }
 }
+

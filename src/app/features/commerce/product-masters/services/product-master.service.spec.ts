@@ -12,6 +12,7 @@ import {
   ProductImage,
   ProductMaster,
   ProductMasterCreatePayload,
+  ProductMasterExternalLink,
   ProductMasterUpdatePayload
 } from '../models/product-master.model';
 import { ProductMasterService } from './product-master.service';
@@ -289,5 +290,113 @@ describe('ProductMasterService', () => {
       req.flush([sampleImage]);
     });
   });
+
+  describe('External Links and Marketplace endpoints', () => {
+    const sampleLink: ProductMasterExternalLink = {
+      id: 'link-1',
+      product_master_id: '01a1c785-02b3-7641-bb12-9988aa112233',
+      url: 'https://www.facebook.com/marketplace/item/123456/',
+      portal: 'FACEBOOK',
+      link_type: 'MARKETPLACE',
+      label: 'Marketplace - Liz',
+      is_primary: true,
+      is_public: true,
+      sort_order: 1,
+      created_at: '2026-11-14T00:00:00Z',
+      updated_at: '2026-11-14T00:00:00Z'
+    };
+
+    it('should get external links with filters', () => {
+      service
+        .getExternalLinks('01a1c785-02b3-7641-bb12-9988aa112233', {
+          link_type: 'MARKETPLACE',
+          only_public: false
+        })
+        .subscribe(links => {
+          expect(links).toEqual([sampleLink]);
+        });
+
+      const req = httpMock.expectOne(
+        'http://localhost:8000/api/commerce/product-masters/01a1c785-02b3-7641-bb12-9988aa112233/links?link_type=MARKETPLACE&only_public=false'
+      );
+      expect(req.request.method).toBe('GET');
+      req.flush([sampleLink]);
+    });
+
+    it('should add external link', () => {
+      const payload = {
+        url: 'https://www.amazon.es/dp/B08N5WRWNW',
+        link_type: 'REFERENCE',
+        label: 'Amazon Oficial',
+        is_public: true
+      };
+
+      service.addExternalLink('01a1c785-02b3-7641-bb12-9988aa112233', payload).subscribe(link => {
+        expect(link.portal).toBe('AMAZON');
+      });
+
+      const req = httpMock.expectOne('http://localhost:8000/api/commerce/product-masters/01a1c785-02b3-7641-bb12-9988aa112233/links');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.body).toEqual(payload);
+      req.flush({ ...sampleLink, portal: 'AMAZON', link_type: 'REFERENCE' });
+    });
+
+    it('should update external link', () => {
+      const payload = { label: 'Nuevo Label', is_public: false };
+
+      service
+        .updateExternalLink('01a1c785-02b3-7641-bb12-9988aa112233', 'link-1', payload)
+        .subscribe(res => {
+          expect(res.label).toBe('Nuevo Label');
+        });
+
+      const req = httpMock.expectOne(
+        'http://localhost:8000/api/commerce/product-masters/01a1c785-02b3-7641-bb12-9988aa112233/links/link-1'
+      );
+      expect(req.request.method).toBe('PATCH');
+      expect(req.request.body).toEqual(payload);
+      req.flush({ ...sampleLink, label: 'Nuevo Label', is_public: false });
+    });
+
+    it('should set primary external link', () => {
+      service.setPrimaryExternalLink('01a1c785-02b3-7641-bb12-9988aa112233', 'link-1').subscribe(res => {
+        expect(res.is_primary).toBe(true);
+      });
+
+      const req = httpMock.expectOne(
+        'http://localhost:8000/api/commerce/product-masters/01a1c785-02b3-7641-bb12-9988aa112233/links/link-1/primary'
+      );
+      expect(req.request.method).toBe('PATCH');
+      req.flush({ ...sampleLink, is_primary: true });
+    });
+
+    it('should reorder external links', () => {
+      const items = [{ id: 'link-1', sort_order: 1 }];
+
+      service.reorderExternalLinks('01a1c785-02b3-7641-bb12-9988aa112233', items).subscribe(res => {
+        expect(res.length).toBe(1);
+      });
+
+      const req = httpMock.expectOne(
+        'http://localhost:8000/api/commerce/product-masters/01a1c785-02b3-7641-bb12-9988aa112233/links/reorder'
+      );
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(items);
+      req.flush([sampleLink]);
+    });
+
+    it('should delete external link', () => {
+      service.deleteExternalLink('01a1c785-02b3-7641-bb12-9988aa112233', 'link-1').subscribe(res => {
+        expect(res.message).toBe('Enlace eliminado exitosamente');
+      });
+
+      const req = httpMock.expectOne(
+        'http://localhost:8000/api/commerce/product-masters/01a1c785-02b3-7641-bb12-9988aa112233/links/link-1'
+      );
+      expect(req.request.method).toBe('DELETE');
+      req.flush({ message: 'Enlace eliminado exitosamente' });
+    });
+  });
 });
+
 
