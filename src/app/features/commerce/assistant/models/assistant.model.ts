@@ -17,6 +17,7 @@ export interface MatchedProduct {
   available_stock: number;
   sold_stock: number;
   official_price: number;
+  published_price?: number;
   minimum_price: number;
   currency: string;
   features?: string | null;

@@ -7,6 +7,8 @@ import { of, throwError } from 'rxjs';
 
 import { LoggerService } from '@core/services/logger.service';
 
+import { ProductMasterService } from '@features/commerce/product-masters/services/product-master.service';
+
 import {
   ChatAssistantResponse,
   MatchedProduct
@@ -35,6 +37,7 @@ describe('CommerceAssistantDrawerComponent', () => {
     available_stock: 3,
     sold_stock: 1,
     official_price: 220,
+    published_price: 190,
     minimum_price: 180,
     currency: 'BOB',
     description: 'Cargador múltiple para celular y audífonos.'
@@ -60,6 +63,20 @@ describe('CommerceAssistantDrawerComponent', () => {
       )
     };
 
+    const productMasterServiceMock = {
+      getProductMasterByNumber: jest.fn().mockReturnValue(
+        of({
+          id: '1',
+          item_number: 49,
+          name: 'Estación de Carga 3 en 1',
+          official_price: 220,
+          published_price: 190,
+          minimum_price: 180,
+          currency: 'BOB'
+        })
+      )
+    };
+
     await TestBed.configureTestingModule({
       imports: [CommerceAssistantDrawerComponent],
       providers: [
@@ -67,6 +84,7 @@ describe('CommerceAssistantDrawerComponent', () => {
         provideHttpClientTesting(),
         MessageService,
         { provide: CommerceAssistantService, useValue: serviceMock },
+        { provide: ProductMasterService, useValue: productMasterServiceMock },
         { provide: LoggerService, useValue: mockLogger }
       ]
     }).compileComponents();
@@ -181,6 +199,47 @@ describe('CommerceAssistantDrawerComponent', () => {
       expect(writeTextMock).toHaveBeenCalledWith(expect.stringContaining('[#49] Estación de Carga 3 en 1'));
       await Promise.resolve();
       expect(component.copiedProductId()).toBe(49);
+    });
+
+    it('should copy message content to clipboard', async () => {
+      const writeTextMock = jest.fn().mockResolvedValue(undefined);
+      Object.assign(navigator, {
+        clipboard: {
+          writeText: writeTextMock
+        }
+      });
+
+      const msg: ChatMessage = {
+        id: 'msg-1',
+        role: 'assistant',
+        content: 'Respuesta de prueba',
+        timestamp: new Date()
+      };
+
+      component.copyMessageContent(msg);
+
+      expect(writeTextMock).toHaveBeenCalledWith('Respuesta de prueba');
+      await Promise.resolve();
+      expect(component.copiedMessageId()).toBe('msg-1');
+    });
+
+    it('should copy full conversation to clipboard', async () => {
+      const writeTextMock = jest.fn().mockResolvedValue(undefined);
+      Object.assign(navigator, {
+        clipboard: {
+          writeText: writeTextMock
+        }
+      });
+
+      component.messages.set([
+        { id: '1', role: 'user', content: '¿Stock?', timestamp: new Date() },
+        { id: '2', role: 'assistant', content: 'Hay 5.', timestamp: new Date(), providerUsed: 'groq' }
+      ]);
+
+      component.copyFullConversation();
+
+      expect(writeTextMock).toHaveBeenCalledWith(expect.stringContaining('¿Stock?'));
+      expect(writeTextMock).toHaveBeenCalledWith(expect.stringContaining('Hay 5.'));
     });
 
     it('should format markdown securely and sanitize HTML entities', () => {

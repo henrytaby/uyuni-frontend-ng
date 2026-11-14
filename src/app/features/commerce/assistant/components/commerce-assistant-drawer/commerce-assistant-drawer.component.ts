@@ -34,6 +34,8 @@ import {
 
 import { LoggerService } from '@core/services/logger.service';
 
+import { ProductMasterService } from '@features/commerce/product-masters/services/product-master.service';
+
 import {
   ChatMessage,
   MatchedProduct
@@ -75,6 +77,7 @@ interface ProviderOption {
 })
 export class CommerceAssistantDrawerComponent implements OnInit {
   private readonly assistantService = inject(CommerceAssistantService);
+  private readonly productMasterService = inject(ProductMasterService);
   private readonly messageService = inject(MessageService);
   private readonly logger = inject(LoggerService);
 
@@ -94,6 +97,7 @@ export class CommerceAssistantDrawerComponent implements OnInit {
   readonly includeStock = signal<boolean>(true);
   readonly isMaximized = signal<boolean>(false);
   readonly copiedProductId = signal<number | null>(null);
+  readonly copiedMessageId = signal<string | null>(null);
 
   readonly providerOptions = signal<ProviderOption[]>([
     { label: '⚡ Groq (1.1s)', value: 'groq', icon: 'zap' },
@@ -146,13 +150,7 @@ export class CommerceAssistantDrawerComponent implements OnInit {
       timestamp: new Date()
     };
 
-    // Agregar mensaje del usuario a la lista
-    this.messages.update(prev => [...prev, userMsg]);
-    this.userInput.set('');
-    this.isLoading.set(true);
-    this.scrollToBottom();
-
-    // Preparar historial conversacional para el backend (máximo últimos 8)
+    // Preparar historial conversacional previo para el backend (máximo últimos 8)
     const historyPayload = this.messages()
       .filter(m => m.role === 'user' || m.role === 'assistant')
       .slice(-8)
@@ -160,6 +158,12 @@ export class CommerceAssistantDrawerComponent implements OnInit {
         role: m.role as 'user' | 'assistant',
         content: m.content
       }));
+
+    // Agregar mensaje del usuario a la lista
+    this.messages.update(prev => [...prev, userMsg]);
+    this.userInput.set('');
+    this.isLoading.set(true);
+    this.scrollToBottom();
 
     this.assistantService
       .sendMessage({
@@ -176,12 +180,13 @@ export class CommerceAssistantDrawerComponent implements OnInit {
             'CommerceAssistantDrawerComponent'
           );
 
+          const matchedProducts = resp.matched_products || [];
           const assistantMsg: ChatMessage = {
             id: `ast-${Date.now()}`,
             role: 'assistant',
             content: resp.reply,
             timestamp: new Date(),
-            matchedProducts: resp.matched_products || [],
+            matchedProducts,
             providerUsed: resp.provider_used,
             modelUsed: resp.model_used,
             fallbackOccurred: resp.fallback_occurred
@@ -190,6 +195,9 @@ export class CommerceAssistantDrawerComponent implements OnInit {
           this.messages.update(prev => [...prev, assistantMsg]);
           this.isLoading.set(false);
           this.scrollToBottom();
+
+          // Enriquecer en segundo plano con el precio publicado si aún no viene provisto
+          this.enrichPublishedPrices(matchedProducts);
         },
         error: err => {
           this.logger.error('Error from AI Assistant', err, 'CommerceAssistantDrawerComponent');
@@ -244,14 +252,28 @@ export class CommerceAssistantDrawerComponent implements OnInit {
     this.openProduct.emit(itemNumber);
   }
 
+  getPublishedPrice(prod: MatchedProduct): number {
+    if (prod.published_price && prod.published_price > 0) {
+      return prod.published_price;
+    }
+    return prod.official_price;
+  }
+
   copyProductSummary(prod: MatchedProduct): void {
     if (!navigator?.clipboard) return;
+
+    const published = this.getPublishedPrice(prod);
+    const margin = Math.max(0, published - prod.minimum_price);
+    const regateoText = margin > 0
+      ? `Bs. ${prod.minimum_price.toFixed(2)} (Margen: Bs. ${margin.toFixed(2)})`
+      : `Bs. ${prod.minimum_price.toFixed(2)} (Precio Fijo)`;
 
     const summary = [
       `[#${prod.item_number}] ${prod.name}`,
       `• Marca/Modelo: ${prod.brand || 'N/A'} ${prod.model || ''}`,
-      `• Precio Oficial: Bs. ${prod.official_price.toFixed(2)}`,
-      `• Precio Mínimo Protegido: Bs. ${prod.minimum_price.toFixed(2)}`,
+      `• Precio Publicado (Venta Cliente): Bs. ${published.toFixed(2)}`,
+      `• Piso Regateo (Mínimo): ${regateoText}`,
+      `• Precio Lista (Ref. Mercado): Bs. ${prod.official_price.toFixed(2)}`,
       `• Stock Físico Disponible: ${prod.available_stock} unidad(es)`,
       prod.description ? `• Info: ${prod.description}` : ''
     ]
@@ -270,6 +292,65 @@ export class CommerceAssistantDrawerComponent implements OnInit {
           this.copiedProductId.set(null);
         }
       }, 2000);
+    });
+  }
+
+  private enrichPublishedPrices(products: MatchedProduct[]): void {
+    for (const prod of products) {
+      if ((!prod.published_price || prod.published_price <= 0) && prod.item_number) {
+        this.productMasterService.getProductMasterByNumber(prod.item_number).subscribe({
+          next: master => {
+            if (master && typeof master.published_price === 'number' && master.published_price > 0) {
+              prod.published_price = master.published_price;
+              this.messages.update(msgs => [...msgs]);
+            }
+          },
+          error: err => {
+            this.logger.debug(
+              'Could not fetch published_price for product',
+              { itemNumber: prod.item_number, error: err },
+              'CommerceAssistantDrawerComponent'
+            );
+          }
+        });
+      }
+    }
+  }
+
+  copyMessageContent(msg: ChatMessage): void {
+    if (!navigator?.clipboard || !msg.content) return;
+
+    navigator.clipboard.writeText(msg.content).then(() => {
+      this.copiedMessageId.set(msg.id);
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Copiado',
+        detail: msg.role === 'user' ? 'Pregunta copiada al portapapeles.' : 'Respuesta copiada al portapapeles.'
+      });
+      setTimeout(() => {
+        if (this.copiedMessageId() === msg.id) {
+          this.copiedMessageId.set(null);
+        }
+      }, 2000);
+    });
+  }
+
+  copyFullConversation(): void {
+    if (!navigator?.clipboard || this.messages().length === 0) return;
+
+    const formatted = this.messages()
+      .map(m => {
+        const role = m.role === 'user' ? '👤 Usuario' : `🤖 Copiloto Uyuni (${m.providerUsed || 'IA'})`;
+        return `${role}:\n${m.content}`;
+      })
+      .join('\n\n---\n\n');
+
+    navigator.clipboard.writeText(formatted).then(() => {
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Conversación Copiada',
+        detail: 'Historial completo copiado al portapapeles.'
+      });
     });
   }
 

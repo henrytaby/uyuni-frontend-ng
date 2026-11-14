@@ -35,6 +35,17 @@
       <!-- Acciones de Cabecera -->
       <div class="flex items-center gap-1.5">
         
+        <!-- Botón Copiar Toda la Conversación -->
+        <button
+          type="button"
+          (click)="copyFullConversation()"
+          [disabled]="messages().length === 0"
+          class="w-7.5 h-7.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white flex items-center justify-center transition-colors shadow-2xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          pTooltip="Copiar toda la conversación"
+          tooltipPosition="bottom">
+          <svg lucideCopy size="14"></svg>
+        </button>
+
         <!-- Botón Limpiar Chat -->
         <button
           type="button"
@@ -112,12 +123,26 @@
         
         <!-- Mensaje del Usuario (Alineado a la derecha) -->
         @if (msg.role === 'user') {
-          <div class="flex justify-end pl-8">
+          <div class="flex justify-end pl-8 group">
             <div class="max-w-[85%] rounded-2xl rounded-tr-xs px-4 py-2.5 bg-brand-600 text-white shadow-xs">
               <p class="m-0 text-xs sm:text-[13px] whitespace-pre-wrap leading-relaxed">{{ msg.content }}</p>
-              <span class="block text-[10px] text-brand-200 text-right mt-1 font-mono">
-                {{ msg.timestamp | date:'HH:mm' }}
-              </span>
+              <div class="flex items-center justify-end gap-1.5 mt-1">
+                <button
+                  type="button"
+                  (click)="copyMessageContent(msg)"
+                  class="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded text-brand-200 hover:text-white hover:bg-brand-700/60 cursor-pointer"
+                  [pTooltip]="copiedMessageId() === msg.id ? '¡Copiado!' : 'Copiar pregunta'"
+                  tooltipPosition="left">
+                  @if (copiedMessageId() === msg.id) {
+                    <svg lucideCheck size="11"></svg>
+                  } @else {
+                    <svg lucideCopy size="11"></svg>
+                  }
+                </button>
+                <span class="block text-[10px] text-brand-200 font-mono">
+                  {{ msg.timestamp | date:'HH:mm' }}
+                </span>
+              </div>
             </div>
           </div>
         }
@@ -160,6 +185,24 @@
                 <div [innerHTML]="formatMarkdown(msg.content)" class="space-y-1"></div>
               </div>
 
+              <!-- Acciones Rápidas de la Respuesta (Copiar) -->
+              <div class="flex items-center gap-2 mt-1 pl-0.5">
+                <button
+                  type="button"
+                  (click)="copyMessageContent(msg)"
+                  class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer"
+                  [pTooltip]="copiedMessageId() === msg.id ? '¡Copiado!' : 'Copiar respuesta al portapapeles'"
+                  tooltipPosition="top">
+                  @if (copiedMessageId() === msg.id) {
+                    <svg lucideCheck size="12" class="text-emerald-600"></svg>
+                    <span class="text-emerald-600 font-semibold text-[10px]">Copiado</span>
+                  } @else {
+                    <svg lucideCopy size="12"></svg>
+                    <span class="text-[10px]">Copiar</span>
+                  }
+                </button>
+              </div>
+
               <!-- Fichas de Productos Encontradas (Matched Products) -->
               @if (msg.matchedProducts && msg.matchedProducts.length > 0) {
                 <div class="mt-3 space-y-2">
@@ -171,14 +214,14 @@
                     <span class="text-[10px] text-gray-400 font-mono">Datos en tiempo real</span>
                   </div>
 
-                  <div class="space-y-2">
+                  <div class="space-y-1.5">
                     @for (prod of msg.matchedProducts; track prod.item_number) {
-                      <div class="p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xs hover:border-brand-400 dark:hover:border-brand-600 transition-all">
+                      <div class="p-2 sm:p-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xs hover:border-brand-400 dark:hover:border-brand-600 transition-all">
                         
-                        <!-- Encabezado de la Tarjeta: # Catálogo + Nombre + Stock -->
-                        <div class="flex items-start justify-between gap-2 mb-1.5">
-                          <div class="flex items-center gap-2 min-w-0 flex-1">
-                            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-brand-500/10 text-brand-700 dark:text-brand-300 border border-brand-500/20 shrink-0 font-mono">
+                        <!-- Fila 1: # Catálogo + Nombre + Stock -->
+                        <div class="flex items-start justify-between gap-1.5 mb-0.5">
+                          <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                            <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-brand-500/10 text-brand-700 dark:text-brand-300 border border-brand-500/20 shrink-0 font-mono">
                               #{{ prod.item_number }}
                             </span>
                             <span class="font-bold text-gray-900 dark:text-gray-100 text-xs sm:text-[13px] truncate" [pTooltip]="prod.name" tooltipPosition="top">
@@ -187,7 +230,7 @@
                           </div>
 
                           <!-- Badge de Stock Físico Real -->
-                          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 border flex items-center gap-1"
+                          <span class="px-2 py-0.2 rounded-full text-[10px] font-bold shrink-0 border flex items-center gap-1 leading-normal"
                                 [ngClass]="prod.available_stock > 0 
                                   ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25' 
                                   : 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/25'">
@@ -196,61 +239,89 @@
                           </span>
                         </div>
 
-                        <!-- Marca / Modelo si existen -->
+                        <!-- Fila 2: Marca / Modelo (si existen, pegado al título) -->
                         @if (prod.brand || prod.model) {
-                          <div class="text-[11px] text-gray-500 dark:text-gray-400 mb-2 pl-0.5">
-                            <span class="font-medium text-gray-700 dark:text-gray-300">{{ prod.brand || 'Marca general' }}</span>
+                          <div class="text-[10px] text-gray-500 dark:text-gray-400 mb-1.5 pl-0.5 truncate leading-tight">
+                            <span class="font-medium text-gray-600 dark:text-gray-300">{{ prod.brand || 'General' }}</span>
                             @if (prod.model) {
                               <span class="text-gray-400 font-mono"> · Mod: {{ prod.model }}</span>
                             }
                           </div>
                         }
 
-                        <!-- Precios de Catálogo y Piso de Regateo -->
-                        <div class="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 mb-2.5 text-xs">
-                          <div>
-                            <span class="block text-[10px] text-gray-400 uppercase tracking-wider font-medium">Precio Lista</span>
-                            <span class="font-bold text-gray-900 dark:text-gray-100 text-xs sm:text-[13px]">
-                              {{ prod.official_price | number:'1.2-2' }} <span class="text-[10px] font-normal text-gray-500">{{ prod.currency }}</span>
-                            </span>
-                          </div>
-                          <div class="text-right">
-                            <span class="block text-[10px] text-amber-600 dark:text-amber-400 font-semibold uppercase tracking-wider">
-                              Piso Regateo (Mínimo)
-                            </span>
-                            <span class="font-bold text-emerald-600 dark:text-emerald-400 text-xs sm:text-[13px]">
-                              {{ prod.minimum_price | number:'1.2-2' }} <span class="text-[10px] font-normal text-gray-500">{{ prod.currency }}</span>
-                            </span>
-                          </div>
-                        </div>
-
-                        <!-- Botones de Acción de la Ficha -->
-                        <div class="flex items-center justify-end gap-2 pt-1 border-t border-gray-100 dark:border-gray-800">
+                        <!-- Fila 3: Barra Integrada de Precios + Botones de Acción (Ultra Compacto) -->
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 px-2 py-1 rounded-lg bg-gray-50/80 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 text-xs">
                           
-                          <!-- Copiar Resumen Comercial -->
-                          <button
-                            type="button"
-                            (click)="copyProductSummary(prod)"
-                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-colors cursor-pointer"
-                            [pTooltip]="copiedProductId() === prod.item_number ? '¡Copiado!' : 'Copiar detalles para chat'"
-                            tooltipPosition="top">
-                            @if (copiedProductId() === prod.item_number) {
-                              <svg lucideCheck size="12" class="text-emerald-600"></svg>
-                              <span class="text-emerald-600 font-semibold">Copiado</span>
-                            } @else {
-                              <svg lucideCopy size="12"></svg>
-                              <span>Copiar</span>
-                            }
-                          </button>
+                          <!-- Precios -->
+                          <div class="flex items-center gap-2.5 sm:gap-3.5 text-xs">
+                            
+                            <!-- 1. Precio Lista -->
+                            <div class="leading-tight">
+                              <span class="block text-[9px] text-gray-400 uppercase tracking-wider font-medium truncate" pTooltip="Precio regular habitual en el mercado" tooltipPosition="top">
+                                P. Lista
+                              </span>
+                              <span class="font-medium text-gray-500 dark:text-gray-400 text-xs">
+                                {{ prod.official_price | number:'1.2-2' }}
+                              </span>
+                            </div>
 
-                          <!-- Ver Ficha Maestra -->
-                          <button
-                            type="button"
-                            (click)="handleOpenProduct(prod.item_number)"
-                            class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-semibold bg-brand-500/10 text-brand-700 dark:text-brand-300 border border-brand-500/25 hover:bg-brand-500/20 transition-all cursor-pointer shadow-2xs">
-                            <svg lucideExternalLink size="12"></svg>
-                            <span>Ver Ficha Maestra</span>
-                          </button>
+                            <span class="text-gray-200 dark:text-gray-700 text-xs select-none">|</span>
+
+                            <!-- 2. Precio Publicado -->
+                            <div class="leading-tight">
+                              <span class="block text-[9px] text-brand-600 dark:text-brand-400 font-bold uppercase tracking-wider truncate" pTooltip="Nuestro precio oficial de venta publicado en Marketplace y redes" tooltipPosition="top">
+                                Publicado ★
+                              </span>
+                              <span class="font-bold text-brand-700 dark:text-brand-300 text-xs sm:text-[13px]">
+                                {{ getPublishedPrice(prod) | number:'1.2-2' }} <span class="text-[9px] font-normal text-brand-500/80">{{ prod.currency }}</span>
+                              </span>
+                            </div>
+
+                            <span class="text-gray-200 dark:text-gray-700 text-xs select-none">|</span>
+
+                            <!-- 3. Piso Regateo -->
+                            <div class="leading-tight">
+                              <span class="block text-[9px] text-amber-600 dark:text-amber-400 font-semibold uppercase tracking-wider truncate" pTooltip="Límite mínimo para transmisiones en vivo o regateo" tooltipPosition="top">
+                                Piso Regateo
+                              </span>
+                              <span class="font-bold text-emerald-600 dark:text-emerald-400 text-xs">
+                                {{ prod.minimum_price | number:'1.2-2' }}
+                              </span>
+                            </div>
+
+                          </div>
+
+                          <!-- Acciones Integradas a la Derecha -->
+                          <div class="flex items-center justify-end gap-1.5 shrink-0 pt-1 sm:pt-0 border-t sm:border-t-0 border-gray-200/40 dark:border-gray-700/40">
+                            
+                            <!-- Copiar -->
+                            <button
+                              type="button"
+                              (click)="copyProductSummary(prod)"
+                              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 transition-colors cursor-pointer shadow-2xs"
+                              [pTooltip]="copiedProductId() === prod.item_number ? '¡Copiado!' : 'Copiar detalles'"
+                              tooltipPosition="top">
+                              @if (copiedProductId() === prod.item_number) {
+                                <svg lucideCheck size="11" class="text-emerald-600"></svg>
+                                <span class="text-emerald-600 font-semibold">Copiado</span>
+                              } @else {
+                                <svg lucideCopy size="11"></svg>
+                                <span>Copiar</span>
+                              }
+                            </button>
+
+                            <!-- Ver Ficha Maestra -->
+                            <button
+                              type="button"
+                              (click)="handleOpenProduct(prod.item_number)"
+                              class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-brand-500/10 text-brand-700 dark:text-brand-300 border border-brand-500/25 hover:bg-brand-500/20 transition-all cursor-pointer shadow-2xs"
+                              pTooltip="Ver detalles completos en Ficha Maestra"
+                              tooltipPosition="top">
+                              <svg lucideExternalLink size="11"></svg>
+                              <span>Ver Ficha</span>
+                            </button>
+
+                          </div>
 
                         </div>
 

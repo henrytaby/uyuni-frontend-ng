@@ -295,6 +295,14 @@ export class ProductMasterDrawerComponent {
       return { isValid: false, error: 'Los precios no pueden ser negativos', warning: null };
     }
 
+    if (min > published && published > 0) {
+      return {
+        isValid: true,
+        error: null,
+        warning: 'El precio mínimo protegido es mayor al precio publicado de venta'
+      };
+    }
+
     if (min > official && official > 0) {
       return {
         isValid: true,
@@ -314,6 +322,27 @@ export class ProductMasterDrawerComponent {
   readonly totalAvailableStock = computed(() => this.currentDisplayProduct()?.total_available_stock ?? 0);
   readonly totalSoldStock = computed(() => this.currentDisplayProduct()?.total_sold_stock ?? 0);
   readonly totalMermaStock = computed(() => this.currentDisplayProduct()?.total_merma_stock ?? 0);
+  readonly totalHistoricalStock = computed(() => {
+    return this.totalAvailableStock() + this.totalSoldStock() + this.totalMermaStock();
+  });
+
+  // Margen de Regateo calculado estrictamente sobre el Precio Publicado (precio de venta real)
+  readonly negotiationMargin = computed<{ amount: number; percentage: number; hasMargin: boolean }>(() => {
+    const published = this.publishedPrice() ?? 0;
+    const official = this.officialPrice() ?? 0;
+    const min = this.minimumPrice() ?? 0;
+
+    // Base comercial: Precio Publicado (si no está definido o es 0, usa Precio Oficial)
+    const base = published > 0 ? published : official;
+    const amount = base > min ? base - min : 0;
+    const percentage = base > 0 && amount > 0 ? (amount / base) * 100 : 0;
+
+    return {
+      amount,
+      percentage,
+      hasMargin: amount > 0
+    };
+  });
 
   private lastOpenedProductId: string | null = null;
   private lastVisibleState = false;

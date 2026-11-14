@@ -192,6 +192,23 @@ describe('ProductMasterLinksComponent', () => {
       expect(productMasterService.deleteExternalLink).toHaveBeenCalledWith('master-1', 'link-1');
       expect(component.links()).toEqual([]);
     });
+
+    it('should remove link from local state in create mode when confirmed', () => {
+      componentRef.setInput('masterId', null);
+      component.links.set([sampleLink]);
+
+      jest.spyOn(confirmationService, 'confirm').mockImplementation(opts => {
+        if (opts.accept) {
+          opts.accept();
+        }
+        return confirmationService;
+      });
+
+      component.confirmDelete(sampleLink);
+
+      expect(productMasterService.deleteExternalLink).not.toHaveBeenCalled();
+      expect(component.links()).toEqual([]);
+    });
   });
 
   describe('copyUrl', () => {
@@ -208,6 +225,83 @@ describe('ProductMasterLinksComponent', () => {
       expect(writeTextMock).toHaveBeenCalledWith('https://amazon.com');
       await Promise.resolve();
       expect(component.copiedLinkId()).toBe('link-1');
+    });
+  });
+
+  describe('Inline link editing (startEdit, cancelEdit, saveEdit)', () => {
+    it('should initialize edit state with link data on startEdit', () => {
+      component.startEdit(sampleLink);
+
+      expect(component.editingLinkId()).toBe('link-1');
+      expect(component.editUrl()).toBe(sampleLink.url);
+      expect(component.editLabel()).toBe(sampleLink.label);
+      expect(component.editIsPublic()).toBe(sampleLink.is_public);
+    });
+
+    it('should reset edit state on cancelEdit', () => {
+      component.startEdit(sampleLink);
+      component.cancelEdit();
+
+      expect(component.editingLinkId()).toBeNull();
+      expect(component.editUrl()).toBe('');
+      expect(component.editLabel()).toBe('');
+      expect(component.editIsPublic()).toBe(true);
+    });
+
+    it('should warn when attempting to save with empty url', () => {
+      jest.spyOn(messageService, 'add');
+      component.startEdit(sampleLink);
+      component.editUrl.set('   ');
+
+      component.saveEdit(sampleLink);
+
+      expect(messageService.add).toHaveBeenCalledWith(
+        expect.objectContaining({ severity: 'warn', summary: 'URL requerida' })
+      );
+      expect(productMasterService.updateExternalLink).not.toHaveBeenCalled();
+    });
+
+    it('should update link in memory when masterId is null (create mode)', () => {
+      componentRef.setInput('masterId', null);
+      component.links.set([sampleLink]);
+      component.startEdit(sampleLink);
+      component.editUrl.set('https://www.facebook.com/marketplace/item/999999/');
+      component.editLabel.set('Marketplace Juan Actualizado');
+
+      component.saveEdit(sampleLink);
+
+      expect(productMasterService.updateExternalLink).not.toHaveBeenCalled();
+      const updated = component.links().find(l => l.id === 'link-1');
+      expect(updated?.url).toBe('https://www.facebook.com/marketplace/item/999999/');
+      expect(updated?.label).toBe('Marketplace Juan Actualizado');
+      expect(component.editingLinkId()).toBeNull();
+    });
+
+    it('should call updateExternalLink and persist changes when masterId exists', () => {
+      componentRef.setInput('masterId', 'master-1');
+      component.links.set([sampleLink]);
+      component.startEdit(sampleLink);
+      component.editUrl.set('https://www.facebook.com/marketplace/item/888888/');
+      component.editLabel.set('Marketplace Editado');
+
+      const serverUpdated: ProductMasterExternalLink = {
+        ...sampleLink,
+        url: 'https://www.facebook.com/marketplace/item/888888/',
+        label: 'Marketplace Editado'
+      };
+
+      productMasterService.updateExternalLink.mockReturnValue(of(serverUpdated));
+
+      component.saveEdit(sampleLink);
+
+      expect(productMasterService.updateExternalLink).toHaveBeenCalledWith('master-1', 'link-1', {
+        url: 'https://www.facebook.com/marketplace/item/888888/',
+        label: 'Marketplace Editado',
+        is_public: true
+      });
+      const updated = component.links().find(l => l.id === 'link-1');
+      expect(updated?.url).toBe('https://www.facebook.com/marketplace/item/888888/');
+      expect(component.editingLinkId()).toBeNull();
     });
   });
 });

@@ -15,9 +15,11 @@ import {
   LucideInfo,
   LucideLink,
   LucideLock,
+  LucidePencil,
   LucideStar,
   LucideStore,
-  LucideTrash2
+  LucideTrash2,
+  LucideX
 } from '@lucide/angular';
 
 import { LoggerService } from '@core/services/logger.service';
@@ -51,9 +53,11 @@ interface PortalBadgeInfo {
     LucideInfo,
     LucideLink,
     LucideLock,
+    LucidePencil,
     LucideStar,
     LucideStore,
-    LucideTrash2
+    LucideTrash2,
+    LucideX
   ],
   templateUrl: './product-master-links.component.html',
   styleUrl: './product-master-links.component.css',
@@ -87,6 +91,13 @@ export class ProductMasterLinksComponent {
   readonly newIsPublic = signal<boolean>(true);
   readonly isSubmitting = signal<boolean>(false);
   readonly copiedLinkId = signal<string | null>(null);
+
+  // Edición en línea
+  readonly editingLinkId = signal<string | null>(null);
+  readonly editUrl = signal<string>('');
+  readonly editLabel = signal<string>('');
+  readonly editIsPublic = signal<boolean>(true);
+  readonly isSubmittingEdit = signal<boolean>(false);
 
   readonly isReference = computed(() => this.linkType() === 'REFERENCE');
   readonly isMarketplace = computed(() => this.linkType() === 'MARKETPLACE');
@@ -172,6 +183,122 @@ export class ProductMasterLinksComponent {
   }
 
   /**
+   * Inicia la edición en línea de un enlace o publicación existente
+   */
+  startEdit(link: ProductMasterExternalLink): void {
+    this.editingLinkId.set(link.id);
+    this.editUrl.set(link.url);
+    this.editLabel.set(link.label || '');
+    this.editIsPublic.set(link.is_public);
+  }
+
+  /**
+   * Cancela la edición en línea y descarta cambios no guardados
+   */
+  cancelEdit(): void {
+    this.editingLinkId.set(null);
+    this.editUrl.set('');
+    this.editLabel.set('');
+    this.editIsPublic.set(true);
+  }
+
+  /**
+   * Guarda las modificaciones de URL, etiqueta o visibilidad de un enlace
+   */
+  saveEdit(link: ProductMasterExternalLink): void {
+    const rawUrl = this.editUrl().trim();
+    if (!rawUrl) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'URL requerida',
+        detail: 'La dirección URL no puede estar vacía.'
+      });
+      return;
+    }
+
+    const trimmedLabel = this.editLabel().trim() || null;
+    const isPub = this.isReference() ? this.editIsPublic() : true;
+    const prodId = this.masterId();
+
+    // Modo creación (sin guardar en base de datos aún): actualización en memoria
+    if (!prodId) {
+      const updatedList = this.links().map(item => {
+        if (item.id === link.id) {
+          return {
+            ...item,
+            url: rawUrl,
+            label: trimmedLabel,
+            is_public: isPub
+          };
+        }
+        return item;
+      });
+
+      this.links.set(updatedList);
+      if (link.is_primary) {
+        this.primaryChanged.emit({
+          masterId: '',
+          linkId: link.id,
+          url: rawUrl,
+          linkType: this.linkType()
+        });
+      }
+
+      this.cancelEdit();
+      this.messageService.add({
+        severity: 'success',
+        summary: this.isMarketplace() ? 'Publicación Modificada' : 'Enlace Modificado',
+        detail: 'Los datos fueron actualizados en la lista.'
+      });
+      return;
+    }
+
+    // Modo edición (registro persistido en BD)
+    this.isSubmittingEdit.set(true);
+    this.productMasterService
+      .updateExternalLink(prodId, link.id, {
+        url: rawUrl,
+        label: trimmedLabel,
+        is_public: isPub
+      })
+      .subscribe({
+        next: updated => {
+          this.logger.info('External link updated successfully', { id: updated.id }, 'ProductMasterLinksComponent');
+
+          const updatedList = this.links().map(item => (item.id === updated.id ? updated : item));
+          this.links.set(updatedList);
+
+          if (updated.is_primary) {
+            this.primaryChanged.emit({
+              masterId: prodId,
+              linkId: updated.id,
+              url: updated.url,
+              linkType: this.linkType()
+            });
+          }
+
+          this.cancelEdit();
+          this.isSubmittingEdit.set(false);
+
+          this.messageService.add({
+            severity: 'success',
+            summary: this.isMarketplace() ? 'Publicación Actualizada' : 'Enlace Actualizado',
+            detail: 'Los cambios fueron guardados exitosamente.'
+          });
+        },
+        error: err => {
+          this.logger.error('Error updating external link', err, 'ProductMasterLinksComponent');
+          this.isSubmittingEdit.set(false);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error al Modificar',
+            detail: err?.error?.detail || 'No se pudieron guardar las modificaciones del enlace.'
+          });
+        }
+      });
+  }
+
+  /**
    * Designa un enlace como principal de su categoría
    */
   setAsPrimary(link: ProductMasterExternalLink): void {
@@ -252,20 +379,55 @@ export class ProductMasterLinksComponent {
   }
 
   /**
-   * Confirma y elimina un enlace externo
+   * Confirma y elimina un enlace externo (previene borrados accidentales)
    */
   confirmDelete(link: ProductMasterExternalLink): void {
     const prodId = this.masterId();
-    if (!prodId) return;
 
+    // Modo creación (sin ID persistido aún): confirma y remueve de la lista en memoria
+    if (!prodId) {
+      this.confirmationService.confirm({
+        header: this.isMarketplace() ? 'Eliminar Publicación' : 'Eliminar Enlace de Referencia',
+        message: `¿Estás seguro de que deseas eliminar este enlace (${link.label || link.url})?`,
+        icon: 'pi pi-exclamation-triangle',
+        acceptLabel: 'Eliminar',
+        rejectLabel: 'Cancelar',
+        acceptButtonProps: {
+          severity: 'danger'
+        },
+        rejectButtonProps: {
+          severity: 'secondary',
+          outlined: true
+        },
+        accept: () => {
+          const remaining = this.links().filter(item => item.id !== link.id);
+          this.links.set(remaining);
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Enlace Removido',
+            detail: 'El registro fue quitado de la lista.'
+          });
+        }
+      });
+      return;
+    }
+
+    // Modo edición (enlace persistido en BD): confirmación modal con protección de primario
     this.confirmationService.confirm({
       header: this.isMarketplace() ? 'Eliminar Publicación' : 'Eliminar Enlace de Referencia',
-      message: `¿Desea eliminar ${link.label || link.url}? Si era el enlace principal, el sistema designará automáticamente el siguiente disponible.`,
+      message: `¿Estás seguro de que deseas eliminar "${link.label || link.url}"? Esta acción no se puede deshacer.${
+        link.is_primary ? ' Si era el enlace principal, el sistema designará automáticamente el siguiente disponible.' : ''
+      }`,
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: 'Eliminar',
       rejectLabel: 'Cancelar',
-      acceptButtonStyleClass: 'p-button-danger p-button-sm',
-      rejectButtonStyleClass: 'p-button-secondary p-button-outlined p-button-sm',
+      acceptButtonProps: {
+        severity: 'danger'
+      },
+      rejectButtonProps: {
+        severity: 'secondary',
+        outlined: true
+      },
       accept: () => {
         this.productMasterService.deleteExternalLink(prodId, link.id).subscribe({
           next: () => {
