@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpParams, HttpRequest } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 
 import { forkJoin, map, Observable } from 'rxjs';
@@ -9,6 +9,8 @@ import { LoggerService } from '@core/services/logger.service';
 
 import {
   CommerceCatalogs,
+  ProductImage,
+  ProductImageReorderItem,
   ProductMaster,
   ProductMasterCreatePayload,
   ProductMasterParams,
@@ -146,5 +148,73 @@ export class ProductMasterService {
           liveBaskets: res['commerce_live_baskets'] || []
         }))
       );
+  }
+
+  // ===========================================================================
+  // MULTI-FOTOGRAFÍA Y GALERÍA MULTIMEDIA (CLOUDINARY)
+  // ===========================================================================
+
+  /**
+   * Sube una o múltiples fotografías a Cloudinary reportando el progreso de subida HTTP
+   */
+  uploadImagesWithProgress(
+    masterId: string,
+    files: File[],
+    imageType = 'CATALOG',
+    isCover = false
+  ): Observable<HttpEvent<ProductImage[]>> {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file, file.name);
+    });
+    formData.append('image_type', imageType);
+    formData.append('is_cover', isCover ? 'true' : 'false');
+
+    this.logger.info(
+      'Uploading product master images with progress tracking',
+      { masterId, count: files.length, imageType, isCover },
+      'ProductMasterService'
+    );
+
+    const req = new HttpRequest<FormData>('POST', `${this.baseUrl}/${masterId}/images`, formData, {
+      reportProgress: true
+    });
+
+    return this.http.request<ProductImage[]>(req);
+  }
+
+  /**
+   * Obtiene la galería de imágenes de una ficha maestra
+   */
+  getImages(masterId: string, imageType?: string): Observable<ProductImage[]> {
+    let httpParams = new HttpParams();
+    if (imageType) httpParams = httpParams.set('image_type', imageType);
+
+    this.logger.debug('Fetching product master images', { masterId, imageType }, 'ProductMasterService');
+    return this.http.get<ProductImage[]>(`${this.baseUrl}/${masterId}/images`, { params: httpParams });
+  }
+
+  /**
+   * Define una imagen específica como la portada oficial (is_cover = true)
+   */
+  setCoverImage(masterId: string, imageId: string): Observable<ProductImage> {
+    this.logger.info('Setting cover image for product master', { masterId, imageId }, 'ProductMasterService');
+    return this.http.patch<ProductImage>(`${this.baseUrl}/${masterId}/images/${imageId}/cover`, {});
+  }
+
+  /**
+   * Elimina una imagen de la base de datos y destruye su asset en Cloudinary
+   */
+  deleteImage(masterId: string, imageId: string): Observable<{ message: string }> {
+    this.logger.info('Deleting product master image', { masterId, imageId }, 'ProductMasterService');
+    return this.http.delete<{ message: string }>(`${this.baseUrl}/${masterId}/images/${imageId}`);
+  }
+
+  /**
+   * Reordena la secuencia de imágenes de la galería
+   */
+  reorderImages(masterId: string, items: ProductImageReorderItem[]): Observable<ProductImage[]> {
+    this.logger.info('Reordering product master images', { masterId, count: items.length }, 'ProductMasterService');
+    return this.http.put<ProductImage[]>(`${this.baseUrl}/${masterId}/images/reorder`, items);
   }
 }

@@ -1,4 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
+import { HttpEventType, provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
@@ -9,6 +9,7 @@ import { CatalogService } from '@core/services/catalog.service';
 import { LoggerService } from '@core/services/logger.service';
 
 import {
+  ProductImage,
   ProductMaster,
   ProductMasterCreatePayload,
   ProductMasterUpdatePayload
@@ -208,6 +209,84 @@ describe('ProductMasterService', () => {
     expect(mockCatalogService.getBulkCatalogs).toHaveBeenCalledWith({
       commerce_categories: {},
       commerce_live_baskets: {}
+    });
+  });
+
+  describe('Multimedia Gallery & Cloudinary endpoints', () => {
+    const sampleImage: ProductImage = {
+      id: 'img-1',
+      product_master_id: '01a1c785-02b3-7641-bb12-9988aa112233',
+      url: 'https://res.cloudinary.com/novalabs-bo/image/upload/v1/uyuni/products/53/catalog/img1.webp',
+      public_id: 'uyuni/products/53/catalog/img1',
+      image_type: 'CATALOG',
+      title: 'img1.webp',
+      original_filename: 'img1.jpg',
+      file_size_bytes: 120000,
+      width: 1200,
+      height: 1200,
+      format: 'webp',
+      is_cover: true,
+      sort_order: 1
+    };
+
+    it('should upload images with progress tracking', done => {
+      const file = new File(['dummy content'], 'photo.jpg', { type: 'image/jpeg' });
+
+      service
+        .uploadImagesWithProgress('01a1c785-02b3-7641-bb12-9988aa112233', [file], 'CATALOG', true)
+        .subscribe(event => {
+          if (event.type === HttpEventType.Response) {
+            expect(event.body).toEqual([sampleImage]);
+            done();
+          }
+        });
+
+      const req = httpMock.expectOne('http://localhost:8000/api/commerce/product-masters/01a1c785-02b3-7641-bb12-9988aa112233/images');
+      expect(req.request.method).toBe('POST');
+      expect(req.request.reportProgress).toBe(true);
+      req.flush([sampleImage]);
+    });
+
+    it('should get product images', () => {
+      service.getImages('01a1c785-02b3-7641-bb12-9988aa112233', 'CATALOG').subscribe(images => {
+        expect(images).toEqual([sampleImage]);
+      });
+
+      const req = httpMock.expectOne('http://localhost:8000/api/commerce/product-masters/01a1c785-02b3-7641-bb12-9988aa112233/images?image_type=CATALOG');
+      expect(req.request.method).toBe('GET');
+      req.flush([sampleImage]);
+    });
+
+    it('should set cover image', () => {
+      service.setCoverImage('01a1c785-02b3-7641-bb12-9988aa112233', 'img-1').subscribe(res => {
+        expect(res.is_cover).toBe(true);
+      });
+
+      const req = httpMock.expectOne('http://localhost:8000/api/commerce/product-masters/01a1c785-02b3-7641-bb12-9988aa112233/images/img-1/cover');
+      expect(req.request.method).toBe('PATCH');
+      req.flush({ ...sampleImage, is_cover: true });
+    });
+
+    it('should delete image', () => {
+      service.deleteImage('01a1c785-02b3-7641-bb12-9988aa112233', 'img-1').subscribe(res => {
+        expect(res.message).toBe('Fotografía eliminada exitosamente');
+      });
+
+      const req = httpMock.expectOne('http://localhost:8000/api/commerce/product-masters/01a1c785-02b3-7641-bb12-9988aa112233/images/img-1');
+      expect(req.request.method).toBe('DELETE');
+      req.flush({ message: 'Fotografía eliminada exitosamente' });
+    });
+
+    it('should reorder images', () => {
+      const items = [{ id: 'img-1', sort_order: 1 }];
+      service.reorderImages('01a1c785-02b3-7641-bb12-9988aa112233', items).subscribe(images => {
+        expect(images.length).toBe(1);
+      });
+
+      const req = httpMock.expectOne('http://localhost:8000/api/commerce/product-masters/01a1c785-02b3-7641-bb12-9988aa112233/images/reorder');
+      expect(req.request.method).toBe('PUT');
+      expect(req.request.body).toEqual(items);
+      req.flush([sampleImage]);
     });
   });
 });

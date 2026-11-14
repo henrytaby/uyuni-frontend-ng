@@ -15,6 +15,7 @@
       </button>
 
       <!-- Active Role Indicator & Change Button -->
+      @if (selectedRole()) {
       <div
         class="hidden xl:flex items-center gap-3 ml-6 bg-gray-50 dark:bg-white/5 px-3 py-1.5 rounded-full border border-gray-200 dark:border-gray-800 transition-all hover:shadow-sm">
         <div class="flex items-center gap-2">
@@ -29,6 +30,7 @@
           Cambiar
         </button>
       </div>
+      }
 
       <a routerLink="/" class="xl:hidden mx-auto">
         <img class="dark:hidden w-32" src="/images/logo/logo-01.png" alt="Logo" />
@@ -45,6 +47,7 @@
       class="flex-col xl:flex-row items-center justify-between w-full gap-3 px-5 py-2 xl:flex shadow-theme-md xl:justify-end xl:px-0 xl:shadow-none">
 
       <!-- Compact Mobile Active Role -->
+      @if (selectedRole()) {
       <div
         class="xl:hidden w-full flex items-center justify-between bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-100 dark:border-gray-800">
         <div class="flex items-center gap-2">
@@ -55,6 +58,7 @@
         <p-button label="Cambiar" [text]="true" size="small" (click)="roleSelector.show()"
           class="font-bold py-0 h-6"></p-button>
       </div>
+      }
 
       <div class="flex items-center justify-between w-full xl:w-auto gap-3">
         <div class="flex items-center gap-3">

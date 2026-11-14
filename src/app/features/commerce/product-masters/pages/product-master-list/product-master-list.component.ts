@@ -39,6 +39,8 @@ import {
 import { CatalogItem } from '@core/models/catalog.model';
 import { LoggerService } from '@core/services/logger.service';
 
+import { CloudinaryUrlPipe } from '@shared/pipe/cloudinary-url.pipe';
+
 import { ProductMasterDrawerComponent } from '../../components/product-master-drawer/product-master-drawer.component';
 import { ProductMasterFilterDrawerComponent } from '../../components/product-master-filter-drawer/product-master-filter-drawer.component';
 import { ProductMaster } from '../../models/product-master.model';
@@ -71,6 +73,7 @@ import { ProductMasterFilterService, ProductMasterFilterState } from '../../serv
     LucideExternalLink,
     LucideCopy,
     LucideTv,
+    CloudinaryUrlPipe,
     ProductMasterDrawerComponent,
     ProductMasterFilterDrawerComponent
   ],
@@ -222,6 +225,13 @@ export class ProductMasterListComponent implements OnInit {
   onProductDeleted(id: string): void {
     this.logger.info('Product master deleted, reloading table', { id }, 'ProductMasterListComponent');
     this.loadData({ first: this.first(), rows: this.rows() });
+  }
+
+  onCoverImageChanged(event: { masterId: string; coverUrl: string | null }): void {
+    this.logger.info('Product master cover image updated reactively', event, 'ProductMasterListComponent');
+    this.productList.update(list =>
+      list.map(p => (p.id === event.masterId ? { ...p, cover_image_url: event.coverUrl } : p))
+    );
   }
 
   openFilterDrawer(): void {

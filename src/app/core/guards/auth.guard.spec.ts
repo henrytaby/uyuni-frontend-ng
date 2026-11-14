@@ -1,6 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 
+import { Observable, of, throwError } from 'rxjs';
+
 import { AuthService } from '@core/auth/auth.service';
 
 import { authGuard } from './auth.guard';
@@ -146,6 +148,56 @@ describe('authGuard', () => {
       // Assert - guard returns false (falsy is coerced to false in the if statement)
       expect(result).toBe(false);
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/signin']);
+    });
+  });
+
+  describe('session restoration', () => {
+    it('should return true when session restoration succeeds', (done) => {
+      mockAuthService.hasValidSession = jest.fn().mockReturnValue(false);
+      mockAuthService.canRestoreSession = jest.fn().mockReturnValue(true);
+      mockAuthService.restoreSession = jest.fn().mockReturnValue(of(true));
+
+      const result$ = TestBed.runInInjectionContext(() =>
+        authGuard(mockRoute, mockState)
+      ) as Observable<boolean>;
+
+      result$.subscribe(allowed => {
+        expect(allowed).toBe(true);
+        expect(mockRouter.navigate).not.toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('should navigate to signin when session restoration fails', (done) => {
+      mockAuthService.hasValidSession = jest.fn().mockReturnValue(false);
+      mockAuthService.canRestoreSession = jest.fn().mockReturnValue(true);
+      mockAuthService.restoreSession = jest.fn().mockReturnValue(of(false));
+
+      const result$ = TestBed.runInInjectionContext(() =>
+        authGuard(mockRoute, mockState)
+      ) as Observable<boolean>;
+
+      result$.subscribe(allowed => {
+        expect(allowed).toBe(false);
+        expect(mockRouter.navigate).toHaveBeenCalledWith(['/signin']);
+        done();
+      });
+    });
+
+    it('should navigate to signin when restoreSession throws error', (done) => {
+      mockAuthService.hasValidSession = jest.fn().mockReturnValue(false);
+      mockAuthService.canRestoreSession = jest.fn().mockReturnValue(true);
+      mockAuthService.restoreSession = jest.fn().mockReturnValue(throwError(() => new Error('Refresh failed')));
+
+      const result$ = TestBed.runInInjectionContext(() =>
+        authGuard(mockRoute, mockState)
+      ) as Observable<boolean>;
+
+      result$.subscribe(allowed => {
+        expect(allowed).toBe(false);
+        expect(mockRouter.navigate).toHaveBeenCalledWith(['/signin']);
+        done();
+      });
     });
   });
 });

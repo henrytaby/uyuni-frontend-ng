@@ -1,8 +1,8 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { computed, inject,Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { catchError, Observable, of,tap, throwError } from 'rxjs';
+import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
 
 import { ConfigService } from '@core/config/config.service';
 import { MenuGroup } from '@core/models/menu.models';
@@ -11,6 +11,8 @@ import { LoggerService } from '@core/services/logger.service';
 import { TokenRefreshService } from '@core/services/token-refresh.service';
 
 import { TokenResponse, User, UserRole } from '@features/auth/models/auth.models';
+
+import { isJwtExpired } from './jwt.utils';
 
 /**
  * AuthService manages user authentication state and operations.
@@ -37,13 +39,13 @@ export class AuthService {
   // State Signals
   private userSignal = signal<User | null>(null);
   private rolesSignal = signal<UserRole[]>([]);
-  private tokenSignal = signal<string | null>(localStorage.getItem('access_token'));
+  private tokenSignal = signal<string | null>(this.initToken());
   private activeRoleSignal = signal<UserRole | null>(null);
   
   // Computed signals
   readonly currentUser = this.userSignal.asReadonly();
   readonly currentRoles = this.rolesSignal.asReadonly();
-  readonly isAuthenticated = computed(() => !!this.tokenSignal());
+  readonly isAuthenticated = computed(() => !!this.tokenSignal() && !isJwtExpired(this.tokenSignal()));
   readonly activeRole = this.activeRoleSignal.asReadonly();
   
   private menuSignal = signal<MenuGroup[]>([]);
@@ -53,12 +55,83 @@ export class AuthService {
   readonly isLoadingRoles = this.loadingRolesSignal.asReadonly();
 
   constructor() {
-    // Attempt to restore session if token exists.
+    // Attempt to restore session if token exists and is valid.
     // ConfigService is guaranteed to be ready because it uses HttpBackend and is loaded via APP_INITIALIZER
-    if (this.tokenSignal()) {
+    if (this.tokenSignal() && !isJwtExpired(this.tokenSignal())) {
       // Defer execution to allow AuthService to fully construct before AuthInterceptor tries to inject it
       setTimeout(() => this.refreshProfile(), 0);
     }
+  }
+
+  /**
+   * Inicializa el token de acceso verificando expiración previa para prevenir renders no autenticados.
+   */
+  private initToken(): string | null {
+    const accessToken = localStorage.getItem('access_token');
+    const refreshToken = localStorage.getItem('refresh_token');
+
+    if (!accessToken && !refreshToken) {
+      return null;
+    }
+
+    // Si el refresh token expiró, la sesión está totalmente muerta
+    if (refreshToken && isJwtExpired(refreshToken)) {
+      this.clearSession(false);
+      return null;
+    }
+
+    // Si no hay refresh token y el access token expiró
+    if (!refreshToken && isJwtExpired(accessToken)) {
+      this.clearSession(false);
+      return null;
+    }
+
+    // Si el access token expiró pero hay refresh token válido, no inicializamos tokenSignal hasta refrescarlo
+    if (accessToken && isJwtExpired(accessToken)) {
+      return null;
+    }
+
+    return accessToken;
+  }
+
+  /**
+   * Verifica si existe una sesión activa con token no expirado
+   */
+  hasValidSession(): boolean {
+    const token = this.tokenSignal() || localStorage.getItem('access_token');
+    if (!token) {
+      return false;
+    }
+    return !isJwtExpired(token);
+  }
+
+  /**
+   * Verifica si es posible restaurar la sesión mediante refresh_token
+   */
+  canRestoreSession(): boolean {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+      return false;
+    }
+    return !isJwtExpired(refreshToken);
+  }
+
+  /**
+   * Restaura la sesión mediante el servicio de refresh token sin renderizar interfaces intermedias
+   */
+  restoreSession(): Observable<boolean> {
+    return this.tokenRefreshService.refreshToken().pipe(
+      tap(newToken => {
+        this.tokenSignal.set(newToken);
+        this.refreshProfile();
+      }),
+      map(() => true),
+      catchError(err => {
+        this.logger.warn('No se pudo restaurar la sesión con el refresh token', err, 'AuthService');
+        this.clearSession(false);
+        return of(false);
+      })
+    );
   }
 
   /**
@@ -229,7 +302,7 @@ export class AuthService {
   /**
    * Clear all session data
    */
-  private clearSession(): void {
+  clearSession(navigate = true): void {
     this.loadingService.forceReset();
     this.tokenRefreshService.reset();
     
@@ -244,7 +317,9 @@ export class AuthService {
     this.menuSignal.set([]);
     
     this.logger.info('Session cleared', undefined, 'AuthService');
-    this.router.navigate(['/signin']);
+    if (navigate) {
+      this.router.navigate(['/signin']);
+    }
   }
 
   /**
