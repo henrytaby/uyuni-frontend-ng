@@ -1,12 +1,13 @@
 <div class="p-4 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-900">
 
-  <!-- Encabezado con Título, Búsqueda y Botón Nuevo Producto -->
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+  <!-- Encabezado con Título, Selector de Vista, Búsqueda, Filtros y Nuevo Producto -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-3">
     <div>
       <h1 class="text-lg font-bold m-0 text-gray-900 dark:text-gray-100 flex items-center gap-2">
         <span>Inventario Físico de Productos</span>
-        <span class="text-xs font-normal px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
-          Control por Lotes
+        <span
+          class="text-xs font-normal px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-800">
+          {{ totalRecords() }} unidades
         </span>
       </h1>
       <span class="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -14,17 +15,60 @@
       </span>
     </div>
 
-    <div class="flex items-center gap-2.5 w-full sm:w-auto">
-      <p-iconfield iconPosition="left" class="w-full sm:w-64">
+    <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+      <!-- Selector de Vista: Tabla / Tarjetas -->
+      <div
+        class="inline-flex items-center p-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shrink-0">
+        <button
+          type="button"
+          (click)="setViewMode('table')"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md transition-all cursor-pointer font-medium"
+          [class]="viewMode() === 'table'
+            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-2xs font-semibold'
+            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
+          pTooltip="Vista Tabla Administrativa (ERP)"
+          tooltipPosition="bottom">
+          <svg lucideTable2 size="14"></svg>
+          <span class="hidden md:inline">Tabla</span>
+        </button>
+        <button
+          type="button"
+          (click)="setViewMode('cards')"
+          class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md transition-all cursor-pointer font-medium"
+          [class]="viewMode() === 'cards'
+            ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-2xs font-semibold'
+            : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
+          pTooltip="Vista Tarjetas de Existencias"
+          tooltipPosition="bottom">
+          <svg lucideLayoutGrid size="14"></svg>
+          <span class="hidden md:inline">Tarjetas</span>
+        </button>
+      </div>
+
+      <!-- Buscador rápido -->
+      <p-iconfield iconPosition="left" class="w-full sm:w-60">
         <p-inputicon class="pi pi-search"></p-inputicon>
         <input
           type="text"
           pInputText
-          placeholder="Buscar por nombre, variante, caja..."
-          class="w-full text-sm"
+          placeholder="Buscar por #, lote, producto..."
+          class="w-full text-xs"
           (input)="onSearch($event)" />
       </p-iconfield>
 
+      <!-- Botón Filtros con Badge -->
+      <p-button
+        [label]="activeFilterCount() > 0 ? 'Filtros (' + activeFilterCount() + ')' : 'Filtros'"
+        icon="pi pi-filter"
+        size="small"
+        [severity]="activeFilterCount() > 0 ? 'primary' : 'secondary'"
+        [outlined]="activeFilterCount() === 0"
+        (click)="openFilterDrawer()"
+        class="shrink-0"
+        pTooltip="Filtros avanzados de existencias">
+      </p-button>
+
+      <!-- Botón Nuevo Producto -->
       <p-button
         label="Nuevo Producto"
         icon="pi pi-plus"
@@ -36,79 +80,72 @@
     </div>
   </div>
 
-  <!-- Barra de Filtros de Alta Densidad Responsiva -->
+  <!-- Barra de Filtros Activos (Pills / Chips) -->
+  @if (activeFilterCount() > 0) {
   <div
-    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 p-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm items-center w-full">
-
-    <!-- Lote / Caja -->
-    <div class="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 w-full min-w-0">
-      <span class="font-medium text-color whitespace-nowrap text-xs">Caja / Lote:</span>
-      <p-select
-        [options]="batches()"
-        [ngModel]="selectedBatch()"
-        (ngModelChange)="onBatchChange($event)"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Todas las Cajas"
-        [showClear]="true"
-        [filter]="true"
-        filterPlaceholder="Buscar caja..."
-        appendTo="body"
-        class="w-full min-w-0">
-      </p-select>
+    class="flex flex-wrap items-center gap-1.5 mb-3 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 text-xs">
+    <div class="text-gray-500 dark:text-gray-400 font-medium mr-1 flex items-center gap-1">
+      <svg lucideListFilter size="13"></svg>
+      <span>Filtros activos:</span>
     </div>
 
-    <!-- Ficha Maestra -->
-    <div class="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 w-full min-w-0">
-      <span class="font-medium text-color whitespace-nowrap text-xs">Ficha Maestra:</span>
-      <p-select
-        [options]="masterProducts()"
-        [ngModel]="selectedMasterProduct()"
-        (ngModelChange)="onMasterChange($event)"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Todas las Fichas"
-        [showClear]="true"
-        [filter]="true"
-        filterPlaceholder="Buscar ficha..."
-        appendTo="body"
-        class="w-full min-w-0">
-      </p-select>
-    </div>
-
-    <!-- Estado -->
-    <div class="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 w-full min-w-0">
-      <span class="font-medium text-color whitespace-nowrap text-xs">Estado:</span>
-      <p-select
-        [options]="statuses()"
-        [ngModel]="selectedStatus()"
-        (ngModelChange)="onStatusChange($event)"
-        optionLabel="label"
-        optionValue="value"
-        placeholder="Todos los Estados"
-        [showClear]="true"
-        appendTo="body"
-        class="w-full min-w-0">
-      </p-select>
-    </div>
-
-    <!-- Botón Limpiar -->
-    <div class="flex w-full min-w-0">
-      <p-button
+    <!-- Chip Caja / Lote -->
+    @if (selectedBatch()) {
+    <div
+      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 font-medium">
+      <span>Caja: {{ getBatchLabel(selectedBatch()) }}</span>
+      <button
         type="button"
-        icon="pi pi-filter-slash"
-        label="Limpiar Filtros"
-        severity="secondary"
-        [outlined]="true"
-        size="small"
-        class="w-full min-w-0 justify-content-center"
-        (click)="clearFilters()"
-        [disabled]="selectedBatch() === null && selectedMasterProduct() === null && selectedStatus() === null">
-      </p-button>
+        class="hover:text-red-500 cursor-pointer p-0.5"
+        (click)="clearBatchFilter()"
+        pTooltip="Quitar filtro de lote">
+        <svg lucideX size="12"></svg>
+      </button>
     </div>
-  </div>
+    }
 
-  <!-- Tabla Principal de Existencias Físicas -->
+    <!-- Chip Ficha Maestra -->
+    @if (selectedMasterProduct()) {
+    <div
+      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-medium">
+      <span>Ficha: {{ getMasterProductLabel(selectedMasterProduct()) }}</span>
+      <button
+        type="button"
+        class="hover:text-red-500 cursor-pointer p-0.5"
+        (click)="clearMasterFilter()"
+        pTooltip="Quitar filtro de ficha">
+        <svg lucideX size="12"></svg>
+      </button>
+    </div>
+    }
+
+    <!-- Chip Estado Comercial -->
+    @if (selectedStatus()) {
+    <div
+      class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-medium">
+      <span>Estado: {{ getStatusLabel(selectedStatus()!) }}</span>
+      <button
+        type="button"
+        class="hover:text-red-500 cursor-pointer p-0.5"
+        (click)="clearStatusFilter()"
+        pTooltip="Quitar filtro de estado">
+        <svg lucideX size="12"></svg>
+      </button>
+    </div>
+    }
+
+    <!-- Botón Limpiar Todo -->
+    <button
+      type="button"
+      class="text-xs text-gray-500 hover:text-red-600 dark:hover:text-red-400 font-semibold underline ml-auto cursor-pointer"
+      (click)="clearFilters()">
+      Limpiar todos
+    </button>
+  </div>
+  }
+
+  <!-- VISTA 1: TABLA ADMINISTRATIVA DE ALTA DENSIDAD (ERP) -->
+  @if (viewMode() === 'table') {
   <p-table
     [value]="productList()"
     [lazy]="true"
@@ -127,77 +164,79 @@
 
     <ng-template pTemplate="header">
       <tr>
-        <th pSortableColumn="name" style="min-width: 15rem">
+        <th pSortableColumn="name" style="min-width: 14rem; max-width: 24rem">
           <div class="flex items-center gap-1.5 whitespace-nowrap">
             <span>Producto Físico & Variante</span>
             <p-sortIcon field="name"></p-sortIcon>
           </div>
         </th>
-        <th style="min-width: 11rem">
+        <th style="width: 9.5rem">
           <div class="flex items-center gap-1.5 whitespace-nowrap">
             <span>Caja / Lote</span>
           </div>
         </th>
-        <th pSortableColumn="cost_price" style="min-width: 11rem">
+        <th pSortableColumn="cost_price" style="width: 10rem">
           <div class="flex items-center gap-1.5 whitespace-nowrap">
             <span>Costos & Precios (BOB)</span>
             <p-sortIcon field="cost_price"></p-sortIcon>
           </div>
         </th>
-        <th pSortableColumn="available_quantity" style="min-width: 10rem">
+        <th pSortableColumn="available_quantity" style="width: 8.5rem">
           <div class="flex items-center gap-1.5 whitespace-nowrap">
             <span>Existencias</span>
             <p-sortIcon field="available_quantity"></p-sortIcon>
           </div>
         </th>
-        <th style="min-width: 9rem">
+        <th style="width: 8rem">
           <div class="flex items-center gap-1.5 whitespace-nowrap">
             <span>Condición Física</span>
           </div>
         </th>
-        <th style="width: 6.5rem" class="text-center">
+        <th style="width: 5.5rem" class="text-center">
           <div class="flex items-center justify-center gap-1.5 whitespace-nowrap">
             <span>Inspección</span>
           </div>
         </th>
-        <th pSortableColumn="status" class="text-center" style="width: 7.5rem">
+        <th pSortableColumn="status" class="text-center" style="width: 6.5rem">
           <div class="flex items-center justify-center gap-1.5 whitespace-nowrap">
             <span>Estado</span>
             <p-sortIcon field="status"></p-sortIcon>
           </div>
         </th>
-        <th style="width: 3.5rem"></th>
+        <th style="width: 3rem"></th>
       </tr>
     </ng-template>
 
     <ng-template pTemplate="body" let-prod>
       <tr>
-        <!-- Producto & Variante (Clickable para drawer) -->
-        <td class="vertical-align-middle">
+        <!-- Producto & Variante (Con Avatar + Nombre Multilínea clamp-2) -->
+        <td class="vertical-align-middle max-w-xs md:max-w-sm xl:max-w-md">
           <button
             type="button"
-            class="flex items-center gap-3 cursor-pointer group text-left bg-transparent border-none p-0 w-full"
+            class="flex items-start gap-2.5 cursor-pointer group text-left bg-transparent border-none p-0 w-full"
             (click)="openEditProduct(prod)">
             <p-avatar
               [label]="getInitials(prod.name)"
               shape="circle"
-              class="shrink-0 bg-gray-100 text-brand-700 group-hover:bg-brand-100 transition-colors border border-gray-200 dark:border-gray-700">
+              class="shrink-0 bg-gray-100 text-brand-700 group-hover:bg-brand-100 transition-colors border border-gray-200 dark:border-gray-700 mt-0.5">
             </p-avatar>
-            <div class="flex flex-col min-w-0">
-              <span class="text-gray-900 dark:text-gray-100 font-medium group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors truncate">
+            <div class="flex flex-col min-w-0 flex-1">
+              <span
+                class="text-gray-900 dark:text-gray-100 font-medium group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors line-clamp-2 leading-snug break-words"
+                [title]="prod.name">
                 {{ prod.name }}
               </span>
-              <span class="text-gray-500 dark:text-gray-400 text-xs flex items-center gap-1.5">
+              <div class="text-gray-500 dark:text-gray-400 text-xs flex items-center gap-1.5 mt-0.5">
                 @if (prod.variant_name) {
-                  <span class="font-medium text-brand-600 dark:text-brand-400">{{ prod.variant_name }}</span>
+                  <span class="font-medium text-brand-600 dark:text-brand-400 truncate">{{ prod.variant_name }}</span>
                 } @else {
                   <span class="text-gray-400 italic">Estándar</span>
                 }
                 @if (prod.sheet_row_id) {
                   <span class="text-gray-300 dark:text-gray-600">·</span>
-                  <span class="text-gray-400 font-mono text-[11px]">Fila #{{ prod.sheet_row_id }}</span>
+                  <span class="text-gray-400 font-mono text-[11px] shrink-0">Fila #{{ prod.sheet_row_id }}</span>
                 }
-              </span>
+              </div>
             </div>
           </button>
         </td>
@@ -205,9 +244,11 @@
         <!-- Caja / Lote de Origen -->
         <td class="vertical-align-middle">
           @if (prod.batch_name) {
-            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-medium">
-              <svg lucideBoxes size="13" class="text-gray-500"></svg>
-              <span>{{ prod.batch_name }}</span>
+            <span
+              class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-medium truncate max-w-36"
+              [title]="prod.batch_name">
+              <svg lucideBoxes size="13" class="text-amber-600 dark:text-amber-400 shrink-0"></svg>
+              <span class="truncate">{{ prod.batch_name }}</span>
             </span>
           } @else {
             <span class="text-xs text-gray-400 italic">Sin lote asignado</span>
@@ -315,8 +356,195 @@
       </tr>
     </ng-template>
   </p-table>
+  }
 
-  <!-- Slide-Over Drawer para Creación y Edición -->
+  <!-- VISTA 2: CUADRÍCULA DE TARJETAS COMERCIALES DE EXISTENCIAS -->
+  @if (viewMode() === 'cards') {
+  @if (isLoading()) {
+  <div class="flex items-center justify-center p-12 text-gray-400 gap-2">
+    <i class="pi pi-spin pi-spinner text-lg text-brand-600"></i>
+    <span class="text-xs">Cargando existencias físicas...</span>
+  </div>
+  } @else if (productList().length === 0) {
+  <div
+    class="text-center p-10 border border-dashed border-gray-200 dark:border-gray-800 rounded-xl my-4 text-gray-500 text-xs">
+    No se encontraron existencias físicas que coincidan con la búsqueda o filtros activos.
+  </div>
+  } @else {
+  <!-- Cuadrícula de Tarjetas de Existencias -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-3.5 my-3">
+    @for (prod of productList(); track prod.id) {
+    <div
+      class="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group">
+
+      <!-- Barra Superior de la Tarjeta (# Fila, Lote, Stock) -->
+      <div
+        class="p-2.5 pb-2 flex items-center justify-between border-b border-gray-100 dark:border-gray-800/80 bg-gray-50/60 dark:bg-gray-850">
+        <div class="flex items-center gap-1.5 min-w-0">
+          @if (prod.sheet_row_id) {
+          <span
+            class="font-mono font-bold text-xs text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">
+            #{{ prod.sheet_row_id }}
+          </span>
+          }
+          @if (prod.batch_name) {
+          <span
+            class="inline-flex items-center gap-1 text-[11px] font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 truncate max-w-32">
+            <svg lucideBoxes size="12" class="text-amber-600 dark:text-amber-400 shrink-0"></svg>
+            <span class="truncate">{{ prod.batch_name }}</span>
+          </span>
+          }
+        </div>
+
+        <!-- Indicador de Stock Disponible -->
+        @if (prod.available_quantity > 0) {
+        <span
+          class="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span>{{ prod.available_quantity }} disp.</span>
+        </span>
+        } @else {
+        <span
+          class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60 shrink-0">
+          <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+          <span>Agotado</span>
+        </span>
+        }
+      </div>
+
+      <!-- Cuerpo Principal: Avatar/Iniciales, Título, Variante, Condición y Precios -->
+      <div class="p-3 flex-1 flex flex-col gap-2.5">
+        <div class="flex gap-2.5">
+          <!-- Avatar con iniciales -->
+          <div
+            class="w-11 h-11 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-brand-700 dark:text-brand-300 font-bold text-xs shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+            {{ getInitials(prod.name) }}
+          </div>
+
+          <div class="flex flex-col min-w-0 flex-1 justify-center">
+            <button
+              type="button"
+              (click)="openEditProduct(prod)"
+              class="font-semibold text-xs text-gray-900 dark:text-gray-100 hover:text-brand-600 dark:hover:text-brand-400 text-left line-clamp-2 cursor-pointer transition-colors leading-snug">
+              {{ prod.name }}
+            </button>
+
+            <div class="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 flex-wrap">
+              @if (prod.variant_name) {
+                <span class="font-medium text-brand-600 dark:text-brand-400">{{ prod.variant_name }}</span>
+              } @else {
+                <span class="text-gray-400 italic">Estándar</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Tags: Condición Física & Inspección -->
+        <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-gray-100 dark:border-gray-800 text-[11px]">
+          <div class="flex items-center gap-1.5">
+            <span class="text-gray-500 dark:text-gray-400">Condición:</span>
+            <p-tag
+              [value]="getConditionLabel(prod.physical_condition)"
+              [severity]="prod.physical_condition === 'OPERATIONAL' ? 'success' : (prod.physical_condition === 'REPAIRED' ? 'info' : 'warn')"
+              [rounded]="true"
+              class="text-[10px]">
+            </p-tag>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <span
+              [pTooltip]="prod.is_reviewed ? 'Inspeccionado y probado en mesa' : 'Pendiente de prueba'"
+              [class.text-green-600]="prod.is_reviewed"
+              [class.dark:text-green-400]="prod.is_reviewed"
+              [class.text-gray-300]="!prod.is_reviewed"
+              [class.dark:text-gray-600]="!prod.is_reviewed">
+              <svg lucideShieldCheck size="14"></svg>
+            </span>
+            @if (prod.defect_detail) {
+              <span class="text-amber-500 cursor-help" [pTooltip]="prod.defect_detail" tooltipPosition="top">
+                <i class="pi pi-info-circle text-[11px]"></i>
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- Grid de Precios y Costos (3 columnas) -->
+        <div class="grid grid-cols-3 gap-1.5 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 text-center font-mono">
+          <div class="flex flex-col">
+            <span class="text-[9px] uppercase tracking-wider text-gray-400 font-sans font-medium">Costo</span>
+            <span class="text-[11px] font-bold text-gray-800 dark:text-gray-200">
+              {{ prod.cost_price !== null && prod.cost_price !== undefined ? ('Bs. ' + (prod.cost_price | number:'1.0-2')) : 'S/C' }}
+            </span>
+          </div>
+          <div class="flex flex-col border-x border-gray-200 dark:border-gray-700 px-1">
+            <span class="text-[9px] uppercase tracking-wider text-gray-400 font-sans font-medium">Oficial</span>
+            <span class="text-[11px] font-bold text-gray-900 dark:text-gray-100">
+              Bs. {{ prod.official_price | number:'1.0-0' }}
+            </span>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-[9px] uppercase tracking-wider text-amber-600 dark:text-amber-400 font-sans font-medium">Piso</span>
+            <span class="text-[11px] font-bold text-amber-700 dark:text-amber-300">
+              Bs. {{ prod.minimum_price | number:'1.0-0' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Existencias desglosadas (Iniciales, Vendidas, Mermas) -->
+        <div class="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 px-1">
+          <span class="font-mono">
+            <span class="text-gray-400">Total:</span> {{ prod.initial_quantity }} ini.
+          </span>
+          <div class="flex items-center gap-2 font-mono">
+            @if (prod.sold_quantity > 0) {
+              <span class="text-blue-600 dark:text-blue-400">{{ prod.sold_quantity }} vend.</span>
+            }
+            @if (prod.merma_quantity > 0) {
+              <span class="text-rose-500 font-semibold">{{ prod.merma_quantity }} merma</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer con Estado Comercial y Botón Editar -->
+      <div class="p-2 px-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/40 dark:bg-gray-850/50">
+        <p-tag
+          [value]="getStatusLabel(prod.status)"
+          [severity]="getStatusSeverity(prod.status)"
+          [rounded]="true"
+          class="text-[10px]">
+        </p-tag>
+
+        <p-button
+          icon="pi pi-pencil"
+          [text]="true"
+          [rounded]="true"
+          size="small"
+          severity="secondary"
+          pTooltip="Editar Existencia"
+          tooltipPosition="left"
+          (click)="openEditProduct(prod)">
+        </p-button>
+      </div>
+    </div>
+    }
+  </div>
+
+  <!-- Paginador Sincronizado para Vista Tarjetas -->
+  <p-paginator
+    [rows]="rows()"
+    [first]="first()"
+    [totalRecords]="totalRecords()"
+    [rowsPerPageOptions]="[12, 24, 36, 48]"
+    (onPageChange)="onPaginatorChange($event)"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} unidades"
+    class="my-2">
+  </p-paginator>
+  }
+  }
+
+  <!-- Slide-Over Drawer para Creación y Edición de Producto -->
   <app-product-drawer
     [(visible)]="drawerVisible"
     [product]="selectedProduct()"
@@ -329,5 +557,15 @@
     (productDeleted)="onProductDeleted($event)">
   </app-product-drawer>
 
-</div>
+  <!-- Slide-Over Drawer para Filtros Avanzados -->
+  <app-product-filter-drawer
+    [(visible)]="filterDrawerVisible"
+    [batches]="batches()"
+    [masterProducts]="masterProducts()"
+    [statuses]="statuses()"
+    [filterState]="currentFilterState()"
+    (filterApplied)="onFilterApplied($event)"
+    (filterCleared)="onFilterCleared()">
+  </app-product-filter-drawer>
 
+</div>

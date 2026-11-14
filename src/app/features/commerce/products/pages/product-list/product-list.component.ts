@@ -15,7 +15,7 @@ import { Button } from 'primeng/button';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { InputText } from 'primeng/inputtext';
-import { Select } from 'primeng/select';
+import { Paginator } from 'primeng/paginator';
 import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
@@ -23,13 +23,18 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {
   LucideBoxes,
-  LucideShieldCheck
+  LucideLayoutGrid,
+  LucideListFilter,
+  LucideShieldCheck,
+  LucideTable2,
+  LucideX
 } from '@lucide/angular';
 
 import { CatalogItem } from '@core/models/catalog.model';
 import { LoggerService } from '@core/services/logger.service';
 
 import { ProductDrawerComponent } from '../../components/product-drawer/product-drawer.component';
+import { ProductFilterDrawerComponent } from '../../components/product-filter-drawer/product-filter-drawer.component';
 import { Product } from '../../models/product.model';
 import { ProductService } from '../../services/product.service';
 import { ProductFilterService, ProductFilterState } from '../../services/product-filter.service';
@@ -41,6 +46,7 @@ import { ProductFilterService, ProductFilterState } from '../../services/product
     CommonModule,
     FormsModule,
     TableModule,
+    Paginator,
     Tag,
     Avatar,
     Button,
@@ -48,10 +54,14 @@ import { ProductFilterService, ProductFilterState } from '../../services/product
     IconField,
     InputIcon,
     Tooltip,
-    Select,
     LucideBoxes,
     LucideShieldCheck,
-    ProductDrawerComponent
+    LucideTable2,
+    LucideLayoutGrid,
+    LucideListFilter,
+    LucideX,
+    ProductDrawerComponent,
+    ProductFilterDrawerComponent
   ],
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.css'],
@@ -62,12 +72,24 @@ export class ProductListComponent implements OnInit {
   private readonly filterService = inject(ProductFilterService);
   private readonly logger = inject(LoggerService);
 
+  // View Mode: 'table' (ERP / Backoffice) vs 'cards' (Existencias / Tarjetas)
+  readonly viewMode = signal<'table' | 'cards'>(
+    (typeof localStorage !== 'undefined' &&
+      (localStorage.getItem('uyuni_prod_view_mode') as 'table' | 'cards')) ||
+      'table'
+  );
+
   // State Signals
   readonly productList = signal<Product[]>([]);
   readonly totalRecords = signal<number>(0);
   readonly isLoading = signal<boolean>(false);
   readonly first = signal<number>(0);
-  readonly rows = signal<number>(15);
+  readonly rows = signal<number>(
+    (typeof localStorage !== 'undefined' &&
+      localStorage.getItem('uyuni_prod_view_mode') === 'cards')
+      ? 12
+      : 15
+  );
 
   // Search Debouncing
   private readonly searchSubject = new Subject<string>();
@@ -79,17 +101,40 @@ export class ProductListComponent implements OnInit {
   readonly statuses = signal<CatalogItem[]>([]);
   readonly physicalConditions = signal<CatalogItem[]>([]);
 
-  // Filters
+  // Filters State
   readonly selectedBatch = signal<string | null>(null);
   readonly selectedMasterProduct = signal<string | null>(null);
   readonly selectedStatus = signal<string | null>(null);
+  readonly filterDrawerVisible = signal<boolean>(false);
+
+  readonly activeFilterCount = computed<number>(() => {
+    let count = 0;
+    if (this.selectedBatch()) count++;
+    if (this.selectedMasterProduct()) count++;
+    if (this.selectedStatus()) count++;
+    return count;
+  });
+
+  readonly currentFilterState = computed<ProductFilterState>(() => ({
+    selectedBatch: this.selectedBatch(),
+    selectedMasterProduct: this.selectedMasterProduct(),
+    selectedStatus: this.selectedStatus()
+  }));
 
   // Drawer
   readonly drawerVisible = signal<boolean>(false);
   readonly selectedProduct = signal<Product | null>(null);
   readonly drawerMode = signal<'create' | 'edit'>('create');
 
-  // Mappings
+  // Mappings for fast label lookup
+  readonly batchesMap = computed(() => {
+    return new Map(this.batches().map(b => [String(b.value), b.label]));
+  });
+
+  readonly masterProductsMap = computed(() => {
+    return new Map(this.masterProducts().map(m => [String(m.value), m.label]));
+  });
+
   readonly statusesMap = computed(() => {
     return new Map(this.statuses().map(s => [String(s.value), s.label]));
   });
@@ -114,6 +159,28 @@ export class ProductListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCatalogs();
+    if (this.viewMode() === 'cards') {
+      this.loadData({ first: this.first(), rows: this.rows() });
+    }
+  }
+
+  setViewMode(mode: 'table' | 'cards'): void {
+    const prevMode = this.viewMode();
+    this.viewMode.set(mode);
+    try {
+      localStorage.setItem('uyuni_prod_view_mode', mode);
+    } catch {
+      // ignore storage error
+    }
+
+    if (prevMode !== mode) {
+      const targetRows = mode === 'cards' ? 12 : 15;
+      this.rows.set(targetRows);
+      this.first.set(0);
+      if (mode === 'cards') {
+        this.loadData({ first: 0, rows: targetRows });
+      }
+    }
   }
 
   private loadCatalogs(): void {
@@ -152,26 +219,41 @@ export class ProductListComponent implements OnInit {
     this.loadData({ first: this.first(), rows: this.rows() });
   }
 
-  onBatchChange(batchId: string | null): void {
-    this.selectedBatch.set(batchId);
+  openFilterDrawer(): void {
+    this.filterDrawerVisible.set(true);
+  }
+
+  onFilterApplied(state: ProductFilterState): void {
+    this.selectedBatch.set(state.selectedBatch);
+    this.selectedMasterProduct.set(state.selectedMasterProduct);
+    this.selectedStatus.set(state.selectedStatus);
     this.resetAndReload();
   }
 
-  onMasterChange(masterId: string | null): void {
-    this.selectedMasterProduct.set(masterId);
-    this.resetAndReload();
-  }
-
-  onStatusChange(status: string | null): void {
-    this.selectedStatus.set(status);
-    this.resetAndReload();
-  }
-
-  clearFilters(): void {
+  onFilterCleared(): void {
     this.selectedBatch.set(null);
     this.selectedMasterProduct.set(null);
     this.selectedStatus.set(null);
     this.resetAndReload();
+  }
+
+  clearBatchFilter(): void {
+    this.selectedBatch.set(null);
+    this.resetAndReload();
+  }
+
+  clearMasterFilter(): void {
+    this.selectedMasterProduct.set(null);
+    this.resetAndReload();
+  }
+
+  clearStatusFilter(): void {
+    this.selectedStatus.set(null);
+    this.resetAndReload();
+  }
+
+  clearFilters(): void {
+    this.onFilterCleared();
   }
 
   private resetAndReload(): void {
@@ -224,9 +306,27 @@ export class ProductListComponent implements OnInit {
     });
   }
 
+  onPaginatorChange(event: { first?: number; rows?: number }): void {
+    const f = event.first ?? 0;
+    const r = event.rows ?? this.rows();
+    this.first.set(f);
+    this.rows.set(r);
+    this.loadData({ first: f, rows: r });
+  }
+
   onSearch(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.searchSubject.next(value);
+  }
+
+  getBatchLabel(id?: string | null): string {
+    if (!id) return '';
+    return this.batchesMap().get(id) || id;
+  }
+
+  getMasterProductLabel(id?: string | null): string {
+    if (!id) return '';
+    return this.masterProductsMap().get(id) || id;
   }
 
   getStatusLabel(status: string): string {
