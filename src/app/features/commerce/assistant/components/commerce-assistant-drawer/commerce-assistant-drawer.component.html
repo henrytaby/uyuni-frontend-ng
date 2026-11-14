@@ -60,7 +60,7 @@
         <button
           type="button"
           (click)="toggleMaximize()"
-          class="w-7.5 h-7.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white flex items-center justify-center transition-colors shadow-2xs cursor-pointer hidden sm:flex"
+          class="w-7.5 h-7.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white hidden sm:flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
           [pTooltip]="isMaximized() ? 'Restaurar ancho normal' : 'Maximizar a pantalla completa'"
           tooltipPosition="bottom">
           @if (isMaximized()) {
@@ -347,8 +347,8 @@
           <div class="p-3.5 rounded-2xl rounded-tl-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex items-center gap-2.5 text-xs text-gray-500 dark:text-gray-400 shadow-2xs">
             <span class="inline-flex gap-1 items-center">
               <span class="w-2 h-2 rounded-full bg-brand-500 animate-bounce"></span>
-              <span class="w-2 h-2 rounded-full bg-brand-500 animate-bounce [animation-delay:0.2s]"></span>
-              <span class="w-2 h-2 rounded-full bg-brand-500 animate-bounce [animation-delay:0.4s]"></span>
+              <span class="w-2 h-2 rounded-full bg-brand-500 animate-bounce animate-delay-200"></span>
+              <span class="w-2 h-2 rounded-full bg-brand-500 animate-bounce animate-delay-400"></span>
             </span>
             <span>Consultando existencias en BD y formulando respuesta...</span>
           </div>

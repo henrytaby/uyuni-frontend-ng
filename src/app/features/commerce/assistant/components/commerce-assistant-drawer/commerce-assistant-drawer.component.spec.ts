@@ -11,6 +11,7 @@ import { ProductMasterService } from '@features/commerce/product-masters/service
 
 import {
   ChatAssistantResponse,
+  ChatMessage,
   MatchedProduct
 } from '../../models/assistant.model';
 import { CommerceAssistantService } from '../../services/assistant.service';
