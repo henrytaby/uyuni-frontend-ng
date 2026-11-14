@@ -5,6 +5,7 @@ import {
   Component,
   computed,
   effect,
+  HostListener,
   inject,
   input,
   model,
@@ -35,7 +36,8 @@ import {
   LucideMinimize2,
   LucidePackage,
   LucideShare2,
-  LucideTag
+  LucideTag,
+  LucideX
 } from '@lucide/angular';
 
 import { CatalogItem } from '@core/models/catalog.model';
@@ -86,6 +88,7 @@ import { ProductMasterLinksComponent } from '../product-master-links/product-mas
     LucideMaximize2,
     LucideMinimize2,
     LucideShare2,
+    LucideX,
     CdkScrollable,
     CloudinaryUrlPipe,
     MarkdownEditorComponent,
@@ -180,6 +183,44 @@ export class ProductMasterDrawerComponent {
         this.visible.set(false);
       }
     });
+  }
+
+  /**
+   * Intercepta clics sobre el backdrop gris de fondo (.p-drawer-mask) para proteger cambios sin guardar
+   * sin permitir que PrimeNG destruya prematuramente la máscara modal.
+   */
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.visible()) return;
+
+    // Si hay un diálogo modal de confirmación o alerta abierto, no interceptar
+    if (document.querySelector('.p-dialog-mask, .p-confirm-dialog')) {
+      return;
+    }
+
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+
+    // Si el clic fue directamente sobre la máscara de fondo del drawer
+    if (target.classList?.contains('p-drawer-mask')) {
+      this.requestClose();
+    }
+  }
+
+  /**
+   * Intercepta la tecla Escape para proteger cambios sin guardar con confirmación modal
+   */
+  @HostListener('document:keydown.escape', ['$event'])
+  onEscapeKey(event: Event): void {
+    if (!this.visible()) return;
+
+    // Si hay un modal o diálogo abierto encima (como confirmación), dejar que el diálogo maneje su propio escape
+    if (document.querySelector('.p-dialog-mask, .p-confirm-dialog')) {
+      return;
+    }
+
+    event.preventDefault();
+    this.requestClose();
   }
 
   onCoverImageChanged(event: { masterId: string; coverUrl: string | null }): void {
