@@ -657,6 +657,7 @@ In Tailwind CSS v4, the important modifier is strictly a **suffix** (postfix). Y
 | Dark Mode | `dark:` anywhere | `dark:` before utility |
 | Hover Mods | `hover:dark:` not standard | `hover:dark:` is valid |
 | Config | Tailwind.config.js | CSS @theme directive |
+| Text Wrapping | `break-words` | `wrap-break-word` (canonical v4) |
 
 #### Canonical Spacing and Sizing (`suggestCanonicalClasses`)
 

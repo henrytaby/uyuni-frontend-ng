@@ -75,4 +75,16 @@ $$\text{Canonical value} = \frac{\text{Pixel value}}{4}$$
 ### Why this happens:
 Tailwind v4 replaces the rigid v3 numerical map with a continuous mathematical scale based on `--spacing: 0.25rem`. As a result, fractional numbers (`w-2.75`, `max-w-42.5`, `max-w-162.5`) are valid first-class citizens. Avoid bracket syntax for spacing unless using arbitrary CSS units (e.g. `calc()`, `dvh`).
 
+## 5. Text Wrapping Utilities (`overflow-wrap`)
+In Tailwind CSS v4, text wrapping utilities were renamed to align with standard CSS `overflow-wrap` property values:
+
+| Tailwind v3 (Legacy) | Tailwind v4 (Canonical) | CSS Equivalente |
+|---------------------|-------------------------|-----------------|
+| `break-words` (⚠️) | `wrap-break-word` (✅) | `overflow-wrap: break-word;` |
+| `break-normal` | `wrap-normal` | `overflow-wrap: normal;` |
+| - | `wrap-anywhere` | `overflow-wrap: anywhere;` |
+| `break-all` | `break-all` | `word-break: break-all;` |
+| `break-keep` | `break-keep` | `word-break: keep-all;` |
+
+
 
