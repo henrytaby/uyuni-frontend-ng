@@ -153,6 +153,7 @@ export class BatchService {
 
     const staticFinancialStatuses = [
       { value: 'EN_RECUPERACION', label: 'En Recuperación' },
+      { value: 'CASI_TABLAS', label: 'Casi Tablas' },
       { value: 'RECUPERADO', label: 'Recuperado / Ganancia' }
     ];
 

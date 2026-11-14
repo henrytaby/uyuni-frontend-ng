@@ -112,6 +112,8 @@ export class CustomButtonComponent {
 - **@primeuix/themes**: Always use `@primeuix/themes` (NOT `@primeng/themes`)
 - **No deprecated properties**: Specifically, **never** use `styleClass` on PrimeNG components; use standard `class` instead to comply with v21+ guidelines.
 - **TypeScript strictness**: Use proper typing for all component properties
+- **p-table Template Directives**: ALWAYS use `pTemplate="header"`, `pTemplate="body" let-item`, and `pTemplate="emptymessage"`. NEVER use `#header` or `#body` in `p-table`; doing so breaks row context typing (`Property 'x' does not exist on type '...'`) and causes template reference collisions with parent components (like `p-drawer` or `p-dialog` `#header`).
+- **HTML5 Phrasing Content**: Do not wrap Angular `@if` blocks or nested blocks inside inline `<span>` elements; use `<div>` instead to avoid `Unexpected closing tag "span"` parser errors in the Angular Language Service / ngtsc.
 
 #### 5. Checking for Deprecation Warnings
 ```bash
@@ -136,6 +138,7 @@ npm run build
 5. **Check @primeuix/themes** for theme-related configurations
 6. **Review PrimeNG changelog** when implementing new features
 7. **NEVER use `styleClass`**: Always use standard `class` attributes on PrimeNG elements.
+8. **ALWAYS use `pTemplate` in `p-table`**: Write `<ng-template pTemplate="header">` and `<ng-template pTemplate="body" let-item>`. Never use `#header` or `#body`.
 
 ### Deprecation Map (v17/v18 → v21)
 | Legacy (v17/v18) | Modern (v21) | Status |

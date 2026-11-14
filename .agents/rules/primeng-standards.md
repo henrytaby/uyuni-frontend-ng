@@ -36,7 +36,55 @@ In PrimeNG v21+, `styleClass` is deprecated. Use the standard `class` attribute:
 <p-button label="Guardar" styleClass="p-button-sm" />
 ```
 
-## 4. Lucide Icons (Primary Icon Library)
+## 4. PrimeNG Table (`p-table`) Template Standards
+In `p-table`, templates must ALWAYS use PrimeNG's structural directive `pTemplate`. Never use template variable references (`#header`, `#body`):
+
+```html
+<!-- ✅ CORRECT - pTemplate injects row context correctly -->
+<p-table [value]="items()">
+  <ng-template pTemplate="header">
+    <tr>
+      <th>Columna</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-item>
+    <tr>
+      <td>{{ item.name }}</td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="emptymessage">
+    <tr><td>Sin datos</td></tr>
+  </ng-template>
+</p-table>
+
+<!-- ❌ FORBIDDEN - Causes ngtsc(2339) 'item does not exist on component' and collisions with parent drawer #header -->
+<p-table [value]="items()">
+  <ng-template #header> ... </ng-template>
+  <ng-template #body let-item> ... </ng-template>
+</p-table>
+```
+
+### HTML5 Phrasing Content inside Templates
+Avoid nesting `@if` blocks or sub-tags inside inline `<span>` elements. Use `<div>` or `<p>` to prevent Angular compiler `Unexpected closing tag "span"` errors:
+```html
+<!-- ✅ CORRECT -->
+<div class="text-xs text-gray-400">
+  {{ item.count }} unid.
+  @if (item.merma > 0) {
+    <span class="text-red-500">(-{{ item.merma }})</span>
+  }
+</div>
+
+<!-- ❌ FORBIDDEN -->
+<span class="text-xs text-gray-400 block">
+  {{ item.count }} unid.
+  @if (item.merma > 0) {
+    <span class="text-red-500">(-{{ item.merma }})</span>
+  }
+</span>
+```
+
+## 5. Lucide Icons (Primary Icon Library)
 Use `@lucide/angular` for all application iconography.
 
 ### Static Icons

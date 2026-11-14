@@ -14,7 +14,6 @@ import { Button } from 'primeng/button';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { InputText } from 'primeng/inputtext';
-import { Select } from 'primeng/select';
 import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { Tag } from 'primeng/tag';
 import { Tooltip } from 'primeng/tooltip';
@@ -22,13 +21,15 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {
   LucideBoxes,
-  LucideSearch
+  LucideListFilter,
+  LucideX
 } from '@lucide/angular';
 
 import { CatalogItem } from '@core/models/catalog.model';
 import { LoggerService } from '@core/services/logger.service';
 
 import { BatchDrawerComponent } from '../../components/batch-drawer/batch-drawer.component';
+import { BatchFilterDrawerComponent } from '../../components/batch-filter-drawer/batch-filter-drawer.component';
 import { Batch } from '../../models/batch.model';
 import { BatchService } from '../../services/batch.service';
 import { BatchFilterService, BatchFilterState } from '../../services/batch-filter.service';
@@ -46,10 +47,11 @@ import { BatchFilterService, BatchFilterState } from '../../services/batch-filte
     IconField,
     InputIcon,
     Tooltip,
-    Select,
     LucideBoxes,
-    LucideSearch,
-    BatchDrawerComponent
+    LucideListFilter,
+    LucideX,
+    BatchDrawerComponent,
+    BatchFilterDrawerComponent
   ],
   templateUrl: './batch-list.component.html',
   styleUrls: ['./batch-list.component.css'],
@@ -79,6 +81,23 @@ export class BatchListComponent implements OnInit {
   // Filters
   readonly selectedStatus = signal<string | null>(null);
   readonly selectedFinancialStatus = signal<string | null>(null);
+  readonly selectedRound = signal<string | null>(null);
+  readonly filterDrawerVisible = signal<boolean>(false);
+
+  // Active filters count
+  readonly activeFilterCount = computed<number>(() => {
+    let count = 0;
+    if (this.selectedStatus()) count++;
+    if (this.selectedFinancialStatus()) count++;
+    if (this.selectedRound()) count++;
+    return count;
+  });
+
+  readonly currentFilterState = computed<BatchFilterState>(() => ({
+    selectedStatus: this.selectedStatus(),
+    selectedFinancialStatus: this.selectedFinancialStatus(),
+    selectedRound: this.selectedRound()
+  }));
 
   // Drawer
   readonly drawerVisible = signal<boolean>(false);
@@ -92,6 +111,10 @@ export class BatchListComponent implements OnInit {
 
   readonly financialStatusesMap = computed(() => {
     return new Map(this.financialStatuses().map(f => [String(f.value), f.label]));
+  });
+
+  readonly roundsMap = computed(() => {
+    return new Map(this.investmentRounds().map(r => [String(r.value), r.label]));
   });
 
   // Track current sort
@@ -143,7 +166,41 @@ export class BatchListComponent implements OnInit {
     this.searchSubject.next(term);
   }
 
-  onFilterChange(): void {
+  onSearchInput(event: Event): void {
+    const term = (event.target as HTMLInputElement)?.value || '';
+    this.onSearchChange(term);
+  }
+
+  openFilterDrawer(): void {
+    this.filterDrawerVisible.set(true);
+  }
+
+  onFilterApplied(state: BatchFilterState): void {
+    this.selectedStatus.set(state.selectedStatus);
+    this.selectedFinancialStatus.set(state.selectedFinancialStatus);
+    this.selectedRound.set(state.selectedRound);
+    this.first.set(0);
+    this.fetchData(this.searchValue());
+  }
+
+  onFilterCleared(): void {
+    this.clearFilters();
+  }
+
+  clearStatusFilter(): void {
+    this.selectedStatus.set(null);
+    this.first.set(0);
+    this.fetchData(this.searchValue());
+  }
+
+  clearFinancialStatusFilter(): void {
+    this.selectedFinancialStatus.set(null);
+    this.first.set(0);
+    this.fetchData(this.searchValue());
+  }
+
+  clearRoundFilter(): void {
+    this.selectedRound.set(null);
     this.first.set(0);
     this.fetchData(this.searchValue());
   }
@@ -152,8 +209,21 @@ export class BatchListComponent implements OnInit {
     this.searchValue.set('');
     this.selectedStatus.set(null);
     this.selectedFinancialStatus.set(null);
+    this.selectedRound.set(null);
     this.first.set(0);
     this.fetchData('');
+  }
+
+  getStatusLabel(status: string): string {
+    return this.statusesMap().get(status) || status;
+  }
+
+  getFinancialStatusLabel(status: string): string {
+    return this.financialStatusesMap().get(status) || status;
+  }
+
+  getRoundLabel(roundId: string): string {
+    return this.roundsMap().get(roundId) || roundId;
   }
 
   fetchData(search = ''): void {
@@ -162,7 +232,7 @@ export class BatchListComponent implements OnInit {
     const filterState: BatchFilterState = {
       selectedStatus: this.selectedStatus(),
       selectedFinancialStatus: this.selectedFinancialStatus(),
-      selectedRound: null
+      selectedRound: this.selectedRound()
     };
 
     const params = this.filterService.buildParams(
@@ -231,10 +301,12 @@ export class BatchListComponent implements OnInit {
     switch (status) {
       case 'RECUPERADO':
         return 'success';
-      case 'EN_RECUPERACION':
+      case 'CASI_TABLAS':
         return 'warn';
-      default:
+      case 'EN_RECUPERACION':
         return 'info';
+      default:
+        return 'secondary';
     }
   }
 }

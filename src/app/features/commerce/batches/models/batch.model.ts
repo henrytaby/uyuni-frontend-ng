@@ -7,6 +7,7 @@ export interface Batch {
   investment_round_id?: string | null;
   provider?: string | null;
   batch_type?: string | null;
+  costing_method?: 'WEIGHTED_RETAIL' | 'SPECIFIC_ITEM' | 'FLAT_AVERAGE' | string;
   purchase_date?: string | null;
   purchase_price: number;
   freight_cost: number;
@@ -34,11 +35,12 @@ export interface BatchParams {
 }
 
 export interface BatchCreatePayload {
-  code: string;
+  code?: string | null;
   name: string;
   investment_round_id?: string | null;
   provider?: string | null;
   batch_type?: string | null;
+  costing_method?: 'WEIGHTED_RETAIL' | 'SPECIFIC_ITEM' | 'FLAT_AVERAGE' | string;
   purchase_date?: string | null;
   purchase_price?: number;
   freight_cost?: number;
@@ -54,11 +56,12 @@ export interface BatchCreatePayload {
 }
 
 export interface BatchUpdatePayload {
-  code?: string;
+  code?: string | null;
   name?: string;
   investment_round_id?: string | null;
   provider?: string | null;
   batch_type?: string | null;
+  costing_method?: 'WEIGHTED_RETAIL' | 'SPECIFIC_ITEM' | 'FLAT_AVERAGE' | string;
   purchase_date?: string | null;
   purchase_price?: number;
   freight_cost?: number;

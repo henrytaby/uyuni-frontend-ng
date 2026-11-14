@@ -1,91 +1,166 @@
 <p-drawer
   [visible]="visible()"
-  (visibleChange)="visible.set($event)"
+  (visibleChange)="onVisibleChange($event)"
   position="right"
   [modal]="true"
-  [style]="{ width: '44rem', maxWidth: '100vw' }">
+  [dismissible]="false"
+  [closeOnEscape]="false"
+  [closable]="false"
+  [fullScreen]="isMaximized()"
+  class="max-w-full"
+  [class.w-full]="isMaximized()"
+  [class.sm:w-135]="!isMaximized()"
+  [class.md:w-162.5]="!isMaximized()"
+  [class.lg:w-187.5]="!isMaximized()"
+  [style]="isMaximized() ? { width: '100vw', maxWidth: '100vw' } : { width: '100%', maxWidth: '750px' }">
 
   <!-- Header del Drawer -->
   <ng-template #header>
     <div class="flex items-center justify-between w-full pr-2">
       <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-700 dark:text-amber-300">
+        <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex items-center justify-center text-amber-700 dark:text-amber-300 shrink-0">
           <svg lucideBoxes size="18"></svg>
         </div>
-        <div>
-          <h2 class="text-base font-bold text-gray-900 dark:text-gray-100 m-0 flex items-center gap-2">
-            <span>{{ mode() === 'create' ? 'Nueva Caja / Lote' : 'Lote / Caja' }}</span>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h2 class="text-sm sm:text-base font-bold text-gray-900 dark:text-gray-100 m-0">
+              {{ mode() === 'create' ? 'Nueva Caja / Lote' : 'Lote / Caja' }}
+            </h2>
             @if (mode() === 'edit' && currentDisplayBatch()?.code) {
-              <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200">
+              <span class="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300">
                 {{ currentDisplayBatch()?.code }}
               </span>
             }
-          </h2>
-          <span class="block text-xs text-gray-500 dark:text-gray-400 m-0">
+
+            <!-- Indicador de Estado en el Header (Mobile y Desktop) -->
+            @if (isDirty()) {
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shrink-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                <span>Sin guardar</span>
+              </span>
+            } @else if (mode() === 'edit') {
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 shrink-0">
+                <svg lucideCheck size="11"></svg>
+                <span>Guardado</span>
+              </span>
+            }
+          </div>
+          <span class="block text-xs text-gray-500 dark:text-gray-400 m-0 truncate max-w-50 sm:max-w-md">
             {{ mode() === 'create' ? 'Alta de contenedor o lote de mercadería adquirida' : (currentDisplayBatch()?.name || 'Administración de caja de importación') }}
           </span>
         </div>
       </div>
 
-      @if (mode() === 'edit' && currentDisplayBatch()?.id) {
+      <div class="flex items-center gap-1.5 shrink-0">
+        @if (mode() === 'edit' && currentDisplayBatch()?.id) {
+          <button
+            type="button"
+            class="w-7.5 h-7.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
+            pTooltip="Copiar ID Universal (UUID)"
+            tooltipPosition="bottom"
+            (click)="copyToClipboard(currentDisplayBatch()!.id, 'ID de Lote')">
+            <svg lucideCopy size="14"></svg>
+          </button>
+        }
+
+        <!-- Botón Maximizar / Restaurar Pantalla Completa -->
         <button
           type="button"
-          class="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          pTooltip="Copiar ID Universal (UUID)"
-          tooltipPosition="left"
-          (click)="copyToClipboard(currentDisplayBatch()!.id, 'ID de Lote')">
-          <svg lucideCopy size="15"></svg>
+          class="hidden sm:flex w-7.5 h-7.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white items-center justify-center transition-colors shadow-2xs cursor-pointer"
+          [pTooltip]="isMaximized() ? 'Restaurar tamaño normal' : 'Maximizar a pantalla completa'"
+          tooltipPosition="bottom"
+          (click)="toggleMaximize()">
+          @if (isMaximized()) {
+            <svg lucideMinimize2 size="14"></svg>
+          } @else {
+            <svg lucideMaximize2 size="14"></svg>
+          }
         </button>
-      }
+
+        <!-- Botón Cerrar Drawer con confirmación de cambios sin guardar -->
+        <button
+          type="button"
+          class="w-7.5 h-7.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
+          pTooltip="Cerrar (Esc)"
+          tooltipPosition="bottom"
+          (click)="requestClose()">
+          <svg lucideX size="14"></svg>
+        </button>
+      </div>
     </div>
   </ng-template>
 
-  <!-- Contenido con Tabs -->
-  <div class="py-2">
-    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
-      <p-tablist class="text-xs border-b border-gray-200 dark:border-gray-700">
+  <!-- Contenido Modular con Tabs (Sin espacios innecesarios) -->
+  <div class="flex flex-col h-full overflow-hidden">
+    <p-tabs
+      [value]="activeTab()"
+      (valueChange)="onTabChange($event)"
+      class="w-full flex-1 flex flex-col overflow-hidden">
+
+      <p-tablist>
+        <!-- Tab 0: Identificación y Compra -->
         <p-tab value="0">
           <div class="flex items-center gap-1.5 py-1">
             <svg lucideTag size="14"></svg>
             <span>Identificación y Compra</span>
           </div>
         </p-tab>
+
+        <!-- Tab 1: Costos y Rendimiento -->
         <p-tab value="1">
           <div class="flex items-center gap-1.5 py-1">
             <svg lucideDollarSign size="14"></svg>
             <span>Costos y Rendimiento</span>
           </div>
         </p-tab>
+
+        <!-- Tab 2: Estado y Sincronización -->
         <p-tab value="2">
           <div class="flex items-center gap-1.5 py-1">
             <svg lucideShieldCheck size="14"></svg>
             <span>Estado y Sincronización</span>
           </div>
         </p-tab>
+
+        <!-- Tab 3: Productos Desempacados -->
+        @if (mode() === 'edit' && currentDisplayBatch()?.id) {
+          <p-tab value="3">
+            <div class="flex items-center gap-1.5 py-1">
+              <svg lucidePackage size="14"></svg>
+              <span>Productos Desempacados</span>
+              @if (batchProducts().length > 0) {
+                <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-400">
+                  {{ batchProducts().length }}
+                </span>
+              }
+            </div>
+          </p-tab>
+        }
       </p-tablist>
 
-      <p-tabpanels class="pt-4">
+      <p-tabpanels cdkScrollable class="flex-1 overflow-y-auto p-3 sm:p-4!">
+
         <!-- TAB 0: IDENTIFICACIÓN Y COMPRA -->
-        <p-tabpanel value="0">
+        <p-tabpanel value="0" class="p-0!">
           <div class="flex flex-col gap-4 text-sm">
 
             <!-- Fila 1: Código y Nombre -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label for="batch_code" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Código de Caja / Lote <span class="text-red-500">*</span>
+                  Código de Caja / Lote <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(Opcional)</span>
                 </label>
                 <input
                   pInputText
                   id="batch_code"
                   type="text"
                   class="w-full text-xs uppercase"
-                  placeholder="Ej: ATAUD-01, LIQ-2024"
+                  placeholder="CAJA-XX (Opcional / Automático)"
                   [ngModel]="code()"
                   (ngModelChange)="code.set($event)" />
-                @if (!codeValidation().isValid) {
-                  <span class="block text-xs text-red-500 mt-1">{{ codeValidation().error }}</span>
-                }
+                <span class="block text-[11px] text-gray-400 mt-0.5 m-0">
+                  Si se envía vacío, el backend lo genera automáticamente.
+                </span>
               </div>
 
               <div>
@@ -101,13 +176,30 @@
                   [ngModel]="name()"
                   (ngModelChange)="name.set($event)" />
                 @if (!nameValidation().isValid) {
-                  <span class="block text-xs text-red-500 mt-1">{{ nameValidation().error }}</span>
+                  <span class="block text-xs text-red-500 mt-1 m-0">{{ nameValidation().error }}</span>
                 }
               </div>
             </div>
 
-            <!-- Fila 2: Ronda de Inversión y Proveedor -->
+            <!-- Fila 2: Método de Costeo y Ronda de Inversión -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label for="batch_costing_method" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Método de Costeo <span class="text-red-500">*</span>
+                </label>
+                <p-select
+                  inputId="batch_costing_method"
+                  [options]="costingMethodOptions"
+                  [ngModel]="costingMethod()"
+                  (ngModelChange)="onCostingMethodChange($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full text-xs" />
+                <span class="block text-[11px] text-gray-400 mt-0.5 m-0">
+                  Define el criterio de distribución de costo entre los productos.
+                </span>
+              </div>
+
               <div>
                 <label for="batch_round" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   Ronda de Inversión
@@ -122,9 +214,14 @@
                   placeholder="Seleccione Ronda (Opcional)"
                   [showClear]="true"
                   class="w-full text-xs" />
-                <span class="block text-[11px] text-gray-400 mt-1">Asocia los costos a una ronda de capital</span>
+                <span class="block text-[11px] text-gray-400 mt-0.5 m-0">
+                  Asocia los costos a una ronda de capital
+                </span>
               </div>
+            </div>
 
+            <!-- Fila 3: Proveedor y Tipo de Lote -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label for="batch_provider" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   Proveedor / Fuente
@@ -138,10 +235,7 @@
                   [ngModel]="provider()"
                   (ngModelChange)="provider.set($event)" />
               </div>
-            </div>
 
-            <!-- Fila 3: Tipo de Lote y Fecha de Compra -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label for="batch_type" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   Tipo o Categoría del Lote
@@ -155,18 +249,27 @@
                   [ngModel]="batchType()"
                   (ngModelChange)="batchType.set($event)" />
               </div>
+            </div>
 
+            <!-- Fila 4: Fecha de Adquisición / Compra -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label for="batch_date" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Fecha de Adquisición / Compra
+                  Fecha de Compra <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(Opcional)</span>
                 </label>
-                <input
-                  pInputText
-                  id="batch_date"
-                  type="date"
-                  class="w-full text-xs"
+                <p-datepicker
+                  inputId="batch_date"
                   [ngModel]="purchaseDate()"
-                  (ngModelChange)="purchaseDate.set($event)" />
+                  (ngModelChange)="purchaseDate.set($event)"
+                  dateFormat="dd/mm/yy"
+                  [showIcon]="true"
+                  iconDisplay="input"
+                  [showClear]="true"
+                  [showButtonBar]="true"
+                  [fluid]="true"
+                  appendTo="body"
+                  placeholder="Seleccionar fecha (DD/MM/AAAA)"
+                  class="w-full text-xs" />
               </div>
             </div>
 
@@ -179,14 +282,17 @@
         </p-tabpanel>
 
         <!-- TAB 1: COSTOS Y RENDIMIENTO -->
-        <p-tabpanel value="1">
+        <p-tabpanel value="1" class="p-0!">
           <div class="flex flex-col gap-4 text-sm">
 
             <!-- Fila 1: Precio de Compra, Flete y Moneda -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
                 <label for="batch_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Precio de Compra <span class="text-red-500">*</span>
+                  Precio de Compra
+                  @if (!isPurchasePriceDisabled()) {
+                    <span class="text-red-500">*</span>
+                  }
                 </label>
                 <p-inputnumber
                   inputId="batch_price"
@@ -196,7 +302,17 @@
                   [minFractionDigits]="2"
                   [maxFractionDigits]="2"
                   [min]="0"
+                  [disabled]="isPurchasePriceDisabled()"
                   class="w-full text-xs" />
+                @if (isPurchasePriceDisabled()) {
+                  <span class="block text-[11px] text-amber-600 dark:text-amber-400 mt-0.5 m-0 leading-tight">
+                    Calculado sumando el costo unitario de los productos de este lote.
+                  </span>
+                } @else {
+                  <span class="block text-[11px] text-gray-400 mt-0.5 m-0 leading-tight">
+                    Costo global de adquisición de la caja.
+                  </span>
+                }
               </div>
 
               <div>
@@ -212,20 +328,26 @@
                   [maxFractionDigits]="2"
                   [min]="0"
                   class="w-full text-xs" />
+                <span class="block text-[11px] text-gray-400 mt-0.5 m-0 leading-tight">
+                  Gastos de transporte, flete internacional o aduana.
+                </span>
               </div>
 
               <div>
                 <label for="batch_currency" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Moneda
+                  Moneda <span class="text-red-500">*</span>
                 </label>
-                <input
-                  pInputText
-                  id="batch_currency"
-                  type="text"
-                  class="w-full text-xs uppercase"
-                  placeholder="BOB"
+                <p-select
+                  inputId="batch_currency"
+                  [options]="currencyOptions"
                   [ngModel]="currency()"
-                  (ngModelChange)="currency.set($event)" />
+                  (ngModelChange)="currency.set($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full text-xs" />
+                <span class="block text-[11px] text-gray-400 mt-0.5 m-0 leading-tight">
+                  Moneda de registro contable.
+                </span>
               </div>
             </div>
 
@@ -233,9 +355,9 @@
             <div class="p-3 rounded-lg bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 flex items-center justify-between">
               <div>
                 <span class="block text-xs font-semibold text-amber-900 dark:text-amber-200">Costo Total Puesto Almacén</span>
-                <span class="block text-[11px] text-amber-700 dark:text-amber-400">Precio Compra + Flete y Aduana</span>
+                <span class="block text-[11px] text-amber-700 dark:text-amber-400">Precio Compra + Costo de Flete</span>
               </div>
-              <div class="text-base font-bold text-amber-900 dark:text-amber-100">
+              <div class="text-base font-bold text-amber-900 dark:text-amber-100 font-mono">
                 {{ calculatedTotalCost() | number:'1.2-2' }} {{ currency() }}
               </div>
             </div>
@@ -251,8 +373,11 @@
                   [ngModel]="initialItemsCount()"
                   (ngModelChange)="initialItemsCount.set($event || 0)"
                   [min]="0"
+                  [disabled]="true"
                   class="w-full text-xs" />
-                <span class="block text-[11px] text-gray-400 mt-1">Conteo bruto recibido al abrir la caja</span>
+                <span class="block text-[11px] text-gray-400 mt-0.5 m-0 leading-tight">
+                  Sincronizado automáticamente a partir de los productos físicos desempacados.
+                </span>
               </div>
 
               <div>
@@ -264,8 +389,11 @@
                   [ngModel]="mermaItemsCount()"
                   (ngModelChange)="mermaItemsCount.set($event || 0)"
                   [min]="0"
+                  [disabled]="true"
                   class="w-full text-xs" />
-                <span class="block text-[11px] text-gray-400 mt-1">Ítems inservibles o descartados</span>
+                <span class="block text-[11px] text-gray-400 mt-0.5 m-0 leading-tight">
+                  Sincronizado automáticamente a partir de los productos físicos desempacados.
+                </span>
               </div>
             </div>
 
@@ -277,14 +405,14 @@
             <div class="grid grid-cols-2 gap-3">
               <div class="p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
                 <span class="block text-[11px] text-gray-500 dark:text-gray-400">Unidades Vendibles</span>
-                <span class="block text-sm font-bold text-gray-900 dark:text-gray-100">
+                <span class="block text-sm font-bold text-gray-900 dark:text-gray-100 font-mono">
                   {{ calculatedSellableItems() }} unid.
                 </span>
               </div>
 
               <div class="p-2.5 rounded-lg bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40">
                 <span class="block text-[11px] text-emerald-800 dark:text-emerald-300">Costo Promedio Unitario</span>
-                <span class="block text-sm font-bold text-emerald-900 dark:text-emerald-100">
+                <span class="block text-sm font-bold text-emerald-900 dark:text-emerald-100 font-mono">
                   {{ calculatedUnitCost() | number:'1.2-2' }} {{ currency() }}
                 </span>
               </div>
@@ -294,7 +422,7 @@
         </p-tabpanel>
 
         <!-- TAB 2: ESTADO Y SINCRONIZACIÓN -->
-        <p-tabpanel value="2">
+        <p-tabpanel value="2" class="p-0!">
           <div class="flex flex-col gap-4 text-sm">
 
             <!-- Fila 1: Estado Operativo y Estado Financiero -->
@@ -305,26 +433,29 @@
                 </label>
                 <p-select
                   inputId="batch_status"
-                  [options]="statuses()"
+                  [options]="statusOptions()"
                   [ngModel]="status()"
                   (ngModelChange)="status.set($event)"
                   optionLabel="label"
                   optionValue="value"
                   class="w-full text-xs" />
+                <span class="block text-[11px] text-gray-400 mt-0.5 m-0">
+                  Indica si la caja está activa para operaciones o archivada.
+                </span>
               </div>
 
               <div>
-                <label for="batch_financial" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                <span class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                   Estado Financiero
-                </label>
-                <p-select
-                  inputId="batch_financial"
-                  [options]="financialStatuses()"
-                  [ngModel]="financialStatus()"
-                  (ngModelChange)="financialStatus.set($event)"
-                  optionLabel="label"
-                  optionValue="value"
-                  class="w-full text-xs" />
+                </span>
+                <div class="flex items-center h-8">
+                  <p-tag
+                    [value]="getFinancialStatusLabel(financialStatus())"
+                    [severity]="getFinancialStatusSeverity(financialStatus())" />
+                </div>
+                <span class="block text-[11px] text-gray-400 mt-0.5 m-0 leading-tight">
+                  Calculado automáticamente según la recuperación de la inversión por ventas.
+                </span>
               </div>
             </div>
 
@@ -338,7 +469,7 @@
                 id="batch_obs"
                 rows="3"
                 class="w-full text-xs"
-                placeholder="Detalles sobre empaque, faltantes, precintos de seguridad, etc."
+                placeholder="Detalles sobre empaque, notas de control, precintos, flete, etc."
                 [ngModel]="observations()"
                 (ngModelChange)="observations.set($event)"></textarea>
             </div>
@@ -352,65 +483,273 @@
 
                 <div class="flex items-center justify-between p-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30">
                   <div>
-                    <span class="block text-xs font-medium text-gray-900 dark:text-gray-100">
-                      Sincronizar Conteos con Productos Físicos
-                    </span>
-                    <span class="block text-[11px] text-gray-500 dark:text-gray-400">
-                      Recalcula ítems iniciales, mermas y revalúa costos de ventas automáticamente.
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-semibold text-gray-900 dark:text-gray-100">
+                        Sincronizar Conteos con Productos Físicos
+                      </span>
+                      @if (batchProducts().length > 0) {
+                        <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+                          {{ batchProducts().length }} productos
+                        </span>
+                      }
+                    </div>
+                    <span class="block text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                      Recalcula ítems iniciales, mermas y revalúa costos a partir del inventario desempacado.
                     </span>
                   </div>
-                  <p-button
-                    label="Recalcular"
-                    icon="pi pi-refresh"
-                    [loading]="isRecalculating()"
-                    (onClick)="recalculateFromProducts()"
-                    severity="secondary"
-                    size="small" />
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <p-button
+                      label="Ver Productos"
+                      icon="pi pi-box"
+                      [outlined]="true"
+                      severity="secondary"
+                      size="small"
+                      (onClick)="activeTab.set('3')" />
+                    <p-button
+                      label="Recalcular"
+                      icon="pi pi-refresh"
+                      [loading]="isRecalculating()"
+                      (onClick)="recalculateFromProducts()"
+                      severity="primary"
+                      size="small" />
+                  </div>
                 </div>
               </div>
             }
 
           </div>
         </p-tabpanel>
+
+        <!-- TAB 3: PRODUCTOS FÍSICOS DESEMPACADOS -->
+        @if (mode() === 'edit' && currentDisplayBatch()?.id) {
+          <p-tabpanel value="3" class="p-0!">
+            <div class="flex flex-col gap-3 text-xs">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg border border-amber-200 dark:border-amber-800/60 bg-amber-50/50 dark:bg-amber-950/20 gap-3">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h3 class="text-xs font-bold text-gray-900 dark:text-gray-100 m-0">
+                      Productos Registrados en esta Caja
+                    </h3>
+                    @if (batchProducts().length > 0) {
+                      <span class="text-[10px] font-semibold px-1.5 py-0.2 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+                        {{ batchProducts().length }} productos
+                      </span>
+                    }
+                  </div>
+                  <div class="text-[11px] text-gray-600 dark:text-gray-400 mt-0.5 leading-relaxed">
+                    Distribución y control de mercadería física del lote {{ currentDisplayBatch()?.code }}.
+                    @if (costingMethod() === 'WEIGHTED_RETAIL') {
+                      <span>Al terminar el desempaque, ejecuta el prorrateo para repartir el costo total según valor de venta.</span>
+                    }
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0">
+                  <!-- Botón Prorratear Costos Ponderados (allocate-relative-costs) -->
+                  <p-button
+                    label="Prorratear Costos"
+                    icon="pi pi-percentage"
+                    severity="primary"
+                    size="small"
+                    [loading]="isAllocatingCosts()"
+                    [disabled]="batchProducts().length === 0 || isSubmitting() || isRecalculating()"
+                    (onClick)="confirmAllocateRelativeCosts()"
+                    pTooltip="Distribuye los {{ calculatedTotalCost() | number:'1.2-2' }} {{ currency() }} entre los productos según su valor de venta"
+                    tooltipPosition="bottom" />
+
+                  <p-button
+                    icon="pi pi-refresh"
+                    severity="secondary"
+                    [outlined]="true"
+                    size="small"
+                    pTooltip="Refrescar lista de productos"
+                    [loading]="isLoadingProducts()"
+                    (onClick)="loadBatchProducts(currentDisplayBatch()!.id)" />
+                </div>
+              </div>
+
+              @if (isLoadingProducts()) {
+                <div class="flex items-center justify-center p-8 text-gray-400">
+                  <i class="pi pi-spin pi-spinner mr-2"></i>
+                  <span>Cargando productos de la caja...</span>
+                </div>
+              } @else if (batchProducts().length === 0) {
+                <div class="flex flex-col items-center justify-center p-8 rounded-lg border border-dashed border-gray-300 dark:border-gray-700 text-center gap-2">
+                  <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400">
+                    <svg lucidePackage size="20"></svg>
+                  </div>
+                  <div>
+                    <span class="block text-xs font-semibold text-gray-800 dark:text-gray-200">
+                      No hay productos físicos registrados aún
+                    </span>
+                    <span class="block text-[11px] text-gray-500 dark:text-gray-400 max-w-sm mt-0.5">
+                      Los productos se vinculan automáticamente a esta caja cuando son desempaquetados y registrados en el módulo de Productos.
+                    </span>
+                  </div>
+                </div>
+              } @else {
+                <div class="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  <p-table
+                    [value]="batchProducts()"
+                    class="text-xs dense-table"
+                    [rows]="10"
+                    [paginator]="batchProducts().length > 10"
+                    responsiveLayout="scroll">
+                    <ng-template pTemplate="header">
+                      <tr class="text-[11px] text-gray-600 dark:text-gray-300 bg-gray-50/50 dark:bg-gray-800/40 border-b border-gray-200 dark:border-gray-700">
+                        <th style="min-width: 12rem;">Producto / Ficha</th>
+                        <th style="width: 7.5rem;" class="text-center">Existencias</th>
+                        <th style="width: 5.5rem;" class="text-right">Costo Unit.</th>
+                        <th style="width: 5.5rem;" class="text-right">P. Venta</th>
+                        <th style="width: 5.5rem;" class="text-center">Estado</th>
+                      </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-prod>
+                      <tr class="hover:bg-gray-50/60 dark:hover:bg-gray-800/40 border-b border-gray-100 dark:border-gray-800">
+                        <td>
+                          <div class="flex flex-col">
+                            <span class="font-semibold text-gray-900 dark:text-gray-100 line-clamp-1">
+                              {{ prod.name }}
+                            </span>
+                            @if (prod.variant_name) {
+                              <span class="text-[10px] text-amber-700 dark:text-amber-400">
+                                {{ prod.variant_name }}
+                              </span>
+                            }
+                          </div>
+                        </td>
+                        <td class="text-center">
+                          <span class="font-bold text-gray-900 dark:text-gray-100 font-mono">
+                            {{ prod.available_quantity }} disp.
+                          </span>
+                          <div class="text-[10px] text-gray-400 font-mono">
+                            {{ prod.initial_quantity }} recibidos
+                            @if (prod.merma_quantity > 0) {
+                              <span class="text-red-500 font-sans">(-{{ prod.merma_quantity }})</span>
+                            }
+                          </div>
+                        </td>
+                        <td class="text-right font-mono font-medium text-gray-700 dark:text-gray-300">
+                          Bs. {{ (prod.cost_price ?? 0) | number:'1.2-2' }}
+                        </td>
+                        <td class="text-right font-mono font-semibold text-emerald-700 dark:text-emerald-400">
+                          Bs. {{ (prod.official_price ?? 0) | number:'1.2-2' }}
+                        </td>
+                        <td class="text-center">
+                          <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                            {{ prod.status || 'Activo' }}
+                          </span>
+                        </td>
+                      </tr>
+                    </ng-template>
+                  </p-table>
+                </div>
+              }
+            </div>
+          </p-tabpanel>
+        }
       </p-tabpanels>
     </p-tabs>
   </div>
 
-  <!-- Footer con Botones de Acción -->
+  <!-- Footer del Drawer (Fijo al fondo, idéntico a Catálogo Maestro) -->
   <ng-template #footer>
-    <div class="flex items-center justify-between w-full pt-2 border-t border-gray-200 dark:border-gray-700">
-      <div>
+    <div class="flex items-center justify-between w-full gap-2">
+      <!-- Lado Izquierdo: Eliminar + Estado de Guardado -->
+      <div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
         @if (mode() === 'edit') {
           <p-button
-            label="Eliminar Caja"
+            label="Eliminar"
             icon="pi pi-trash"
             severity="danger"
-            variant="text"
+            [outlined]="true"
             size="small"
-            (onClick)="confirmDelete()"
-            [disabled]="isSubmitting() || isRecalculating()" />
+            [disabled]="isSubmitting() || isRecalculating()"
+            (click)="confirmDelete()"
+            class="hidden sm:inline-flex"
+            pTooltip="Eliminar caja"
+            tooltipPosition="top">
+          </p-button>
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [outlined]="true"
+            size="small"
+            [disabled]="isSubmitting() || isRecalculating()"
+            (click)="confirmDelete()"
+            class="sm:hidden"
+            pTooltip="Eliminar caja"
+            tooltipPosition="top">
+          </p-button>
+        }
+
+        <!-- Indicador de Estado en Footer (Desktop) -->
+        @if (isDirty()) {
+          <span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+            <span>Cambios sin guardar</span>
+          </span>
+        } @else if (mode() === 'edit') {
+          <span class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] text-gray-500 dark:text-gray-400">
+            <svg lucideCheck size="12" class="text-emerald-500"></svg>
+            <span>Todo guardado</span>
+          </span>
         }
       </div>
 
-      <div class="flex items-center gap-2">
+      <!-- Lado Derecho: Cerrar + Guardar (Permanecer) + Guardar y Salir -->
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <p-button
-          label="Cancelar"
+          label="Cerrar"
           severity="secondary"
-          variant="text"
+          [outlined]="true"
           size="small"
-          (onClick)="visible.set(false)"
-          [disabled]="isSubmitting() || isRecalculating()" />
+          [disabled]="isSubmitting() || isRecalculating()"
+          (click)="requestClose()">
+        </p-button>
 
+        <!-- Guardar (Permanecer en el Drawer) -->
         <p-button
-          [label]="mode() === 'create' ? 'Crear Caja' : 'Guardar Cambios'"
-          icon="pi pi-check"
+          [label]="mode() === 'create' ? 'Guardar' : 'Guardar Cambios'"
+          icon="pi pi-save"
+          severity="primary"
+          [outlined]="true"
           size="small"
-          (onClick)="saveBatch()"
-          [loading]="isSubmitting()"
-          [disabled]="!isFormValid() || isRecalculating()" />
+          [loading]="isSubmitting() && savingAction() === 'save'"
+          [disabled]="!isFormValid() || isSubmitting() || isRecalculating()"
+          (click)="saveBatch(false)"
+          [pTooltip]="mode() === 'create' ? 'Crear caja y continuar en ella' : 'Guardar modificaciones y continuar en esta caja'"
+          tooltipPosition="top"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          label="Guardar"
+          icon="pi pi-save"
+          severity="primary"
+          [outlined]="true"
+          size="small"
+          [loading]="isSubmitting() && savingAction() === 'save'"
+          [disabled]="!isFormValid() || isSubmitting() || isRecalculating()"
+          (click)="saveBatch(false)"
+          [pTooltip]="'Guardar y continuar'"
+          tooltipPosition="top"
+          class="sm:hidden">
+        </p-button>
+
+        <!-- Guardar y Salir (Cierra el Drawer) -->
+        <p-button
+          label="Guardar y Salir"
+          icon="pi pi-check"
+          severity="primary"
+          size="small"
+          [loading]="isSubmitting() && savingAction() === 'saveAndClose'"
+          [disabled]="!isFormValid() || isSubmitting() || isRecalculating()"
+          (click)="saveBatch(true)"
+          [pTooltip]="'Guardar modificaciones y salir'"
+          tooltipPosition="top">
+        </p-button>
       </div>
     </div>
   </ng-template>
 
 </p-drawer>
-
