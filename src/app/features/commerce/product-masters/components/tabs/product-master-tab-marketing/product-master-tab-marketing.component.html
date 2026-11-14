@@ -1,0 +1,73 @@
+<div class="flex flex-col gap-4 text-sm">
+
+  <!-- Publicaciones Activas en Marketplace & Redes (Multi-link MARKETPLACE) -->
+  <app-product-master-links
+    [masterId]="store.currentProduct()?.id ?? null"
+    linkType="MARKETPLACE"
+    title="Publicaciones Activas en Marketplace & Redes"
+    subtitle="Control de publicaciones activas en Facebook Marketplace, MercadoLibre y enlaces comerciales del equipo"
+    [mode]="store.mode()"
+    [links]="store.marketplaceLinks()"
+    (linksChange)="store.marketplaceLinks.set($event)"
+    [initialUrl]="store.marketplaceUrl()"
+    (initialUrlChange)="store.marketplaceUrl.set($event)"
+    (primaryChanged)="store.onLinkPrimaryChanged($event)">
+  </app-product-master-links>
+
+  <!-- Guion de Venta Rápida (TikTok Live / Streaming) -->
+  <div>
+    <div class="flex items-center justify-between mb-1">
+      <label for="pm_marketing" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+        Guion de Venta Rápida (TikTok Live / Streaming)
+      </label>
+      <span class="text-[11px] text-gray-400 dark:text-gray-500">
+        Herramienta de pitch comercial
+      </span>
+    </div>
+    <textarea
+      id="pm_marketing"
+      pTextarea
+      [ngModel]="store.marketingDetails()"
+      (ngModelChange)="store.marketingDetails.set($event)"
+      rows="6"
+      placeholder="Ganchos de remate para streaming, respuestas a objeciones frecuentes del cliente, comparativas con modelos similares y cierres de venta rápida..."
+      class="w-full text-sm">
+    </textarea>
+    <span class="block text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
+      Utilizado por el equipo comercial durante transmisiones en vivo y atención personalizada de prospectos.
+    </span>
+  </div>
+
+  <!-- Checklist de Calidad Comercial y Publicación -->
+  <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50/50 dark:bg-gray-800/40">
+    <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 block mb-2.5">
+      Checklist de Calidad Comercial y Publicación
+    </span>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+
+      <div class="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+        <div>
+          <span class="font-medium text-gray-800 dark:text-gray-200 block">Ficha Investigada & Aprobada</span>
+          <span class="text-[11px] text-gray-400">Verificada por el catalogador comercial</span>
+        </div>
+        <p-toggleswitch
+          [ngModel]="store.isReviewed()"
+          (ngModelChange)="store.isReviewed.set($event)">
+        </p-toggleswitch>
+      </div>
+
+      <div class="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+        <div>
+          <span class="font-medium text-gray-800 dark:text-gray-200 block">Publicado en Catálogo WhatsApp</span>
+          <span class="text-[11px] text-gray-400">Habilitado para catálogo y chatbot comercial</span>
+        </div>
+        <p-toggleswitch
+          [ngModel]="store.isWhatsappPublished()"
+          (ngModelChange)="store.isWhatsappPublished.set($event)">
+        </p-toggleswitch>
+      </div>
+
+    </div>
+  </div>
+
+</div>

@@ -18,46 +18,61 @@
   <ng-template #header>
     <div class="flex items-center justify-between w-full pr-2">
       <div class="flex items-center gap-2.5">
-        @if (coverImageUrl()) {
+        @if (store.coverImageUrl()) {
           <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border border-brand-200 dark:border-brand-800 shrink-0 shadow-xs bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-            <img [src]="coverImageUrl() | clUrl:'thumb'" alt="Foto de portada" class="w-full h-full object-cover" />
+            <img [src]="store.coverImageUrl() | clUrl:'thumb'" alt="Foto de portada" class="w-full h-full object-cover" />
           </div>
         } @else {
           <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800 flex items-center justify-center text-brand-700 dark:text-brand-300 shrink-0">
             <svg lucideTag size="18"></svg>
           </div>
         }
-        <div>
-          <h2 class="text-base font-bold text-gray-900 dark:text-gray-100 m-0 flex items-center gap-2">
-            <span>{{ mode() === 'create' ? 'Nueva Ficha Maestra' : 'Ficha Maestra #' + (currentDisplayProduct()?.item_number || '') }}</span>
-            @if (mode() === 'edit' && currentDisplayProduct()?.code) {
-              <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-                {{ currentDisplayProduct()?.code }}
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h2 class="text-sm sm:text-base font-bold text-gray-900 dark:text-gray-100 m-0">
+              {{ store.mode() === 'create' ? 'Nueva Ficha Maestra' : 'Ficha Maestra #' + (store.currentProduct()?.item_number || '') }}
+            </h2>
+            @if (store.mode() === 'edit' && store.currentProduct()?.code) {
+              <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hidden sm:inline-block">
+                {{ store.currentProduct()?.code }}
               </span>
             }
-          </h2>
-          <span class="block text-xs text-gray-500 dark:text-gray-400 m-0">
-            {{ mode() === 'create' ? 'Registro comercial e intelectual de catálogo' : currentDisplayProduct()?.name }}
+
+            <!-- Indicador de Estado en el Header (Siempre visible en Mobile y Desktop) -->
+            @if (store.isDirty()) {
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shrink-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                <span>Sin guardar</span>
+              </span>
+            } @else if (store.mode() === 'edit') {
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 shrink-0">
+                <svg lucideCheck size="11"></svg>
+                <span>Guardado</span>
+              </span>
+            }
+          </div>
+          <span class="block text-xs text-gray-500 dark:text-gray-400 m-0 truncate max-w-[200px] sm:max-w-md">
+            {{ store.mode() === 'create' ? 'Registro comercial e intelectual de catálogo' : store.currentProduct()?.name }}
           </span>
         </div>
       </div>
 
-      <div class="flex items-center gap-1.5">
-        @if (mode() === 'edit' && currentDisplayProduct()?.id) {
+      <div class="flex items-center gap-1.5 shrink-0">
+        @if (store.mode() === 'edit' && store.currentProduct()?.id) {
           <button
             type="button"
-            class="w-7.5 h-7.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
+            class="w-7.5 h-7.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:white flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
             pTooltip="Copiar ID Universal (UUID)"
             tooltipPosition="bottom"
-            (click)="copyToClipboard(currentDisplayProduct()!.id, 'ID de Ficha')">
+            (click)="copyToClipboard(store.currentProduct()!.id, 'ID de Ficha')">
             <svg lucideCopy size="14"></svg>
           </button>
         }
 
-        <!-- Botón Maximizar / Restaurar Pantalla Completa (Estilo Ventana) -->
+        <!-- Botón Maximizar / Restaurar Pantalla Completa: Solo en Desktop (en celular ya es fullscreen) -->
         <button
           type="button"
-          class="w-7.5 h-7.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
+          class="hidden sm:flex w-7.5 h-7.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:white items-center justify-center transition-colors shadow-2xs cursor-pointer"
           [pTooltip]="isMaximized() ? 'Restaurar tamaño normal' : 'Maximizar a pantalla completa'"
           tooltipPosition="bottom"
           (click)="toggleMaximize()">
@@ -81,45 +96,56 @@
     </div>
   </ng-template>
 
-  <!-- Contenido con Tabs -->
+  <!-- Contenido Modular con Tabs -->
   <div class="flex flex-col h-full overflow-hidden">
-    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)" class="w-full flex-1 flex flex-col overflow-hidden">
+    <p-tabs
+      [value]="activeTab()"
+      (valueChange)="onTabChange($event)"
+      class="w-full flex-1 flex flex-col overflow-hidden">
+      
       <p-tablist>
+        <!-- Tab 0: Ficha Comercial -->
         <p-tab value="0">
           <div class="flex items-center gap-1.5 py-1">
             <svg lucideTag size="14"></svg>
             <span>Ficha Comercial</span>
-            @if (referenceLinks().length > 0) {
+            @if (store.referenceLinks().length > 0) {
               <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-brand-500/10 text-brand-600 dark:text-brand-400">
-                {{ referenceLinks().length }}
+                {{ store.referenceLinks().length }}
               </span>
             }
           </div>
         </p-tab>
+
+        <!-- Tab 1: Precios y Stock -->
         <p-tab value="1">
           <div class="flex items-center gap-1.5 py-1">
             <svg lucideDollarSign size="14"></svg>
             <span>Precios y Stock</span>
           </div>
         </p-tab>
+
+        <!-- Tab 2: Galería Multimedia -->
         <p-tab value="2">
           <div class="flex items-center gap-1.5 py-1">
             <svg lucideImages size="14"></svg>
             <span>Galería Multimedia</span>
-            @if (images().length > 0) {
+            @if (store.images().length > 0) {
               <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-brand-500/10 text-brand-600 dark:text-brand-400">
-                {{ images().length }}
+                {{ store.images().length }}
               </span>
             }
           </div>
         </p-tab>
+
+        <!-- Tab 3: Marketing y Redes -->
         <p-tab value="3">
           <div class="flex items-center gap-1.5 py-1">
             <svg lucideShare2 size="14"></svg>
             <span>Marketing y Redes</span>
-            @if (marketplaceLinks().length > 0) {
+            @if (store.marketplaceLinks().length > 0) {
               <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                {{ marketplaceLinks().length }}
+                {{ store.marketplaceLinks().length }}
               </span>
             }
           </div>
@@ -127,547 +153,133 @@
       </p-tablist>
 
       <p-tabpanels cdkScrollable class="flex-1 overflow-y-auto p-3 sm:p-4!">
-        <!-- TAB 0: FICHA COMERCIAL -->
+        <!-- TAB 0: FICHA COMERCIAL (Componente dedicado) -->
         <p-tabpanel value="0" class="p-0!">
-          <div class="flex flex-col gap-4 text-sm">
-            
-            <!-- Fila 1: # Ítem y Código -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label for="pm_item_number" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  # de Catálogo (# Ítem)
-                  @if (mode() === 'edit') {
-                    <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(Inmutable)</span>
-                  } @else {
-                    <span class="text-xs font-normal text-emerald-600 dark:text-emerald-400">(Auto-generado)</span>
-                  }
-                </label>
-                <p-inputnumber
-                  inputId="pm_item_number"
-                  [ngModel]="itemNumber()"
-                  (ngModelChange)="itemNumber.set($event)"
-                  [min]="1"
-                  [useGrouping]="false"
-                  [disabled]="mode() === 'edit'"
-                  placeholder="Automático (secuencial)"
-                  class="w-full">
-                </p-inputnumber>
-                @if (mode() === 'create') {
-                  <span class="block text-[11px] text-gray-400 mt-0.5 m-0">Opcional. Si se deja vacío, el backend asigna el siguiente número correlativo.</span>
-                }
-                @if (!itemNumberValidation().isValid) {
-                  <span class="block text-xs text-red-500 mt-1 m-0">{{ itemNumberValidation().error }}</span>
-                }
-              </div>
-
-              <div>
-                <label for="pm_code" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Código de Barras / SKU <span class="text-xs font-normal text-gray-400 dark:text-gray-500">(Opcional)</span>
-                </label>
-                <input
-                  id="pm_code"
-                  type="text"
-                  pInputText
-                  [ngModel]="code()"
-                  (ngModelChange)="code.set($event)"
-                  placeholder="Ej: 7751234567890 o SKU-PROD"
-                  class="w-full text-sm" />
-                <span class="block text-[11px] text-gray-400 mt-0.5 m-0">Código de barras de fábrica o escáner. Dejar vacío si no aplica.</span>
-              </div>
-            </div>
-
-            <!-- Fila 2: Nombre Comercial -->
-            <div>
-              <label for="pm_name" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Nombre Comercial Oficial <span class="text-red-500">*</span>
-              </label>
-              <input
-                id="pm_name"
-                type="text"
-                pInputText
-                [ngModel]="name()"
-                (ngModelChange)="name.set($event)"
-                placeholder="Ej: Almohadilla Térmica Eléctrica Digital"
-                class="w-full text-sm" />
-              @if (!nameValidation().isValid) {
-                <span class="block text-xs text-red-500 mt-1 m-0">{{ nameValidation().error }}</span>
-              }
-            </div>
-
-            <!-- Fila 3: Categoría y Canasta Live -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label for="pm_category" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Categoría
-                </label>
-                <p-select
-                  inputId="pm_category"
-                  [options]="categories()"
-                  [ngModel]="categoryId()"
-                  (ngModelChange)="categoryId.set($event)"
-                  optionLabel="label"
-                  optionValue="value"
-                  placeholder="Seleccionar Categoría"
-                  [showClear]="true"
-                  appendTo="body"
-                  class="w-full">
-                </p-select>
-              </div>
-
-              <div>
-                <label for="pm_live_basket" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Canasta TikTok Live
-                </label>
-                <p-select
-                  inputId="pm_live_basket"
-                  [options]="liveBaskets()"
-                  [ngModel]="liveBasketId()"
-                  (ngModelChange)="liveBasketId.set($event)"
-                  optionLabel="label"
-                  optionValue="value"
-                  placeholder="Seleccionar Canasta"
-                  [showClear]="true"
-                  appendTo="body"
-                  class="w-full">
-                </p-select>
-              </div>
-            </div>
-
-            <!-- Fila 4: Marca y Modelo -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label for="pm_brand" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Marca del Fabricante
-                </label>
-                <input
-                  id="pm_brand"
-                  type="text"
-                  pInputText
-                  [ngModel]="brand()"
-                  (ngModelChange)="brand.set($event)"
-                  placeholder="Ej: Anker, Logitech, Genérico"
-                  class="w-full text-sm" />
-              </div>
-
-              <div>
-                <label for="pm_model" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Modelo Comercial
-                </label>
-                <input
-                  id="pm_model"
-                  type="text"
-                  pInputText
-                  [ngModel]="modelName()"
-                  (ngModelChange)="modelName.set($event)"
-                  placeholder="Ej: TK-HP2412"
-                  class="w-full text-sm" />
-              </div>
-            </div>
-
-            <!-- Fila 5: Descripción Corta (Catálogo Web / PWA) -->
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label for="pm_description" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
-                  Descripción Corta (Catálogo Web / PWA)
-                </label>
-                <span
-                  class="text-[11px] font-mono font-medium transition-colors"
-                  [class.text-gray-400]="description().length < 800"
-                  [class.text-amber-600]="description().length >= 800 && description().length < 1000"
-                  [class.text-red-500]="description().length >= 1000">
-                  {{ description().length || 0 }} / 1000 caracteres
-                </span>
-              </div>
-              <textarea
-                id="pm_description"
-                pTextarea
-                [ngModel]="description()"
-                (ngModelChange)="description.set($event)"
-                rows="3"
-                maxlength="1000"
-                placeholder="Resumen comercial conciso para la tarjeta de producto en el catálogo público, PWA móvil y vista previa de WhatsApp..."
-                class="w-full text-sm">
-              </textarea>
-              <span class="block text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
-                Resumen comercial visible en el catálogo público, PWA móvil y vistas previas de WhatsApp (máx. 1000 caracteres).
-              </span>
-            </div>
-
-            <!-- Fila 6: Características Técnicas (Editor Visual Markdown Reutilizable) -->
-            <app-markdown-editor
-              label="Características Técnicas"
-              placeholder="• **Resolución**: 1080p Nativo (Decodifica 8K)&#10;• **Sistema Operativo**: Android 14.0 con WiFi Dual Band&#10;• **Brillo**: 350 ANSI Lúmenes&#10;• **Conectividad**: HDMI, USB y Bluetooth 5.2"
-              [(value)]="features" />
-
-            <!-- Fila 7: Estado Activo -->
-            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700">
-              <div>
-                <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 block">Ficha Activa en Catálogo</span>
-                <span class="text-xs text-gray-500 dark:text-gray-400">Si se desactiva, quedará archivada y oculta en los selectores de venta</span>
-              </div>
-              <p-toggleswitch [ngModel]="isActive()" (ngModelChange)="isActive.set($event)"></p-toggleswitch>
-            </div>
-
-            <!-- Fila 8: Fuentes de Referencia & Proveedores Mayoristas (Multi-link REFERENCE) -->
-            <app-product-master-links
-              [masterId]="currentDisplayProduct()?.id ?? null"
-              linkType="REFERENCE"
-              title="Fuentes de Referencia & Proveedores Mayoristas"
-              subtitle="Fichas de Amazon, AliExpress, Alibaba o fabricante para consulta de especificaciones"
-              [mode]="mode()"
-              [links]="referenceLinks()"
-              (linksChange)="referenceLinks.set($event)"
-              [initialUrl]="externalInfoUrl()"
-              (initialUrlChange)="externalInfoUrl.set($event)"
-              (primaryChanged)="onLinkPrimaryChanged($event)">
-            </app-product-master-links>
-
-          </div>
+          <app-product-master-tab-commercial
+            [categories]="categories()"
+            [liveBaskets]="liveBaskets()" />
         </p-tabpanel>
 
-        <!-- TAB 1: PRECIOS Y STOCK CONSOLIDADO -->
+        <!-- TAB 1: PRECIOS Y STOCK CONSOLIDADO (Componente dedicado) -->
         <p-tabpanel value="1" class="p-0!">
-          <div class="flex flex-col gap-4 text-sm">
-
-            <!-- Bloque 1: Resumen de Stock Físico Consolidado -->
-            @if (mode() === 'edit') {
-              <div class="flex flex-col gap-2">
-                <div class="flex items-center justify-between">
-                  <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                    <svg lucidePackage size="14" class="text-brand-600 dark:text-brand-400"></svg>
-                    <span>Inventario Físico Consolidado</span>
-                  </span>
-                  <span class="text-[11px] text-gray-400 dark:text-gray-500 font-mono">
-                    Stock real unificado
-                  </span>
-                </div>
-
-                <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-                  <!-- 1. Total Histórico Ingresado (Suma Total: Disponibles + Vendidas + Mermas) -->
-                  <div class="p-3 rounded-lg bg-purple-50/80 dark:bg-purple-950/30 border border-purple-200/80 dark:border-purple-800/60 text-center shadow-2xs">
-                    <span class="text-xs text-purple-700 dark:text-purple-300 block font-semibold truncate" pTooltip="Suma histórica de todas las unidades ingresadas: Disponibles + Vendidas + Mermas" tooltipPosition="top">
-                      Total Histórico
-                    </span>
-                    <span class="text-2xl font-bold text-purple-900 dark:text-purple-100 font-mono mt-0.5 block">
-                      {{ totalHistoricalStock() }}
-                    </span>
-                    <span class="text-[11px] text-purple-600 dark:text-purple-400 block font-medium">unidades totales</span>
-                  </div>
-
-                  <!-- 2. Disponible para Venta -->
-                  <div class="p-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 text-center shadow-2xs">
-                    <span class="text-xs text-green-700 dark:text-green-300 block font-medium truncate">Disponible Venta</span>
-                    <span class="text-2xl font-bold text-green-900 dark:text-green-100 font-mono mt-0.5 block">
-                      {{ totalAvailableStock() }}
-                    </span>
-                    <span class="text-[11px] text-green-600 dark:text-green-400 block">unidades físicas</span>
-                  </div>
-
-                  <!-- 3. Unidades Vendidas -->
-                  <div class="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-center shadow-2xs">
-                    <span class="text-xs text-blue-700 dark:text-blue-300 block font-medium truncate">Vendidas</span>
-                    <span class="text-2xl font-bold text-blue-900 dark:text-blue-100 font-mono mt-0.5 block">
-                      {{ totalSoldStock() }}
-                    </span>
-                    <span class="text-[11px] text-blue-600 dark:text-blue-400 block">despachadas</span>
-                  </div>
-
-                  <!-- 4. Mermas / Defectuosos -->
-                  <div class="p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 text-center shadow-2xs">
-                    <span class="text-xs text-red-700 dark:text-red-300 block font-medium truncate">Mermas / Bajas</span>
-                    <span class="text-2xl font-bold text-red-900 dark:text-red-100 font-mono mt-0.5 block">
-                      {{ totalMermaStock() }}
-                    </span>
-                    <span class="text-[11px] text-red-600 dark:text-red-400 block">unidades de baja</span>
-                  </div>
-                </div>
-              </div>
-            } @else {
-              <!-- Estado informativo en Modo Creación -->
-              <div class="p-3 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-600 dark:text-gray-300 flex items-start gap-2">
-                <svg lucidePackage size="16" class="shrink-0 text-gray-400 mt-0.5"></svg>
-                <div>
-                  <span class="font-bold">Inventario Inicial:</span>
-                  El registro de existencias físicas se gestiona automáticamente al desempacar e ingresar cajas en el submódulo de <strong>Lotes y Cajas</strong> (`/commerce/batches`).
-                </div>
-              </div>
-            }
-
-            <!-- Bloque 2: Precios Principales y Regateo -->
-            <div class="flex flex-col gap-2">
-              <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
-                <svg lucideDollarSign size="14" class="text-brand-600 dark:text-brand-400"></svg>
-                <span>Estrategia de Precios y Regateo</span>
-              </span>
-
-              <!-- Banner Informativo de Regla de Negocio -->
-              <div class="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-lg text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2">
-                <svg lucideInfo size="16" class="shrink-0 mt-0.5 text-amber-600 dark:text-amber-400"></svg>
-                <div>
-                  <span class="font-bold">Protección de Margen y Piso de Regateo:</span>
-                  El sistema bloquea automáticamente cualquier intento de venta en streaming o WhatsApp por debajo del <strong>Precio Mínimo Protegido</strong>, salvo autorización explícita del administrador.
-                </div>
-              </div>
-
-              <!-- Inputs de Precios -->
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label for="pm_official_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                    Precio Oficial (Lista)
-                  </label>
-                  <p-inputnumber
-                    inputId="pm_official_price"
-                    [ngModel]="officialPrice()"
-                    (ngModelChange)="officialPrice.set($event)"
-                    mode="currency"
-                    currency="BOB"
-                    locale="es-BO"
-                    [minFractionDigits]="2"
-                    class="w-full">
-                  </p-inputnumber>
-                  <span class="text-xs text-gray-400 block mt-0.5">Precio de referencia comercial</span>
-                </div>
-
-                <div>
-                  <label for="pm_published_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                    Precio Publicado (Marketplace)
-                  </label>
-                  <p-inputnumber
-                    inputId="pm_published_price"
-                    [ngModel]="publishedPrice()"
-                    (ngModelChange)="publishedPrice.set($event)"
-                    mode="currency"
-                    currency="BOB"
-                    locale="es-BO"
-                    [minFractionDigits]="2"
-                    class="w-full">
-                  </p-inputnumber>
-                  <span class="text-xs text-gray-400 block mt-0.5">Mostrado en artes y redes</span>
-                </div>
-
-                <div>
-                  <label for="pm_minimum_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                    Precio Mínimo Protegido <span class="text-red-500">*</span>
-                  </label>
-                  <p-inputnumber
-                    inputId="pm_minimum_price"
-                    [ngModel]="minimumPrice()"
-                    (ngModelChange)="minimumPrice.set($event)"
-                    mode="currency"
-                    currency="BOB"
-                    locale="es-BO"
-                    [minFractionDigits]="2"
-                    class="w-full">
-                  </p-inputnumber>
-                  <span class="text-xs text-red-500 font-medium block mt-0.5">Límite infranqueable</span>
-                </div>
-              </div>
-
-              <!-- Advertencia si precio mínimo > oficial -->
-              @if (priceValidation().warning) {
-                <div class="p-2.5 bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 rounded-md text-xs text-yellow-800 dark:text-yellow-300 flex items-center gap-2">
-                  <svg lucideCircleAlert size="14" class="shrink-0"></svg>
-                  <span>{{ priceValidation().warning }}</span>
-                </div>
-              }
-
-              <!-- Resumen de Margen de Negociación con % de descuento sobre Precio Publicado -->
-              <div class="p-3 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg">
-                <div class="flex items-center justify-between mb-1.5">
-                  <span class="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    Simulador de Margen de Regateo
-                  </span>
-                  <span class="text-[10px] text-gray-400 font-mono">
-                    Calculado sobre Precio Publicado
-                  </span>
-                </div>
-
-                <div class="flex items-center justify-between text-xs">
-                  <span class="text-gray-500 dark:text-gray-400">
-                    Margen máximo de descuento para Live / Chat:
-                  </span>
-                  <div class="flex items-center gap-2">
-                    <span class="font-bold text-gray-900 dark:text-gray-100 font-mono text-sm">
-                      Bs. {{ negotiationMargin().amount | number:'1.2-2' }}
-                    </span>
-
-                    @if (negotiationMargin().hasMargin) {
-                      <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-500/20 px-1.5 py-0.5 rounded"
-                            [pTooltip]="'Rebaja máxima autorizada del ' + (negotiationMargin().percentage | number:'1.0-0') + '% sobre el precio publicado sin violar el piso protegido'"
-                            tooltipPosition="top">
-                        {{ negotiationMargin().percentage | number:'1.0-0' }}% máx.
-                      </span>
-                    } @else if (publishedPrice() > 0 && publishedPrice() === minimumPrice()) {
-                      <span class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded"
-                            pTooltip="El precio publicado es igual al piso mínimo. No hay margen de rebaja autorizado."
-                            tooltipPosition="top">
-                        0% (Precio Fijo)
-                      </span>
-                    }
-                  </div>
-                </div>
-
-                <!-- Detalle explicativo de la fórmula comercial para el operador -->
-                <div class="mt-2 pt-1.5 border-t border-gray-200/70 dark:border-gray-700/60 flex items-center justify-between text-[11px] text-gray-400 dark:text-gray-500">
-                  <span>
-                    Precio de venta al cliente: <strong class="text-gray-700 dark:text-gray-300">Bs. {{ (publishedPrice() > 0 ? publishedPrice() : officialPrice()) | number:'1.2-2' }}</strong>
-                  </span>
-                  <span>
-                    Piso protegido infranqueable: <strong class="text-red-600 dark:text-red-400">Bs. {{ minimumPrice() | number:'1.2-2' }}</strong>
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Bloque 3: Separación Conceptual Informativa -->
-            @if (mode() === 'edit') {
-              <div class="p-3 bg-gray-50/70 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-600 dark:text-gray-300 flex items-start gap-2">
-                <svg lucideLayers size="16" class="shrink-0 text-gray-400 mt-0.5"></svg>
-                <div>
-                  <span class="font-bold">Separación de Ficha Maestra vs. Lote Físico:</span>
-                  Las unidades físicas reales se administran a través del desempaque e inspección de cajas importadas en el submódulo de <strong>Lotes y Cajas</strong> (`/commerce/batches`) y el inventario específico en <strong>Productos</strong> (`/commerce/products`).
-                </div>
-              </div>
-            }
-
-          </div>
+          <app-product-master-tab-pricing />
         </p-tabpanel>
 
-        <!-- TAB 2: GALERÍA MULTIMEDIA -->
+        <!-- TAB 2: GALERÍA MULTIMEDIA (Componente dedicado) -->
         <p-tabpanel value="2" class="p-0!">
           <app-product-master-gallery
-            [masterId]="currentDisplayProduct()?.id ?? null"
-            [productName]="name()"
+            [masterId]="store.currentProduct()?.id ?? null"
+            [productName]="store.name()"
             [mode]="mode()"
             [isMaximized]="isMaximized()"
-            [(images)]="images"
-            (coverImageChanged)="onCoverImageChanged($event)"
+            [(images)]="store.images"
+            (coverImageChanged)="handleCoverImageChanged($event)"
             (requestCreateProduct)="activeTab.set('0')" />
         </p-tabpanel>
 
-        <!-- TAB 3: MARKETING Y REDES -->
+        <!-- TAB 3: MARKETING Y REDES (Componente dedicado) -->
         <p-tabpanel value="3" class="p-0!">
-          <div class="flex flex-col gap-4 text-sm">
-            
-            <!-- Publicaciones Activas en Marketplace & Redes (Multi-link MARKETPLACE) -->
-            <app-product-master-links
-              [masterId]="currentDisplayProduct()?.id ?? null"
-              linkType="MARKETPLACE"
-              title="Publicaciones Activas en Marketplace & Redes"
-              subtitle="Control de publicaciones activas en Facebook Marketplace, MercadoLibre y enlaces comerciales del equipo"
-              [mode]="mode()"
-              [links]="marketplaceLinks()"
-              (linksChange)="marketplaceLinks.set($event)"
-              [initialUrl]="marketplaceUrl()"
-              (initialUrlChange)="marketplaceUrl.set($event)"
-              (primaryChanged)="onLinkPrimaryChanged($event)">
-            </app-product-master-links>
-
-            <!-- Guion de Venta Rápida (TikTok Live / Streaming) -->
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label for="pm_marketing" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
-                  Guion de Venta Rápida (TikTok Live / Streaming)
-                </label>
-                <span class="text-[11px] text-gray-400 dark:text-gray-500">
-                  Herramienta de pitch comercial
-                </span>
-              </div>
-              <textarea
-                id="pm_marketing"
-                pTextarea
-                [ngModel]="marketingDetails()"
-                (ngModelChange)="marketingDetails.set($event)"
-                rows="6"
-                placeholder="Ganchos de remate para streaming, respuestas a objeciones frecuentes del cliente, comparativas con modelos similares y cierres de venta rápida..."
-                class="w-full text-sm">
-              </textarea>
-              <span class="block text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
-                Utilizado por el equipo comercial durante transmisiones en vivo y atención personalizada de prospectos.
-              </span>
-            </div>
-
-            <!-- Checklist de Calidad Comercial y Publicación -->
-            <div class="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-gray-50/50 dark:bg-gray-800/40">
-              <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 block mb-2.5">
-                Checklist de Calidad Comercial y Publicación
-              </span>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                
-                <div class="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                  <div>
-                    <span class="font-medium text-gray-800 dark:text-gray-200 block">Ficha Investigada & Aprobada</span>
-                    <span class="text-[11px] text-gray-400">Verificada por el catalogador comercial</span>
-                  </div>
-                  <p-toggleswitch [ngModel]="isReviewed()" (ngModelChange)="isReviewed.set($event)"></p-toggleswitch>
-                </div>
-
-                <div class="flex items-center justify-between p-2.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
-                  <div>
-                    <span class="font-medium text-gray-800 dark:text-gray-200 block">Publicado en Catálogo WhatsApp</span>
-                    <span class="text-[11px] text-gray-400">Habilitado para catálogo y chatbot comercial</span>
-                  </div>
-                  <p-toggleswitch [ngModel]="isWhatsappPublished()" (ngModelChange)="isWhatsappPublished.set($event)"></p-toggleswitch>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
+          <app-product-master-tab-marketing />
         </p-tabpanel>
-
       </p-tabpanels>
     </p-tabs>
   </div>
 
   <!-- Footer del Drawer -->
   <ng-template #footer>
-    <div class="flex items-center justify-between w-full">
-      <div class="flex items-center gap-3">
-        @if (mode() === 'edit') {
+    <div class="flex items-center justify-between w-full gap-2">
+      <!-- Lado Izquierdo: Eliminar + Estado de Guardado -->
+      <div class="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+        @if (store.mode() === 'edit') {
           <p-button
-            label="Eliminar Ficha"
+            label="Eliminar"
             icon="pi pi-trash"
             severity="danger"
             [outlined]="true"
             size="small"
-            [disabled]="isSubmitting()"
-            (click)="confirmDelete()">
+            [disabled]="store.isSubmitting()"
+            (click)="confirmDelete()"
+            class="hidden sm:inline-flex"
+            pTooltip="Eliminar ficha maestra"
+            tooltipPosition="top">
+          </p-button>
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [outlined]="true"
+            size="small"
+            [disabled]="store.isSubmitting()"
+            (click)="confirmDelete()"
+            class="sm:hidden"
+            pTooltip="Eliminar ficha maestra"
+            tooltipPosition="top">
           </p-button>
         }
 
-        <!-- Indicador de Cambios sin Guardar -->
-        @if (isDirty()) {
-          <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+        <!-- Indicador de Estado en Footer: Solo visible en Desktop (en móvil se muestra arriba en la cabecera para máxima legibilidad sin colisiones) -->
+        @if (store.isDirty()) {
+          <span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
             <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
             <span>Cambios sin guardar</span>
           </span>
-        } @else if (mode() === 'edit') {
-          <span class="text-[11px] text-gray-400 dark:text-gray-500 hidden sm:inline-flex items-center gap-1">
+        } @else if (store.mode() === 'edit') {
+          <span class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] text-gray-500 dark:text-gray-400">
             <svg lucideCheck size="12" class="text-emerald-500"></svg>
             <span>Todo guardado</span>
           </span>
         }
       </div>
 
-      <div class="flex items-center gap-2">
+      <!-- Lado Derecho: Cerrar + Guardar (Permanecer) + Guardar y Salir -->
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <p-button
           label="Cerrar"
           severity="secondary"
           [outlined]="true"
           size="small"
-          [disabled]="isSubmitting()"
+          [disabled]="store.isSubmitting()"
           (click)="requestClose()">
         </p-button>
 
+        <!-- Guardar (Permanecer en el Drawer) -->
         <p-button
-          [label]="mode() === 'create' ? 'Guardar Ficha' : 'Guardar Cambios'"
+          [label]="store.mode() === 'create' ? 'Guardar' : 'Guardar Cambios'"
+          icon="pi pi-save"
+          severity="primary"
+          [outlined]="true"
+          size="small"
+          [loading]="store.isSubmitting() && savingAction() === 'save'"
+          [disabled]="!store.isFormValid() || store.isSubmitting()"
+          (click)="saveProduct(false)"
+          [pTooltip]="store.mode() === 'create' ? 'Crear ficha y continuar editando / subir fotos' : 'Guardar modificaciones y continuar en esta ficha'"
+          tooltipPosition="top"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          label="Guardar"
+          icon="pi pi-save"
+          severity="primary"
+          [outlined]="true"
+          size="small"
+          [loading]="store.isSubmitting() && savingAction() === 'save'"
+          [disabled]="!store.isFormValid() || store.isSubmitting()"
+          (click)="saveProduct(false)"
+          [pTooltip]="'Guardar y continuar'"
+          tooltipPosition="top"
+          class="sm:hidden">
+        </p-button>
+
+        <!-- Guardar y Salir (Cierra el Drawer) -->
+        <p-button
+          label="Guardar y Salir"
           icon="pi pi-check"
           severity="primary"
           size="small"
-          [loading]="isSubmitting()"
-          [disabled]="!isFormValid()"
-          (click)="saveProduct()">
+          [loading]="store.isSubmitting() && savingAction() === 'saveAndClose'"
+          [disabled]="!store.isFormValid() || store.isSubmitting()"
+          (click)="saveProduct(true)"
+          [pTooltip]="'Guardar modificaciones y salir'"
+          tooltipPosition="top">
         </p-button>
       </div>
     </div>

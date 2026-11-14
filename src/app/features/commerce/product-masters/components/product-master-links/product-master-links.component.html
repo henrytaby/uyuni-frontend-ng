@@ -62,11 +62,12 @@
     <!-- MODO EDICIÓN: Gestión Completa Multi-Link -->
 
     <!-- Formulario Rápido de Adición -->
-    <div class="p-2.5 rounded-lg bg-gray-50/70 dark:bg-gray-800/40 border border-gray-200/80 dark:border-gray-700/80 mb-3 text-xs">
-      <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-center">
-        
+    <div class="p-3 rounded-lg bg-gray-50/80 dark:bg-gray-800/40 border border-gray-200/80 dark:border-gray-700/80 mb-3 text-xs space-y-2.5">
+      
+      <!-- Fila 1: Inputs con espacio óptimo (URL y Etiqueta) -->
+      <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
         <!-- Input URL -->
-        <div [ngClass]="isReference() ? 'sm:col-span-6' : 'sm:col-span-7'">
+        <div class="sm:col-span-7">
           <input
             pInputText
             [ngModel]="newUrl()"
@@ -79,57 +80,62 @@
         </div>
 
         <!-- Input Etiqueta (opcional) -->
-        <div [ngClass]="isReference() ? 'sm:col-span-3' : 'sm:col-span-3'">
+        <div class="sm:col-span-5">
           <input
             pInputText
             [ngModel]="newLabel()"
             (ngModelChange)="newLabel.set($event)"
             (keydown.enter)="addLink()"
-            [placeholder]="isMarketplace() ? 'Etiqueta (ej. Liz - La Paz)' : 'Etiqueta (ej. Proveedor Shenzhen)'"
+            [placeholder]="isMarketplace() ? 'Etiqueta opcional (ej. Liz - La Paz)' : 'Etiqueta opcional (ej. Proveedor Shenzhen)'"
             class="w-full text-xs" />
         </div>
+      </div>
 
-        <!-- Toggle Público (Solo para Referencia) -->
-        @if (isReference()) {
-          <div class="sm:col-span-1 flex items-center justify-center" 
-               [pTooltip]="newIsPublic() ? 'Visible en catálogo para clientes' : 'Confidencial (solo uso interno)'"
-               tooltipPosition="top">
+      <!-- Fila 2: Selector de Visibilidad y Botón de Acción -->
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-gray-200/60 dark:border-gray-700/60">
+        
+        <!-- Izquierda: Toggle Público / Privado (o nota informativa) -->
+        <div class="flex items-center gap-2">
+          @if (isReference()) {
             <button
               type="button"
               (click)="newIsPublic.set(!newIsPublic())"
-              class="flex items-center gap-1 px-2 py-1.5 rounded-md border text-[11px] font-medium transition-colors"
+              class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-medium transition-colors cursor-pointer"
               [ngClass]="newIsPublic() 
-                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800'
-                : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800'">
+                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800' 
+                : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800'"
+              [pTooltip]="newIsPublic() ? 'Visible en catálogo para clientes. Clic para cambiar a privado.' : 'Confidencial (solo uso interno). Clic para cambiar a público.'"
+              tooltipPosition="top">
               @if (newIsPublic()) {
                 <svg lucideEye size="13"></svg>
-                <span class="hidden md:inline">Público</span>
+                <span>Visible en catálogo (Público)</span>
               } @else {
                 <svg lucideLock size="13"></svg>
-                <span class="hidden md:inline">Privado</span>
+                <span>Confidencial (Privado)</span>
               }
             </button>
-          </div>
-        }
+          }
+          <span class="text-[10px] text-gray-400 dark:text-gray-500 hidden sm:inline">
+            El portal se detecta automáticamente
+          </span>
+        </div>
 
-        <!-- Botón Agregar -->
-        <div [ngClass]="isReference() ? 'sm:col-span-2' : 'sm:col-span-2'">
+        <!-- Derecha: Botón Agregar / Publicar -->
+        <div class="w-full sm:w-auto">
           <p-button
-            [label]="isMarketplace() ? 'Publicar' : 'Agregar'"
+            [label]="isMarketplace() ? 'Publicar Enlace' : 'Agregar Enlace'"
             icon="pi pi-plus"
             size="small"
             severity="primary"
             [disabled]="!newUrl().trim() || isSubmitting()"
             [loading]="isSubmitting()"
             (onClick)="addLink()"
-            class="w-full">
+            class="w-full sm:w-auto">
           </p-button>
         </div>
 
       </div>
-      <span class="block text-[10px] text-gray-400 dark:text-gray-500 mt-1">
-        El portal (Amazon, AliExpress, Facebook, etc.) se detecta automáticamente sin necesidad de seleccionarlo.
-      </span>
+
     </div>
 
     <!-- Lista de Enlaces Registrados -->
@@ -265,130 +271,152 @@
 
             </div>
           } @else {
-            <!-- MODO VISUALIZACIÓN NORMAL -->
+            <!-- MODO VISUALIZACIÓN NORMAL (Estructura en 2 niveles para máxima claridad en móvil y desktop) -->
             @let portalInfo = getPortalInfo(link.portal);
             
-            <div class="flex items-center justify-between p-2 rounded-lg border transition-all text-xs"
+            <div class="p-2.5 rounded-lg border transition-all text-xs"
                  [ngClass]="link.is_primary 
                    ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700/60 shadow-2xs' 
                    : 'bg-white dark:bg-gray-800/60 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'">
               
-              <!-- Información del Enlace (Portal, Etiqueta, URL) -->
-              <div class="flex items-center gap-2 min-w-0 flex-1 mr-2">
-                
-                <!-- Badge Portal -->
-                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide border shrink-0"
-                      [ngClass]="portalInfo.badgeClass">
-                  {{ portalInfo.name }}
-                </span>
-
-                <!-- Badge Principal -->
-                @if (link.is_primary) {
-                  <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 shrink-0 flex items-center gap-0.5"
-                        pTooltip="Enlace principal del producto"
-                        tooltipPosition="top">
-                    <svg lucideStar size="10" class="fill-amber-500 text-amber-500"></svg>
-                    Principal
+              <!-- Fila Superior: Etiqueta/Título y Enlace a Ancho Completo -->
+              <div class="min-w-0 mb-1.5">
+                <div class="flex items-center gap-1.5 mb-0.5">
+                  <span class="font-semibold text-gray-800 dark:text-gray-200 truncate">
+                    {{ link.label || portalInfo.name }}
                   </span>
-                }
-
-                <!-- Etiqueta y URL -->
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-1.5">
-                    <span class="font-semibold text-gray-800 dark:text-gray-200 truncate">
-                      {{ link.label || portalInfo.name }}
+                  @if (link.created_at) {
+                    <span class="text-[10px] text-gray-400 dark:text-gray-500 shrink-0">
+                      ({{ link.created_at | date:'dd/MM/yy' }})
                     </span>
-                    @if (link.created_at) {
-                      <span class="text-[10px] text-gray-400 dark:text-gray-500 shrink-0 hidden sm:inline">
-                        ({{ link.created_at | date:'dd/MM/yy' }})
-                      </span>
-                    }
-                  </div>
-                  <a [href]="link.url" 
-                     target="_blank" 
-                     rel="noopener noreferrer"
-                     class="text-[11px] text-brand-600 dark:text-brand-400 hover:underline truncate block font-mono">
-                    {{ link.url }}
-                  </a>
+                  }
                 </div>
-
+                <!-- URL a ancho completo con tooltip -->
+                <a [href]="link.url" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   class="text-[11px] text-brand-600 dark:text-brand-400 hover:underline truncate block font-mono"
+                   [pTooltip]="link.url"
+                   tooltipPosition="top">
+                  {{ link.url }}
+                </a>
               </div>
 
-              <!-- Acciones Rápidas (Iconos Compactos) -->
-              <div class="flex items-center gap-1 shrink-0">
+              <!-- Fila Inferior: Badges a la izquierda y Acciones a la derecha -->
+              <div class="flex items-center justify-between gap-2 pt-1.5 border-t border-gray-100 dark:border-gray-700/60">
                 
-                <!-- Switch de Visibilidad Pública (Solo REFERENCE) -->
-                @if (isReference()) {
+                <!-- Badges (Portal, Principal, Visibilidad) -->
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <!-- Badge Portal -->
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold tracking-wide border shrink-0"
+                        [ngClass]="portalInfo.badgeClass">
+                    {{ portalInfo.name }}
+                  </span>
+
+                  <!-- Badge Principal -->
+                  @if (link.is_primary) {
+                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 shrink-0 flex items-center gap-0.5"
+                          pTooltip="Enlace principal del producto"
+                          tooltipPosition="top">
+                      <svg lucideStar size="10" class="fill-amber-500 text-amber-500"></svg>
+                      Principal
+                    </span>
+                  }
+
+                  <!-- Badge Visibilidad (Solo REFERENCE) -->
+                  @if (isReference()) {
+                    <span class="px-1.5 py-0.5 rounded text-[10px] font-medium border shrink-0 flex items-center gap-1"
+                          [ngClass]="link.is_public 
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800' 
+                            : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800'">
+                      @if (link.is_public) {
+                        <svg lucideEye size="11"></svg>
+                        <span>Público</span>
+                      } @else {
+                        <svg lucideLock size="11"></svg>
+                        <span>Privado</span>
+                      }
+                    </span>
+                  }
+                </div>
+
+                <!-- Acciones Rápidas (Iconos Compactos) -->
+                <div class="flex items-center gap-1 shrink-0">
+                  
+                  <!-- Switch de Visibilidad Pública (Solo REFERENCE) -->
+                  @if (isReference()) {
+                    <button
+                      type="button"
+                      (click)="togglePublicVisibility(link)"
+                      class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition-colors cursor-pointer"
+                      [pTooltip]="link.is_public ? 'Hacer privado (ocultar en catálogo web)' : 'Hacer público (mostrar en catálogo web)'"
+                      tooltipPosition="top">
+                      @if (link.is_public) {
+                        <svg lucideEye size="14" class="text-emerald-600 dark:text-emerald-400"></svg>
+                      } @else {
+                        <svg lucideLock size="14" class="text-amber-600 dark:text-amber-400"></svg>
+                      }
+                    </button>
+                  }
+
+                  <!-- Editar Enlace (Pencil) -->
                   <button
                     type="button"
-                    (click)="togglePublicVisibility(link)"
-                    class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition-colors cursor-pointer"
-                    [pTooltip]="link.is_public ? 'Público (visible en catálogo web). Clic para hacer privado.' : 'Privado (oculto en catálogo web). Clic para hacer público.'"
+                    (click)="startEdit(link)"
+                    class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-brand-600 dark:hover:text-brand-400 transition-colors cursor-pointer"
+                    [pTooltip]="isMarketplace() ? 'Editar publicación' : 'Editar enlace'"
                     tooltipPosition="top">
-                    @if (link.is_public) {
-                      <svg lucideEye size="14" class="text-emerald-600 dark:text-emerald-400"></svg>
+                    <svg lucidePencil size="14"></svg>
+                  </button>
+
+                  <!-- Copiar URL al portapapeles -->
+                  <button
+                    type="button"
+                    (click)="copyUrl(link.url, link.id)"
+                    class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition-colors cursor-pointer"
+                    [pTooltip]="copiedLinkId() === link.id ? '¡Copiado!' : 'Copiar enlace'"
+                    tooltipPosition="top">
+                    @if (copiedLinkId() === link.id) {
+                      <svg lucideCheck size="14" class="text-emerald-600 dark:text-emerald-400"></svg>
                     } @else {
-                      <svg lucideLock size="14" class="text-amber-600 dark:text-amber-400"></svg>
+                      <svg lucideCopy size="14"></svg>
                     }
                   </button>
-                }
 
-                <!-- Editar Enlace (Pencil) -->
-                <button
-                  type="button"
-                  (click)="startEdit(link)"
-                  class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-brand-600 dark:hover:text-brand-400 transition-colors cursor-pointer"
-                  [pTooltip]="isMarketplace() ? 'Editar publicación' : 'Editar enlace'"
-                  tooltipPosition="top">
-                  <svg lucidePencil size="14"></svg>
-                </button>
+                  <!-- Abrir en pestaña nueva -->
+                  <a
+                    [href]="link.url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+                    pTooltip="Abrir en pestaña nueva"
+                    tooltipPosition="top">
+                    <svg lucideExternalLink size="14"></svg>
+                  </a>
 
-                <!-- Copiar URL al portapapeles -->
-                <button
-                  type="button"
-                  (click)="copyUrl(link.url, link.id)"
-                  class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 transition-colors cursor-pointer"
-                  [pTooltip]="copiedLinkId() === link.id ? '¡Copiado!' : 'Copiar enlace'"
-                  tooltipPosition="top">
-                  @if (copiedLinkId() === link.id) {
-                    <svg lucideCheck size="14" class="text-emerald-600 dark:text-emerald-400"></svg>
-                  } @else {
-                    <svg lucideCopy size="14"></svg>
+                  <!-- Designar como Principal (Star) -->
+                  @if (!link.is_primary) {
+                    <button
+                      type="button"
+                      (click)="setAsPrimary(link)"
+                      class="p-1 rounded hover:bg-amber-100 dark:hover:bg-amber-900/30 text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer"
+                      [pTooltip]="isMarketplace() ? 'Establecer como publicación principal' : 'Establecer como referencia principal'"
+                      tooltipPosition="top">
+                      <svg lucideStar size="14"></svg>
+                    </button>
                   }
-                </button>
 
-                <!-- Abrir en pestaña nueva -->
-                <a
-                  [href]="link.url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
-                  pTooltip="Abrir en pestaña nueva"
-                  tooltipPosition="top">
-                  <svg lucideExternalLink size="14"></svg>
-                </a>
-
-                <!-- Designar como Principal (Star) -->
-                @if (!link.is_primary) {
+                  <!-- Eliminar Enlace -->
                   <button
                     type="button"
-                    (click)="setAsPrimary(link)"
-                    class="p-1 rounded hover:bg-amber-100 dark:hover:bg-amber-900/30 text-gray-400 hover:text-amber-600 dark:hover:text-amber-400 transition-colors cursor-pointer"
-                    [pTooltip]="isMarketplace() ? 'Establecer como publicación principal' : 'Establecer como referencia principal'"
+                    (click)="confirmDelete(link)"
+                    class="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
+                    pTooltip="Eliminar enlace"
                     tooltipPosition="top">
-                    <svg lucideStar size="14"></svg>
+                    <svg lucideTrash2 size="14"></svg>
                   </button>
-                }
 
-                <!-- Eliminar Enlace -->
-                <button
-                  type="button"
-                  (click)="confirmDelete(link)"
-                  class="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
-                  pTooltip="Eliminar enlace"
-                  tooltipPosition="top">
-                  <svg lucideTrash2 size="14"></svg>
-                </button>
+                </div>
 
               </div>
 

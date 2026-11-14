@@ -8,6 +8,9 @@
 }
 
 <p-toast position="top-right"></p-toast>
-<p-confirmdialog></p-confirmdialog>
+<p-confirmdialog
+  [breakpoints]="{ '960px': '75vw', '640px': '90vw' }"
+  [style]="{ width: '420px', maxWidth: '90vw' }">
+</p-confirmdialog>
 
 <router-outlet></router-outlet>

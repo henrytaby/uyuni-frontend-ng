@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
   effect,
   HostListener,
   inject,
@@ -12,29 +11,19 @@ import {
   output,
   signal
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Drawer } from 'primeng/drawer';
-import { InputNumber } from 'primeng/inputnumber';
-import { InputText } from 'primeng/inputtext';
-import { Select } from 'primeng/select';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
-import { Textarea } from 'primeng/textarea';
-import { ToggleSwitch } from 'primeng/toggleswitch';
 import { Tooltip } from 'primeng/tooltip';
 import {
   LucideCheck,
-  LucideCircleAlert,
   LucideCopy,
   LucideDollarSign,
   LucideImages,
-  LucideInfo,
-  LucideLayers,
   LucideMaximize2,
   LucideMinimize2,
-  LucidePackage,
   LucideShare2,
   LucideTag,
   LucideX
@@ -43,26 +32,28 @@ import {
 import { CatalogItem } from '@core/models/catalog.model';
 import { LoggerService } from '@core/services/logger.service';
 
-import { MarkdownEditorComponent } from '@shared/components/markdown-editor/markdown-editor.component';
 import { CloudinaryUrlPipe } from '@shared/pipe/cloudinary-url.pipe';
 
-import {
-  ProductImage,
-  ProductMaster,
-  ProductMasterCreatePayload,
-  ProductMasterExternalLink,
-  ProductMasterUpdatePayload
-} from '../../models/product-master.model';
+import { ProductMaster } from '../../models/product-master.model';
 import { ProductMasterService } from '../../services/product-master.service';
+import { ProductMasterFormStore } from '../../services/product-master-form.store';
 import { ProductMasterGalleryComponent } from '../product-master-gallery/product-master-gallery.component';
-import { ProductMasterLinksComponent } from '../product-master-links/product-master-links.component';
+import { ProductMasterTabCommercialComponent } from '../tabs/product-master-tab-commercial/product-master-tab-commercial.component';
+import { ProductMasterTabMarketingComponent } from '../tabs/product-master-tab-marketing/product-master-tab-marketing.component';
+import { ProductMasterTabPricingComponent } from '../tabs/product-master-tab-pricing/product-master-tab-pricing.component';
 
+/**
+ * Orquestador principal (Shell) de la Ficha Maestra.
+ * Gestiona el ciclo de vida de la ventana modal (Drawer), la navegación entre pestañas
+ * y las acciones globales de persistencia (Guardar / Eliminar).
+ * Provee localmente el ProductMasterFormStore para sus subcomponentes de pestaña.
+ */
 @Component({
   selector: 'app-product-master-drawer',
   standalone: true,
+  providers: [ProductMasterFormStore],
   imports: [
     CommonModule,
-    FormsModule,
     Drawer,
     Tabs,
     TabList,
@@ -70,20 +61,11 @@ import { ProductMasterLinksComponent } from '../product-master-links/product-mas
     TabPanels,
     TabPanel,
     Button,
-    InputText,
-    InputNumber,
-    Select,
-    Textarea,
-    ToggleSwitch,
     Tooltip,
-    LucideCircleAlert,
     LucideTag,
     LucideDollarSign,
     LucideImages,
-    LucidePackage,
     LucideCopy,
-    LucideInfo,
-    LucideLayers,
     LucideCheck,
     LucideMaximize2,
     LucideMinimize2,
@@ -91,21 +73,23 @@ import { ProductMasterLinksComponent } from '../product-master-links/product-mas
     LucideX,
     CdkScrollable,
     CloudinaryUrlPipe,
-    MarkdownEditorComponent,
     ProductMasterGalleryComponent,
-    ProductMasterLinksComponent
+    ProductMasterTabCommercialComponent,
+    ProductMasterTabPricingComponent,
+    ProductMasterTabMarketingComponent
   ],
   templateUrl: './product-master-drawer.component.html',
   styleUrls: ['./product-master-drawer.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProductMasterDrawerComponent {
+  readonly store = inject(ProductMasterFormStore);
   private readonly productMasterService = inject(ProductMasterService);
   private readonly logger = inject(LoggerService);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
 
-  // Two-way and inputs
+  // Two-way e Inputs
   readonly visible = model<boolean>(false);
   readonly product = input<ProductMaster | null>(null);
   readonly mode = input<'create' | 'edit'>('create');
@@ -117,28 +101,56 @@ export class ProductMasterDrawerComponent {
   readonly productDeleted = output<string>();
   readonly coverImageChanged = output<{ masterId: string; coverUrl: string | null }>();
 
-  // State
+  // Estado del Shell
   readonly isMaximized = signal<boolean>(false);
   readonly activeTab = signal<string>('0');
-  readonly isSubmitting = signal<boolean>(false);
-  readonly isLoadingDetails = signal<boolean>(false);
-  readonly freshProduct = signal<ProductMaster | null>(null);
+  readonly savingAction = signal<'save' | 'saveAndClose' | null>(null);
 
-  // Snapshot para detección de cambios no guardados
-  private readonly initialFormSnapshot = signal<string>('');
+  private lastOpenedProductId: string | null = null;
+  private lastVisibleState = false;
 
-  readonly isDirty = computed<boolean>(() => {
-    const init = this.initialFormSnapshot();
-    if (!init) return false;
-    return init !== this.getFormSnapshotString();
-  });
+  constructor() {
+    effect(() => {
+      const isVisible = this.visible();
+      const currentProd = this.product();
+      const currentMode = this.mode();
 
-  // Images state (synced with gallery child component)
-  readonly images = signal<ProductImage[]>([]);
+      if (!isVisible) {
+        this.lastVisibleState = false;
+        this.lastOpenedProductId = null;
+        this.isMaximized.set(false);
+        this.store.resetSnapshot();
+        return;
+      }
 
-  // Multi-link state (synced with links child component)
-  readonly referenceLinks = signal<ProductMasterExternalLink[]>([]);
-  readonly marketplaceLinks = signal<ProductMasterExternalLink[]>([]);
+      const prodId = currentProd?.id ?? null;
+      const isNewOpen = !this.lastVisibleState || this.lastOpenedProductId !== prodId;
+      this.lastVisibleState = true;
+      this.lastOpenedProductId = prodId;
+
+      if (isNewOpen) {
+        this.activeTab.set('0');
+
+        if (currentMode === 'edit' && prodId) {
+          this.store.initForm(currentProd, 'edit');
+
+          this.store.isLoadingDetails.set(true);
+          this.productMasterService.getProductMasterById(prodId).subscribe({
+            next: fresh => {
+              this.store.applyFreshDetails(fresh);
+              this.store.isLoadingDetails.set(false);
+            },
+            error: err => {
+              this.logger.error('Error fetching authoritative product master detail', err, 'ProductMasterDrawerComponent');
+              this.store.isLoadingDetails.set(false);
+            }
+          });
+        } else {
+          this.store.initForm(null, 'create');
+        }
+      }
+    });
+  }
 
   onTabChange(tab: string | number | undefined): void {
     if (tab !== undefined) {
@@ -159,7 +171,7 @@ export class ProductMasterDrawerComponent {
   }
 
   requestClose(): void {
-    if (!this.isDirty()) {
+    if (!this.store.isDirty()) {
       this.visible.set(false);
       return;
     }
@@ -179,21 +191,16 @@ export class ProductMasterDrawerComponent {
         outlined: true
       },
       accept: () => {
-        this.initialFormSnapshot.set('');
+        this.store.resetSnapshot();
         this.visible.set(false);
       }
     });
   }
 
-  /**
-   * Intercepta clics sobre el backdrop gris de fondo (.p-drawer-mask) para proteger cambios sin guardar
-   * sin permitir que PrimeNG destruya prematuramente la máscara modal.
-   */
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (!this.visible()) return;
 
-    // Si hay un diálogo modal de confirmación o alerta abierto, no interceptar
     if (document.querySelector('.p-dialog-mask, .p-confirm-dialog')) {
       return;
     }
@@ -201,20 +208,15 @@ export class ProductMasterDrawerComponent {
     const target = event.target as HTMLElement | null;
     if (!target) return;
 
-    // Si el clic fue directamente sobre la máscara de fondo del drawer
     if (target.classList?.contains('p-drawer-mask')) {
       this.requestClose();
     }
   }
 
-  /**
-   * Intercepta la tecla Escape para proteger cambios sin guardar con confirmación modal
-   */
   @HostListener('document:keydown.escape', ['$event'])
   onEscapeKey(event: Event): void {
     if (!this.visible()) return;
 
-    // Si hay un modal o diálogo abierto encima (como confirmación), dejar que el diálogo maneje su propio escape
     if (document.querySelector('.p-dialog-mask, .p-confirm-dialog')) {
       return;
     }
@@ -223,288 +225,13 @@ export class ProductMasterDrawerComponent {
     this.requestClose();
   }
 
-  onCoverImageChanged(event: { masterId: string; coverUrl: string | null }): void {
-    this.coverImageUrl.set(event.coverUrl || '');
-    if (this.freshProduct()) {
-      this.freshProduct.update(p => (p ? { ...p, cover_image_url: event.coverUrl } : null));
-    }
+  handleCoverImageChanged(event: { masterId: string; coverUrl: string | null }): void {
+    this.store.onCoverImageChanged(event.coverUrl);
     this.coverImageChanged.emit(event);
   }
 
-  onLinkPrimaryChanged(event: { masterId: string; linkId: string; url: string; linkType: string }): void {
-    if (event.linkType === 'REFERENCE') {
-      this.externalInfoUrl.set(event.url);
-      if (this.freshProduct()) {
-        this.freshProduct.update(p => (p ? { ...p, external_info_url: event.url } : null));
-      }
-    } else if (event.linkType === 'MARKETPLACE') {
-      this.marketplaceUrl.set(event.url);
-      if (event.url) {
-        this.isPublishedMarketplace.set(true);
-      }
-      if (this.freshProduct()) {
-        this.freshProduct.update(p =>
-          p ? { ...p, marketplace_url: event.url, is_published_marketplace: true } : null
-        );
-      }
-    }
-  }
-
-  private getFormSnapshotString(): string {
-    return JSON.stringify({
-      code: (this.code() || '').trim(),
-      name: (this.name() || '').trim(),
-      description: (this.description() || '').trim(),
-      categoryId: this.categoryId(),
-      liveBasketId: this.liveBasketId(),
-      brand: (this.brand() || '').trim(),
-      modelName: (this.modelName() || '').trim(),
-      officialPrice: Number(this.officialPrice() || 0),
-      minimumPrice: Number(this.minimumPrice() || 0),
-      publishedPrice: Number(this.publishedPrice() || 0),
-      currency: this.currency(),
-      features: (this.features() || '').trim(),
-      marketingDetails: (this.marketingDetails() || '').trim(),
-      isReviewed: Boolean(this.isReviewed()),
-      isWhatsappPublished: Boolean(this.isWhatsappPublished()),
-      isActive: Boolean(this.isActive())
-    });
-  }
-
-  readonly currentDisplayProduct = computed<ProductMaster | null>(() => {
-    return this.freshProduct() || this.product();
-  });
-
-  // Form Signals
-  readonly itemNumber = signal<number | null>(null);
-  readonly code = signal<string>('');
-  readonly name = signal<string>('');
-  readonly description = signal<string>('');
-  readonly categoryId = signal<string | null>(null);
-  readonly liveBasketId = signal<string | null>(null);
-  readonly brand = signal<string>('');
-  readonly modelName = signal<string>('');
-
-  // Precios
-  readonly officialPrice = signal<number>(0);
-  readonly minimumPrice = signal<number>(0);
-  readonly publishedPrice = signal<number>(0);
-  readonly currency = signal<string>('BOB');
-
-  // Multimedia & Marketing
-  readonly coverImageUrl = signal<string>('');
-  readonly marketplaceUrl = signal<string>('');
-  readonly externalInfoUrl = signal<string>('');
-  readonly features = signal<string>('');
-  readonly marketingDetails = signal<string>('');
-  readonly isReviewed = signal<boolean>(false);
-  readonly isFbVerified = signal<boolean>(false);
-  readonly hasVideo = signal<boolean>(false);
-  readonly isPublishedMarketplace = signal<boolean>(false);
-  readonly isWhatsappPublished = signal<boolean>(false);
-  readonly isActive = signal<boolean>(true);
-
-  // Validations
-  readonly itemNumberValidation = computed<{ isValid: boolean; error: string | null }>(() => {
-    const val = this.itemNumber();
-    if (val === null || val === undefined || isNaN(val)) {
-      return { isValid: true, error: null };
-    }
-    if (val <= 0) {
-      return { isValid: false, error: 'El número debe ser un entero positivo mayor a cero' };
-    }
-    return { isValid: true, error: null };
-  });
-
-  readonly nameValidation = computed<{ isValid: boolean; error: string | null }>(() => {
-    const val = this.name();
-    if (!val || val.trim().length === 0) {
-      return { isValid: false, error: 'El nombre comercial es obligatorio' };
-    }
-    if (val.trim().length < 3) {
-      return { isValid: false, error: 'El nombre debe tener al menos 3 caracteres' };
-    }
-    return { isValid: true, error: null };
-  });
-
-  readonly priceValidation = computed<{ isValid: boolean; error: string | null; warning: string | null }>(() => {
-    const official = this.officialPrice() ?? 0;
-    const min = this.minimumPrice() ?? 0;
-    const published = this.publishedPrice() ?? 0;
-
-    if (official < 0 || min < 0 || published < 0) {
-      return { isValid: false, error: 'Los precios no pueden ser negativos', warning: null };
-    }
-
-    if (min > published && published > 0) {
-      return {
-        isValid: true,
-        error: null,
-        warning: 'El precio mínimo protegido es mayor al precio publicado de venta'
-      };
-    }
-
-    if (min > official && official > 0) {
-      return {
-        isValid: true,
-        error: null,
-        warning: 'El precio mínimo protegido es mayor al precio oficial de lista'
-      };
-    }
-
-    return { isValid: true, error: null, warning: null };
-  });
-
-  readonly isFormValid = computed<boolean>(() => {
-    return this.itemNumberValidation().isValid && this.nameValidation().isValid && this.priceValidation().isValid;
-  });
-
-  // Stock summary computed
-  readonly totalAvailableStock = computed(() => this.currentDisplayProduct()?.total_available_stock ?? 0);
-  readonly totalSoldStock = computed(() => this.currentDisplayProduct()?.total_sold_stock ?? 0);
-  readonly totalMermaStock = computed(() => this.currentDisplayProduct()?.total_merma_stock ?? 0);
-  readonly totalHistoricalStock = computed(() => {
-    return this.totalAvailableStock() + this.totalSoldStock() + this.totalMermaStock();
-  });
-
-  // Margen de Regateo calculado estrictamente sobre el Precio Publicado (precio de venta real)
-  readonly negotiationMargin = computed<{ amount: number; percentage: number; hasMargin: boolean }>(() => {
-    const published = this.publishedPrice() ?? 0;
-    const official = this.officialPrice() ?? 0;
-    const min = this.minimumPrice() ?? 0;
-
-    // Base comercial: Precio Publicado (si no está definido o es 0, usa Precio Oficial)
-    const base = published > 0 ? published : official;
-    const amount = base > min ? base - min : 0;
-    const percentage = base > 0 && amount > 0 ? (amount / base) * 100 : 0;
-
-    return {
-      amount,
-      percentage,
-      hasMargin: amount > 0
-    };
-  });
-
-  private lastOpenedProductId: string | null = null;
-  private lastVisibleState = false;
-
-  constructor() {
-    effect(() => {
-      const isVisible = this.visible();
-      const currentProd = this.product();
-      const currentMode = this.mode();
-
-      if (!isVisible) {
-        this.lastVisibleState = false;
-        this.lastOpenedProductId = null;
-        this.isMaximized.set(false);
-        this.initialFormSnapshot.set('');
-        return;
-      }
-
-      const prodId = currentProd?.id ?? null;
-      const isNewOpen = !this.lastVisibleState || this.lastOpenedProductId !== prodId;
-      this.lastVisibleState = true;
-      this.lastOpenedProductId = prodId;
-
-      if (isNewOpen) {
-        this.activeTab.set('0');
-
-        if (currentMode === 'edit' && prodId) {
-          this.freshProduct.set(null);
-          this.initForm(currentProd);
-
-          this.isLoadingDetails.set(true);
-          this.productMasterService.getProductMasterById(prodId).subscribe({
-            next: fresh => {
-              this.freshProduct.set(fresh);
-              this.initForm(fresh);
-              this.isLoadingDetails.set(false);
-            },
-            error: err => {
-              this.logger.error('Error fetching authoritative product master detail', err, 'ProductMasterDrawerComponent');
-              this.isLoadingDetails.set(false);
-            }
-          });
-        } else {
-          this.freshProduct.set(null);
-          this.initForm(null);
-        }
-      }
-    });
-  }
-
-  private initForm(prod: ProductMaster | null): void {
-    if (prod) {
-      this.itemNumber.set(prod.item_number);
-      this.code.set(prod.code || '');
-      this.name.set(prod.name || '');
-      this.description.set(prod.description || '');
-      this.categoryId.set(prod.category_id || null);
-      this.liveBasketId.set(prod.live_basket_id || null);
-      this.brand.set(prod.brand || '');
-      this.modelName.set(prod.model || '');
-      this.officialPrice.set(prod.official_price || 0);
-      this.minimumPrice.set(prod.minimum_price || 0);
-      this.publishedPrice.set(prod.published_price || 0);
-      this.currency.set(prod.currency || 'BOB');
-      this.coverImageUrl.set(prod.cover_image_url || '');
-      this.marketplaceUrl.set(prod.marketplace_url || '');
-      this.externalInfoUrl.set(prod.external_info_url || '');
-      this.features.set(prod.features || '');
-      this.marketingDetails.set(prod.marketing_details || '');
-      this.isReviewed.set(prod.is_reviewed ?? false);
-      this.isFbVerified.set(prod.is_fb_verified ?? false);
-      this.hasVideo.set(prod.has_video ?? false);
-      this.isPublishedMarketplace.set(prod.is_published_marketplace ?? false);
-      this.isWhatsappPublished.set(prod.is_whatsapp_published ?? false);
-      this.isActive.set(prod.is_active ?? true);
-
-      // Galería de imágenes sincronizada
-      if (prod.images && prod.images.length > 0) {
-        this.images.set(prod.images);
-      } else {
-        this.images.set([]);
-      }
-
-      // Enlaces externos sincronizados
-      this.referenceLinks.set(prod.reference_links || []);
-      this.marketplaceLinks.set(prod.marketplace_links || []);
-    } else {
-      this.itemNumber.set(null);
-      this.code.set('');
-      this.name.set('');
-      this.description.set('');
-      this.categoryId.set(null);
-      this.liveBasketId.set(null);
-      this.brand.set('');
-      this.modelName.set('');
-      this.officialPrice.set(0);
-      this.minimumPrice.set(0);
-      this.publishedPrice.set(0);
-      this.currency.set('BOB');
-      this.coverImageUrl.set('');
-      this.marketplaceUrl.set('');
-      this.externalInfoUrl.set('');
-      this.features.set('');
-      this.marketingDetails.set('');
-      this.isReviewed.set(false);
-      this.isFbVerified.set(false);
-      this.hasVideo.set(false);
-      this.isPublishedMarketplace.set(false);
-      this.isWhatsappPublished.set(false);
-      this.isActive.set(true);
-
-      this.images.set([]);
-      this.referenceLinks.set([]);
-      this.marketplaceLinks.set([]);
-    }
-
-    this.initialFormSnapshot.set(this.getFormSnapshotString());
-  }
-
-  saveProduct(): void {
-    if (!this.isFormValid()) {
+  saveProduct(closeAfterSave = false): void {
+    if (!this.store.isFormValid()) {
       this.messageService.add({
         severity: 'warn',
         summary: 'Formulario Incompleto',
@@ -513,52 +240,35 @@ export class ProductMasterDrawerComponent {
       return;
     }
 
-    this.isSubmitting.set(true);
+    this.savingAction.set(closeAfterSave ? 'saveAndClose' : 'save');
+    this.store.isSubmitting.set(true);
 
-    const num = this.itemNumber();
-    const codeValue = this.code().trim() ? this.code().trim() : null;
-
-    if (this.mode() === 'create') {
-      const payload: ProductMasterCreatePayload = {
-        item_number: num && num > 0 ? num : null,
-        code: codeValue,
-        name: this.name().trim(),
-        description: this.description().trim() || null,
-        category_id: this.categoryId(),
-        live_basket_id: this.liveBasketId(),
-        brand: this.brand().trim() || null,
-        model: this.modelName().trim() || null,
-        official_price: this.officialPrice(),
-        minimum_price: this.minimumPrice(),
-        published_price: this.publishedPrice(),
-        currency: this.currency(),
-        cover_image_url: this.coverImageUrl().trim() || null,
-        marketplace_url: this.marketplaceUrl().trim() || null,
-        external_info_url: this.externalInfoUrl().trim() || null,
-        features: this.features().trim() || null,
-        marketing_details: this.marketingDetails().trim() || null,
-        is_reviewed: this.isReviewed(),
-        is_fb_verified: this.isFbVerified(),
-        has_video: this.hasVideo(),
-        is_published_marketplace: this.isPublishedMarketplace(),
-        is_whatsapp_published: this.isWhatsappPublished(),
-        is_active: this.isActive()
-      };
+    if (this.store.mode() === 'create') {
+      const payload = this.store.buildCreatePayload();
 
       this.productMasterService.createProductMaster(payload).subscribe({
         next: created => {
-          this.isSubmitting.set(false);
+          this.store.isSubmitting.set(false);
+          this.savingAction.set(null);
           this.messageService.add({
             severity: 'success',
             summary: 'Ficha Creada',
             detail: `Ficha maestra #${created.item_number} "${created.name}" creada exitosamente.`
           });
           this.productSaved.emit(created);
-          this.initialFormSnapshot.set('');
-          this.visible.set(false);
+
+          if (closeAfterSave) {
+            this.store.resetSnapshot();
+            this.visible.set(false);
+          } else {
+            // Permanece abierto y pasa automáticamente a modo edición para continuar o subir fotos
+            this.store.initForm(created, 'edit');
+            this.store.markClean();
+          }
         },
         error: err => {
-          this.isSubmitting.set(false);
+          this.store.isSubmitting.set(false);
+          this.savingAction.set(null);
           this.logger.error('Error creating product master', err, 'ProductMasterDrawerComponent');
           const detail = err?.error?.detail || 'No se pudo crear la ficha maestra.';
           this.messageService.add({
@@ -569,51 +279,41 @@ export class ProductMasterDrawerComponent {
         }
       });
     } else {
-      const id = this.currentDisplayProduct()?.id;
+      const id = this.store.currentProduct()?.id;
       if (!id) {
-        this.isSubmitting.set(false);
+        this.store.isSubmitting.set(false);
+        this.savingAction.set(null);
         return;
       }
 
-      const payload: ProductMasterUpdatePayload = {
-        code: codeValue,
-        name: this.name().trim(),
-        description: this.description().trim() || null,
-        category_id: this.categoryId(),
-        live_basket_id: this.liveBasketId(),
-        brand: this.brand().trim() || null,
-        model: this.modelName().trim() || null,
-        official_price: this.officialPrice(),
-        minimum_price: this.minimumPrice(),
-        published_price: this.publishedPrice(),
-        currency: this.currency(),
-        cover_image_url: this.coverImageUrl().trim() || null,
-        marketplace_url: this.marketplaceUrl().trim() || null,
-        external_info_url: this.externalInfoUrl().trim() || null,
-        features: this.features().trim() || null,
-        marketing_details: this.marketingDetails().trim() || null,
-        is_reviewed: this.isReviewed(),
-        is_fb_verified: this.isFbVerified(),
-        has_video: this.hasVideo(),
-        is_published_marketplace: this.isPublishedMarketplace(),
-        is_whatsapp_published: this.isWhatsappPublished(),
-        is_active: this.isActive()
-      };
+      const payload = this.store.buildUpdatePayload();
 
       this.productMasterService.updateProductMaster(id, payload).subscribe({
         next: updated => {
-          this.isSubmitting.set(false);
+          this.store.isSubmitting.set(false);
+          this.savingAction.set(null);
           this.messageService.add({
             severity: 'success',
             summary: 'Ficha Actualizada',
             detail: `Los cambios en la ficha maestra #${updated.item_number} se guardaron exitosamente.`
           });
           this.productSaved.emit(updated);
-          this.initialFormSnapshot.set(this.getFormSnapshotString());
-          this.visible.set(false);
+          this.store.markClean();
+
+          if (closeAfterSave) {
+            this.visible.set(false);
+          } else {
+            // Actualiza el producto actual conservando la vista activa y mostrando "Todo guardado"
+            if (this.store.freshProduct()) {
+              this.store.freshProduct.set(updated);
+            } else {
+              this.store.rawProduct.set(updated);
+            }
+          }
         },
         error: err => {
-          this.isSubmitting.set(false);
+          this.store.isSubmitting.set(false);
+          this.savingAction.set(null);
           this.logger.error('Error updating product master', err, 'ProductMasterDrawerComponent');
           const detail = err?.error?.detail || 'Ocurrió un error al actualizar la ficha maestra.';
           this.messageService.add({
@@ -627,7 +327,7 @@ export class ProductMasterDrawerComponent {
   }
 
   confirmDelete(): void {
-    const prod = this.currentDisplayProduct();
+    const prod = this.store.currentProduct();
     if (!prod) return;
 
     this.confirmationService.confirm({
@@ -644,10 +344,10 @@ export class ProductMasterDrawerComponent {
         outlined: true
       },
       accept: () => {
-        this.isSubmitting.set(true);
+        this.store.isSubmitting.set(true);
         this.productMasterService.deleteProductMaster(prod.id).subscribe({
           next: () => {
-            this.isSubmitting.set(false);
+            this.store.isSubmitting.set(false);
             this.messageService.add({
               severity: 'success',
               summary: 'Ficha Eliminada',
@@ -657,7 +357,7 @@ export class ProductMasterDrawerComponent {
             this.visible.set(false);
           },
           error: err => {
-            this.isSubmitting.set(false);
+            this.store.isSubmitting.set(false);
             this.logger.error('Error deleting product master', err, 'ProductMasterDrawerComponent');
             const detail = err?.error?.detail || 'No se pudo eliminar la ficha maestra.';
             this.messageService.add({

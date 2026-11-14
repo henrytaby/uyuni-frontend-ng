@@ -713,6 +713,52 @@
 }
 
 /* ==========================================================================
+   ConfirmDialog & Dialog Responsive Spacing & Padding (Mobile-First)
+   ========================================================================== */
+.p-dialog-mask {
+  padding: 1rem !important; /* 16px de respiro a los bordes de la pantalla en mobile */
+}
+
+/* Diálogos de confirmación centrados con proporciones elegantes */
+.p-confirmdialog,
+.p-confirm-dialog,
+.p-dialog.p-confirmdialog {
+  width: 90vw !important;
+  max-width: 440px !important;
+  margin: 0 auto !important;
+}
+
+@media (max-width: 639px) {
+  .p-confirmdialog,
+  .p-confirm-dialog,
+  .p-dialog.p-confirmdialog {
+    width: calc(100vw - 2rem) !important;
+    max-width: calc(100vw - 2rem) !important;
+    margin: 0 auto !important;
+  }
+
+  /* Botones simétricos de acción equilibrada en mobile */
+  .p-confirmdialog .p-dialog-footer,
+  .p-confirm-dialog .p-dialog-footer,
+  .p-dialog.p-confirmdialog .p-dialog-footer {
+    display: flex !important;
+    justify-content: stretch !important;
+    gap: 0.5rem !important;
+    padding: 0.75rem 1rem !important;
+  }
+
+  .p-confirmdialog .p-dialog-footer button,
+  .p-confirm-dialog .p-dialog-footer button,
+  .p-dialog.p-confirmdialog .p-dialog-footer button {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    justify-content: center !important;
+    font-size: 0.75rem !important;
+    padding: 0.5rem 0.5rem !important;
+  }
+}
+
+/* ==========================================================================
    Enterprise Drawer Styling (PrimeNG Drawer High-Density Enterprise Theme)
    ========================================================================== */
 .p-drawer {
