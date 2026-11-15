@@ -15,6 +15,7 @@ import {
   inject,
   input,
   model,
+  OnDestroy,
   output,
   signal,
   TemplateRef,
@@ -25,7 +26,6 @@ import { FormsModule } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
 import { Dialog } from 'primeng/dialog';
-import { ProgressBar } from 'primeng/progressbar';
 import { Tooltip } from 'primeng/tooltip';
 import {
   LucideCheck,
@@ -45,7 +45,11 @@ import {
 
 import { LoggerService } from '@core/services/logger.service';
 
-import { MediaGalleryItem, MediaGalleryReorderEvent } from '@shared/models/media-gallery.model';
+import {
+  MediaGalleryItem,
+  MediaGalleryReorderEvent,
+  UploadingMediaPlaceholder
+} from '@shared/models/media-gallery.model';
 import { CloudinaryUrlPipe } from '@shared/pipe/cloudinary-url.pipe';
 import { createZipArchive, ZipFileEntry } from '@shared/utils/zip.utils';
 
@@ -56,7 +60,6 @@ import { createZipArchive, ZipFileEntry } from '@shared/utils/zip.utils';
     CommonModule,
     FormsModule,
     Button,
-    ProgressBar,
     Dialog,
     Tooltip,
     CdkDropList,
@@ -82,7 +85,7 @@ import { createZipArchive, ZipFileEntry } from '@shared/utils/zip.utils';
   styleUrl: './media-gallery.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class MediaGalleryComponent<T extends MediaGalleryItem = MediaGalleryItem> {
+export class MediaGalleryComponent<T extends MediaGalleryItem = MediaGalleryItem> implements OnDestroy {
   private readonly confirmationService = inject(ConfirmationService);
   private readonly messageService = inject(MessageService);
   private readonly logger = inject(LoggerService);
@@ -136,6 +139,7 @@ export class MediaGalleryComponent<T extends MediaGalleryItem = MediaGalleryItem
   readonly zipProgress = signal<string>('');
   readonly isBulkDeleting = signal<boolean>(false);
   readonly deletingIds = signal<Set<string>>(new Set());
+  readonly uploadingPlaceholders = signal<UploadingMediaPlaceholder[]>([]);
 
   // Computeds
   readonly selectedCount = computed(() => {
@@ -148,6 +152,10 @@ export class MediaGalleryComponent<T extends MediaGalleryItem = MediaGalleryItem
   });
   readonly isAllSelected = computed(
     () => this.items().length > 0 && this.selectedCount() === this.items().length
+  );
+  readonly activePlaceholders = computed(() => (this.isUploading() ? this.uploadingPlaceholders() : []));
+  readonly uploadingCount = computed(() =>
+    this.isUploading() ? Math.max(this.uploadingPlaceholders().length, 1) : 0
   );
 
   constructor() {
@@ -169,6 +177,36 @@ export class MediaGalleryComponent<T extends MediaGalleryItem = MediaGalleryItem
         });
       });
     });
+
+    // Limpiar placeholders temporales cuando la subida termina o se cancela
+    effect(() => {
+      const uploading = this.isUploading();
+      if (!uploading) {
+        untracked(() => {
+          this.clearUploadingPlaceholders();
+        });
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.clearUploadingPlaceholders();
+  }
+
+  private clearUploadingPlaceholders(): void {
+    const current = this.uploadingPlaceholders();
+    for (const item of current) {
+      if (item.previewUrl && typeof URL !== 'undefined' && typeof URL.revokeObjectURL === 'function') {
+        try {
+          URL.revokeObjectURL(item.previewUrl);
+        } catch {
+          // ignore
+        }
+      }
+    }
+    if (current.length > 0) {
+      this.uploadingPlaceholders.set([]);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -232,6 +270,18 @@ export class MediaGalleryComponent<T extends MediaGalleryItem = MediaGalleryItem
     }
 
     if (validFiles.length > 0) {
+      this.clearUploadingPlaceholders();
+
+      const canCreateUrl = typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function';
+      const placeholders: UploadingMediaPlaceholder[] = validFiles.map((file, idx) => ({
+        id: `uploading-temp-${Date.now()}-${idx}`,
+        file,
+        previewUrl: canCreateUrl ? URL.createObjectURL(file) : '',
+        fileName: file.name,
+        fileSizeBytes: file.size
+      }));
+      this.uploadingPlaceholders.set(placeholders);
+
       this.filesDropped.emit(validFiles);
     }
   }

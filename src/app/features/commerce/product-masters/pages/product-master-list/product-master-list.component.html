@@ -54,14 +54,8 @@
       </p-button>
 
       <!-- Botón Copiloto IA (Feature Estrella) -->
-      <p-button
-        label="Copiloto IA"
-        icon="pi pi-sparkles"
-        size="small"
-        severity="help"
-        class="shrink-0"
-        (onClick)="openAssistant()"
-        pTooltip="Consultas de inventario, márgenes y catálogo con IA en tiempo real">
+      <p-button label="Copiloto IA" icon="pi pi-sparkles" size="small" severity="help" class="shrink-0"
+        (onClick)="openAssistant()" pTooltip="Consultas de inventario, márgenes y catálogo con IA en tiempo real">
       </p-button>
 
       <!-- Botón Nueva Ficha -->
@@ -248,7 +242,7 @@
 
         <!-- Precios (BOB) Compacto y Legible (Sin hueco gigante) -->
         <td class="vertical-align-middle">
-          <div class="flex flex-col text-xs font-mono max-w-[130px]">
+          <div class="flex flex-col text-xs font-mono max-w-32.5">
             <div class="flex items-center justify-between gap-2 text-gray-500 dark:text-gray-400">
               <span class="text-[10px] font-sans font-medium text-gray-500">Oficial:</span>
               <span class="text-gray-600 dark:text-gray-300">Bs. {{ prod.official_price | number:'1.2-2' }}</span>
@@ -400,11 +394,11 @@
         <div class="flex gap-2.5">
           @if (prod.cover_image_url) {
           <img [src]="prod.cover_image_url | clUrl:'card'" [alt]="prod.name"
-            class="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-700 bg-gray-50 shrink-0 shadow-2xs group-hover:scale-102 transition-transform"
+            class="w-20 h-20 rounded-lg object-cover border border-gray-200 dark:border-gray-700 bg-gray-50 shrink-0 shadow-2xs group-hover:scale-110 transition-transform"
             loading="lazy" />
           } @else {
           <div
-            class="w-16 h-16 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 shrink-0 gap-0.5">
+            class="w-20 h-20 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400 shrink-0 gap-0.5">
             <svg lucidePackage size="20"></svg>
             <span class="text-[10px] font-bold">{{ getInitials(prod.name) }}</span>
           </div>
@@ -430,7 +424,7 @@
               <span
                 class="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.2 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                 <svg lucideTv size="10"></svg>
-                <span class="truncate max-w-[110px]">{{ getLiveBasketLabel(prod.live_basket_id) }}</span>
+                <span class="truncate max-w-27.5">{{ getLiveBasketLabel(prod.live_basket_id) }}</span>
               </span>
               }
             </div>
@@ -535,9 +529,7 @@
   </app-product-master-filter-drawer>
 
   <!-- Slide-Over Drawer para Asistente Comercial IA (Copiloto) -->
-  <app-commerce-assistant-drawer
-    [(visible)]="isAssistantVisible"
-    (openProduct)="onOpenProductFromAssistant($event)">
+  <app-commerce-assistant-drawer [(visible)]="isAssistantVisible" (openProduct)="onOpenProductFromAssistant($event)">
   </app-commerce-assistant-drawer>
 
 </div>

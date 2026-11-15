@@ -1,532 +1,530 @@
 <div class="flex flex-col gap-4 text-sm">
 
   @if (mode() === 'create') {
-    <!-- Estado en Modo Creación: Requiere guardar primero -->
-    <div class="p-8 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 text-center flex flex-col items-center justify-center gap-3">
-      <div class="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-800 text-brand-600 dark:text-brand-400 flex items-center justify-center shadow-xs">
-        <svg lucideImages size="24"></svg>
-      </div>
-      <div class="max-w-md">
-        <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">
-          {{ createModeTitle() }}
-        </h3>
-        <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-          {{ createModeDescription() }}
-        </p>
-      </div>
-      <p-button
-        [label]="createModeActionLabel()"
-        icon="pi pi-arrow-left"
-        [outlined]="true"
-        size="small"
-        (click)="requestCreateAction.emit()">
-      </p-button>
+  <!-- Estado en Modo Creación: Requiere guardar primero -->
+  <div
+    class="p-8 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30 text-center flex flex-col items-center justify-center gap-3">
+    <div
+      class="w-12 h-12 rounded-full bg-brand-50 dark:bg-brand-950/60 border border-brand-200 dark:border-brand-800 text-brand-600 dark:text-brand-400 flex items-center justify-center shadow-xs">
+      <svg lucideImages size="24"></svg>
     </div>
+    <div class="max-w-md">
+      <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100 mb-1">
+        {{ createModeTitle() }}
+      </h3>
+      <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+        {{ createModeDescription() }}
+      </p>
+    </div>
+    <p-button [label]="createModeActionLabel()" icon="pi pi-arrow-left" [outlined]="true" size="small"
+      (click)="requestCreateAction.emit()">
+    </p-button>
+  </div>
   } @else {
-    <!-- Estado en Modo Edición: Galería Completa -->
+  <!-- Estado en Modo Edición: Galería Completa -->
 
-    <!-- Cabecera de la Sección con Contador y Acciones Rápidas (Mobile First / Enterprise) -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 pb-2 border-b border-gray-100 dark:border-gray-800">
-      <div class="min-w-0">
-        <div class="flex items-center gap-2 flex-wrap">
-          <h3 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100 m-0 tracking-tight">
-            {{ title() }}
-          </h3>
-          @if (badgeText()) {
-            <span class="px-1.5 py-0.2 rounded font-mono text-[10px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
-              {{ badgeText() }}
+  <!-- Cabecera de la Sección con Contador y Acciones Rápidas (Mobile First / Enterprise) -->
+  <div
+    class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 pb-2 border-b border-gray-100 dark:border-gray-800">
+    <div class="min-w-0">
+      <div class="flex items-center gap-2 flex-wrap">
+        <h3 class="text-xs sm:text-sm font-bold text-gray-900 dark:text-gray-100 m-0 tracking-tight">
+          {{ title() }}
+        </h3>
+        @if (badgeText()) {
+        <span
+          class="px-1.5 py-0.2 rounded font-mono text-[10px] font-semibold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+          {{ badgeText() }}
+        </span>
+        }
+        <span
+          class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-800 shrink-0">
+          {{ items().length }} {{ items().length === 1 ? 'imagen' : 'imágenes' }}
+          @if (isUploading() && uploadingCount() > 0) {
+            <span class="text-brand-700 dark:text-brand-300 font-medium ml-1">
+              (+{{ uploadingCount() }} procesando)
             </span>
           }
-          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-800 shrink-0">
-            {{ items().length }} {{ items().length === 1 ? 'imagen' : 'imágenes' }}
-          </span>
-        </div>
-        <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">
-          {{ subtitle() }}
-        </p>
+        </span>
       </div>
-
-      <div class="flex items-center gap-1.5 self-start sm:self-center shrink-0">
-        @if (canDownloadZip() && items().length > 0 && selectedCount() === 0) {
-          <p-button
-            size="small"
-            severity="secondary"
-            [outlined]="true"
-            [loading]="isDownloadingZip()"
-            (click)="downloadImagesZip(false)"
-            pTooltip="Descargar todas las fotos originales en un comprimido ZIP"
-            tooltipPosition="bottom"
-            class="whitespace-nowrap">
-            <ng-template pTemplate="content">
-              <div class="flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-gray-700 dark:text-gray-200">
-                <svg lucideDownload size="13" class="text-gray-600 dark:text-gray-400 shrink-0"></svg>
-                <span class="hidden sm:inline">Descargar Álbum (.ZIP)</span>
-                <span class="sm:hidden">Descargar (.ZIP)</span>
-              </div>
-            </ng-template>
-          </p-button>
-        }
-
-        <button
-          type="button"
-          class="h-8 w-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-855 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 flex items-center justify-center transition-colors disabled:opacity-50 cursor-pointer shadow-2xs shrink-0"
-          pTooltip="Sincronizar galería"
-          tooltipPosition="bottom"
-          [disabled]="isLoading() || isUploading()"
-          (click)="refresh.emit()">
-          <svg lucideRefreshCw size="13" [class.animate-spin]="isLoading()"></svg>
-        </button>
-      </div>
+      <p class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 leading-snug">
+        {{ subtitle() }}
+      </p>
     </div>
 
-    <!-- Enterprise Dropzone (Arrastrar y Soltar / Clic) -->
-    <div
-      role="button"
-      tabindex="0"
-      aria-label="Zona para arrastrar o seleccionar fotografías"
-      (keydown.enter)="fileInput.click()"
-      (keydown.space)="fileInput.click(); $event.preventDefault()"
-      class="relative border-2 border-dashed rounded-xl p-4 sm:p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 sm:gap-2"
-      [class.border-brand-500]="isDragOver()"
-      [class.bg-brand-50]="isDragOver()"
-      [class.dark:bg-brand-950]="isDragOver()"
-      [class.ring-4]="isDragOver()"
-      [class.ring-brand-500]="isDragOver()"
-      [class.border-gray-300]="!isDragOver()"
-      [class.dark:border-gray-700]="!isDragOver()"
-      [class.bg-gray-50]="!isDragOver()"
-      [class.dark:bg-gray-800]="!isDragOver()"
-      [class.hover:bg-gray-100]="!isDragOver()"
-      [class.dark:hover:bg-gray-800]="!isDragOver()"
-      [class.hover:border-brand-400]="!isDragOver()"
-      (dragover)="onDragOver($event)"
-      (dragleave)="onDragLeave($event)"
-      (drop)="onDrop($event)"
-      (click)="fileInput.click()">
-
-      <input
-        #fileInput
-        type="file"
-        multiple
-        accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-        (change)="onFileInputChange($event)"
-        class="hidden" />
-
-      <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-brand-100/70 dark:bg-brand-950/70 text-brand-700 dark:text-brand-300 flex items-center justify-center shadow-xs">
-        <svg lucideCloudUpload size="20" class="sm:hidden"></svg>
-        <svg lucideCloudUpload size="24" class="hidden sm:block"></svg>
-      </div>
-
-      <div>
-        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
-          Arrastra y suelta tus fotografías aquí o <span class="text-brand-600 dark:text-brand-400 underline font-bold">haz clic para examinar</span>
-        </span>
-        <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-1">
-          Puedes subir 1 o más imágenes a la vez · JPG, PNG, WEBP, AVIF hasta 10 MB por foto
-        </span>
-      </div>
-    </div>
-
-    <!-- Barra de Progreso de Subida en Tiempo Real -->
-    @if (isUploading()) {
-      <div class="p-3.5 rounded-xl border border-brand-200 dark:border-brand-800 bg-brand-50/50 dark:bg-brand-950/30 flex flex-col gap-2">
-        <div class="flex items-center justify-between text-xs">
-          <div class="flex items-center gap-2 font-semibold text-brand-900 dark:text-brand-200">
-            <span class="inline-block w-2 h-2 rounded-full bg-brand-500 animate-pulse"></span>
-            @if (uploadProgress() < 100) {
-              <span>Subiendo fotografías al servidor...</span>
-            } @else {
-              <span>Optimizando en Cloudinary y convirtiendo a WebP...</span>
-            }
-          </div>
-          <span class="font-mono font-bold text-brand-700 dark:text-brand-300">
-            @if (uploadProgress() < 100) {
-              {{ uploadProgress() }}%
-            } @else {
-              Procesando...
-            }
-          </span>
-        </div>
-        <p-progressbar
-          [value]="uploadProgress() < 100 ? uploadProgress() : 100"
-          [showValue]="false"
-          [mode]="uploadProgress() === 100 ? 'indeterminate' : 'determinate'"
-          class="w-full h-2 rounded-full overflow-hidden">
-        </p-progressbar>
-        <span class="text-[11px] text-gray-500 dark:text-gray-400">
-          @if (uploadProgress() < 100) {
-            Transmitiendo archivos en alta resolución...
-          } @else {
-            El backend está procesando las imágenes y almacenándolas en la nube...
-          }
-        </span>
-      </div>
-    }
-
-    <!-- Indicador de Carga de Galería -->
-    @if (isLoading() && !isUploading()) {
-      <div class="p-6 text-center text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2">
-        <svg lucideRefreshCw size="16" class="animate-spin text-brand-600 dark:text-brand-400"></svg>
-        <span>Sincronizando galería multimedia...</span>
-      </div>
-    }
-
-    <!-- Estado Vacío -->
-    @if (items().length === 0 && !isLoading() && !isUploading()) {
-      <div class="p-8 text-center rounded-xl border border-dashed border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20">
-        <svg lucideImage size="28" class="text-gray-400 dark:text-gray-500 mx-auto mb-2"></svg>
-        <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 block">{{ emptyTitle() }}</span>
-        <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">
-          {{ emptySubtitle() }}
-        </span>
-      </div>
-    }
-
-    <!-- Barra Contextual de Acciones Masivas (Aparece cuando hay 1 o más seleccionadas) -->
-    @if (selectedCount() > 0 && items().length > 0) {
-      <div class="p-2 sm:p-2.5 rounded-xl bg-brand-50/90 dark:bg-brand-950/70 border border-brand-200 dark:border-brand-800 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
-        <div class="flex items-center gap-2">
-          <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-brand-600 text-white shadow-2xs">
-            {{ selectedCount() }} de {{ items().length }} seleccionadas
-          </span>
-          <button
-            type="button"
-            class="text-xs font-semibold text-brand-700 dark:text-brand-300 hover:underline cursor-pointer"
-            (click)="toggleSelectAll()">
-            {{ isAllSelected() ? 'Deseleccionar todas' : 'Seleccionar todas' }}
-          </button>
-        </div>
-
-        <div class="flex items-center gap-2">
-          @if (isBulkDeleting()) {
-            <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-100 dark:bg-red-950/60 border border-red-300 dark:border-red-800 text-xs font-semibold text-red-800 dark:text-red-200">
-              <svg lucideLoaderCircle size="14" class="animate-spin text-red-600 dark:text-red-400"></svg>
-              <span>Eliminando {{ selectedCount() }} {{ selectedCount() === 1 ? 'fotografía' : 'fotografías' }}...</span>
-            </div>
-          } @else {
-            @if (canDownloadZip()) {
-              <p-button
-                [label]="isDownloadingZip() ? (zipProgress() || 'Descargando...') : 'Descargar (' + selectedCount() + ') ZIP'"
-                icon="pi pi-download"
-                size="small"
-                severity="secondary"
-                [outlined]="true"
-                [loading]="isDownloadingZip()"
-                (click)="downloadImagesZip(true)"
-                pTooltip="Descargar únicamente las fotos seleccionadas en un archivo .ZIP"
-                class="whitespace-nowrap">
-              </p-button>
-            }
-
-            @if (canDelete()) {
-              <p-button
-                [label]="'Eliminar (' + selectedCount() + ')'"
-                icon="pi pi-trash"
-                size="small"
-                severity="danger"
-                [outlined]="true"
-                (click)="confirmBulkDelete()"
-                pTooltip="Eliminar permanentemente las fotografías seleccionadas">
-              </p-button>
-            }
-
-            <button
-              type="button"
-              (click)="clearSelection()"
-              class="p-1.5 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
-              pTooltip="Cancelar selección">
-              <svg lucideX size="15"></svg>
-            </button>
-          }
-        </div>
-      </div>
-    } @else if (items().length > 0) {
-      <!-- Barra de Selección Rápida cuando hay fotos pero ninguna seleccionada aún -->
-      <div class="flex items-center justify-between p-2 px-3 rounded-xl bg-gray-50/90 dark:bg-gray-855 border border-gray-200/80 dark:border-gray-700/70 shadow-2xs">
-        <button
-          type="button"
-          (click)="toggleSelectAll()"
-          class="inline-flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:text-brand-600 dark:hover:text-brand-400 cursor-pointer transition-colors group">
-          <span class="w-4 h-4 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 flex items-center justify-center group-hover:border-brand-500 shadow-2xs transition-colors">
-          </span>
-          <span class="hidden sm:inline">Seleccionar todas para descargar o eliminar</span>
-          <span class="sm:hidden">Seleccionar todas</span>
-        </button>
-        <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400">
-          <span class="hidden sm:inline">{{ items().length }} {{ items().length === 1 ? 'fotografía registrada' : 'fotografías registradas' }}</span>
-          <span class="sm:hidden font-mono">{{ items().length }} {{ items().length === 1 ? 'foto' : 'fotos' }}</span>
-        </span>
-      </div>
-    }
-
-    <!-- Grid de Tarjetas con Reordenamiento Drag & Drop -->
-    @if (items().length > 0) {
-      <div
-        cdkDropList
-        cdkDropListOrientation="mixed"
-        (cdkDropListDropped)="onItemDrop($event)"
-        class="grid grid-cols-2 sm:grid-cols-3 gap-3"
-        [class.md:grid-cols-4]="isMaximized()"
-        [class.lg:grid-cols-5]="isMaximized()"
-        [class.xl:grid-cols-6]="isMaximized()">
-        @for (img of items(); track img.id) {
+    <div class="flex items-center gap-1.5 self-start sm:self-center shrink-0">
+      @if (canDownloadZip() && items().length > 0 && selectedCount() === 0) {
+      <p-button size="small" severity="secondary" [outlined]="true" [loading]="isDownloadingZip()"
+        (click)="downloadImagesZip(false)" pTooltip="Descargar todas las fotos originales en un comprimido ZIP"
+        tooltipPosition="bottom" class="whitespace-nowrap">
+        <ng-template pTemplate="content">
           <div
-            cdkDrag
-            [cdkDragDisabled]="!canReorder() || deletingIds().has(img.id)"
-            class="group relative rounded-xl border overflow-hidden bg-white dark:bg-gray-900 shadow-xs transition flex flex-col"
-            [class.border-brand-500]="selectedIds().has(img.id)"
-            [class.ring-2]="selectedIds().has(img.id)"
-            [class.ring-brand-500]="selectedIds().has(img.id)"
-            [class.border-gray-200]="!selectedIds().has(img.id)"
-            [class.dark:border-gray-700]="!selectedIds().has(img.id)"
-            [class.opacity-40]="deletingIds().has(img.id)"
-            [class.pointer-events-none]="deletingIds().has(img.id)">
-
-            <!-- Overlay de Eliminación en Progreso con Spinner -->
-            @if (deletingIds().has(img.id)) {
-              <div class="absolute inset-0 z-30 bg-black/60 dark:bg-black/75 backdrop-blur-[2px] flex flex-col items-center justify-center gap-1.5 text-white select-none">
-                <svg lucideLoaderCircle size="24" class="animate-spin text-red-400"></svg>
-                <span class="text-[11px] font-semibold text-white tracking-wide">Eliminando...</span>
-              </div>
-            }
-
-            <!-- Preview Personalizado de Alto Rendimiento 1:1 con el Cursor -->
-            <ng-template cdkDragPreview [matchSize]="true">
-              <div class="w-full h-full rounded-xl overflow-hidden bg-white dark:bg-gray-900 border-2 border-brand-500 shadow-2xl flex flex-col pointer-events-none select-none">
-                <div class="relative aspect-square bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
-                  <img
-                    [src]="img.url | clUrl:'card'"
-                    [alt]="img.title || 'Foto'"
-                    class="w-full h-full object-cover" />
-                </div>
-                <div class="px-2.5 py-1.5 bg-white dark:bg-gray-900 flex items-center justify-between text-xs border-t border-gray-100 dark:border-gray-800">
-                  <span class="font-bold text-brand-600 dark:text-brand-400">#{{ $index + 1 }}</span>
-                  <span class="text-gray-500 dark:text-gray-400 text-[11px]">{{ img.width }}x{{ img.height }} px</span>
-                </div>
-              </div>
-            </ng-template>
-
-            <!-- Contenedor de la Imagen con Aspect Ratio Cuadrado -->
-            <div
-              role="button"
-              tabindex="0"
-              aria-label="Ver imagen ampliada"
-              (keydown.enter)="openPreview(img)"
-              (keydown.space)="openPreview(img); $event.preventDefault()"
-              class="relative aspect-square bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden cursor-pointer"
-              (click)="openPreview(img)">
-              <img
-                [src]="img.url | clUrl:'card'"
-                [alt]="img.title || 'Fotografía'"
-                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                loading="lazy" />
-
-              <!-- Checkbox de Selección en Esquina Superior Izquierda -->
-              <button
-                type="button"
-                (click)="toggleSelect(img.id, $event)"
-                [attr.aria-label]="selectedIds().has(img.id) ? 'Deseleccionar fotografía' : 'Seleccionar fotografía'"
-                class="absolute top-2 left-2 z-20 w-6 h-6 rounded-md flex items-center justify-center transition-all cursor-pointer shadow-xs"
-                [class.bg-brand-600]="selectedIds().has(img.id)"
-                [class.text-white]="selectedIds().has(img.id)"
-                [class.border-brand-600]="selectedIds().has(img.id)"
-                [class.bg-white]="!selectedIds().has(img.id)"
-                [class.dark:bg-gray-900]="!selectedIds().has(img.id)"
-                [class.border]="!selectedIds().has(img.id)"
-                [class.border-gray-300]="!selectedIds().has(img.id)"
-                [class.dark:border-gray-600]="!selectedIds().has(img.id)"
-                [class.opacity-0]="!selectedIds().has(img.id) && selectedCount() === 0"
-                [class.group-hover:opacity-100]="!selectedIds().has(img.id)"
-                pTooltip="Seleccionar foto"
-                tooltipPosition="top">
-                @if (selectedIds().has(img.id)) {
-                  <svg lucideCheck size="13" class="stroke-3"></svg>
-                }
-              </button>
-
-              <!-- Slot de Badge Personalizado (por ejemplo: Portada Oficial o Privada/Pública) -->
-              @if (cardBadgeTemplate()) {
-                <div class="absolute top-2 left-10 z-10 flex items-center gap-1">
-                  <ng-container
-                    *ngTemplateOutlet="cardBadgeTemplate()!; context: { $implicit: img, index: $index }">
-                  </ng-container>
-                </div>
-              }
-
-              <!-- Botones de Acción en Hover (Grip Reordenar + Zoom + Eliminar) -->
-              <div class="absolute top-2 right-2 flex items-center gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                @if (canReorder()) {
-                  <button
-                    type="button"
-                    cdkDragHandle
-                    aria-label="Arrastrar para reordenar fotografía"
-                    class="w-7 h-7 rounded-md bg-black/60 hover:bg-black/80 text-white flex items-center justify-center cursor-grab active:cursor-grabbing transition-colors"
-                    pTooltip="Arrastrar para reordenar"
-                    tooltipPosition="bottom"
-                    (click)="$event.stopPropagation()">
-                    <svg lucideGripVertical size="13"></svg>
-                  </button>
-                }
-                <button
-                  type="button"
-                  class="w-7 h-7 rounded-md bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors cursor-pointer"
-                  pTooltip="Ampliar imagen"
-                  tooltipPosition="bottom"
-                  (click)="$event.stopPropagation(); openPreview(img)">
-                  <svg lucideEye size="13"></svg>
-                </button>
-                @if (canDelete()) {
-                  <button
-                    type="button"
-                    class="w-7 h-7 rounded-md bg-red-600/80 hover:bg-red-600 text-white flex items-center justify-center transition-colors cursor-pointer"
-                    pTooltip="Eliminar fotografía"
-                    tooltipPosition="bottom"
-                    (click)="$event.stopPropagation(); confirmDeleteSingle(img)">
-                    <svg lucideTrash2 size="13"></svg>
-                  </button>
-                }
-              </div>
-            </div>
-
-            <!-- Footer de la Tarjeta: Posición (#1, #2...), Dimensiones y Slot de Acción -->
-            <div class="p-2 border-t border-gray-100 dark:border-gray-800 flex flex-col gap-1.5 flex-1 justify-between bg-white dark:bg-gray-900">
-              <div class="flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400 font-mono">
-                <div class="flex items-center gap-1.5 font-medium text-gray-600 dark:text-gray-300">
-                  <span class="px-1.5 py-0.2 rounded bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-mono text-[10px] font-bold text-gray-600 dark:text-gray-400">
-                    #{{ $index + 1 }}
-                  </span>
-                  <span>
-                    {{ img.width && img.height ? (img.width + 'x' + img.height) : (img.format ? (img.format | uppercase) : 'WEBP') }}
-                  </span>
-                </div>
-                <span>{{ formatBytes(img.file_size_bytes) }}</span>
-              </div>
-
-              <!-- Slot de Acción Específico de Negocio -->
-              @if (cardActionTemplate()) {
-                <div class="w-full">
-                  <ng-container
-                    *ngTemplateOutlet="cardActionTemplate()!; context: { $implicit: img, index: $index }">
-                  </ng-container>
-                </div>
-              }
-            </div>
-
+            class="flex items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-gray-700 dark:text-gray-200">
+            <svg lucideDownload size="13" class="text-gray-600 dark:text-gray-400 shrink-0"></svg>
+            <span class="hidden sm:inline">Descargar Álbum (.ZIP)</span>
+            <span class="sm:hidden">Descargar (.ZIP)</span>
           </div>
+        </ng-template>
+      </p-button>
+      }
+
+      <button type="button"
+        class="h-8 w-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-855 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 flex items-center justify-center transition-colors disabled:opacity-50 cursor-pointer shadow-2xs shrink-0"
+        pTooltip="Sincronizar galería" tooltipPosition="bottom" [disabled]="isLoading() || isUploading()"
+        (click)="refresh.emit()">
+        <svg lucideRefreshCw size="13" [class.animate-spin]="isLoading()"></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Enterprise Dropzone (Arrastrar y Soltar / Clic) -->
+  <div role="button" tabindex="0" aria-label="Zona para arrastrar o seleccionar fotografías"
+    (keydown.enter)="fileInput.click()" (keydown.space)="fileInput.click(); $event.preventDefault()"
+    class="relative border-2 border-dashed rounded-xl p-4 sm:p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 sm:gap-2"
+    [class.pointer-events-none]="isUploading()" [class.opacity-60]="isUploading()"
+    [class.border-brand-500]="isDragOver()" [class.bg-brand-50]="isDragOver()" [class.dark:bg-brand-950]="isDragOver()"
+    [class.ring-4]="isDragOver()" [class.ring-brand-500]="isDragOver()" [class.border-gray-300]="!isDragOver()"
+    [class.dark:border-gray-700]="!isDragOver()" [class.bg-gray-50]="!isDragOver()"
+    [class.dark:bg-gray-800]="!isDragOver()" [class.hover:bg-gray-100]="!isDragOver()"
+    [class.dark:hover:bg-gray-800]="!isDragOver()" [class.hover:border-brand-400]="!isDragOver()"
+    (dragover)="onDragOver($event)" (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
+    (click)="fileInput.click()">
+
+    <input #fileInput type="file" multiple accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
+      [disabled]="isUploading()"
+      (change)="onFileInputChange($event)" class="hidden" />
+
+    <div
+      class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-brand-100/70 dark:bg-brand-950/70 text-brand-700 dark:text-brand-300 flex items-center justify-center shadow-xs">
+      <svg lucideCloudUpload size="20" class="sm:hidden"></svg>
+      <svg lucideCloudUpload size="24" class="hidden sm:block"></svg>
+    </div>
+
+    <div>
+      <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
+        Arrastra y suelta tus fotografías aquí o <span
+          class="text-brand-600 dark:text-brand-400 underline font-bold">haz clic para examinar</span>
+      </span>
+      <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-1">
+        Puedes subir 1 o más imágenes a la vez · JPG, PNG, WEBP, AVIF hasta 10 MB por foto
+      </span>
+    </div>
+  </div>
+
+  <!-- Indicador de Carga de Galería (Sincronización inicial o manual) -->
+  @if (isLoading() && !isUploading()) {
+  <div class="p-6 text-center text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-2">
+    <svg lucideRefreshCw size="16" class="animate-spin text-brand-600 dark:text-brand-400"></svg>
+    <span>Sincronizando galería multimedia...</span>
+  </div>
+  }
+
+  <!-- Estado Vacío -->
+  @if (items().length === 0 && !isLoading() && !isUploading() && activePlaceholders().length === 0) {
+  <div
+    class="p-8 text-center rounded-xl border border-dashed border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-800/20">
+    <svg lucideImage size="28" class="text-gray-400 dark:text-gray-500 mx-auto mb-2"></svg>
+    <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 block">{{ emptyTitle() }}</span>
+    <span class="text-[11px] text-gray-500 dark:text-gray-400 block mt-0.5">
+      {{ emptySubtitle() }}
+    </span>
+  </div>
+  }
+
+  <!-- Barra Contextual de Acciones Masivas (Aparece cuando hay 1 o más seleccionadas) -->
+  @if (selectedCount() > 0 && items().length > 0) {
+  <div
+    class="p-2 sm:p-2.5 rounded-xl bg-brand-50/90 dark:bg-brand-950/70 border border-brand-200 dark:border-brand-800 flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+    <div class="flex items-center gap-2">
+      <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-brand-600 text-white shadow-2xs">
+        {{ selectedCount() }} de {{ items().length }} seleccionadas
+      </span>
+      <button type="button"
+        class="text-xs font-semibold text-brand-700 dark:text-brand-300 hover:underline cursor-pointer"
+        (click)="toggleSelectAll()">
+        {{ isAllSelected() ? 'Deseleccionar todas' : 'Seleccionar todas' }}
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2">
+      @if (isBulkDeleting()) {
+      <div
+        class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-100 dark:bg-red-950/60 border border-red-300 dark:border-red-800 text-xs font-semibold text-red-800 dark:text-red-200">
+        <svg lucideLoaderCircle size="14" class="animate-spin text-red-600 dark:text-red-400"></svg>
+        <span>Eliminando {{ selectedCount() }} {{ selectedCount() === 1 ? 'fotografía' : 'fotografías' }}...</span>
+      </div>
+      } @else {
+      @if (canDownloadZip()) {
+      <p-button
+        [label]="isDownloadingZip() ? (zipProgress() || 'Descargando...') : 'Descargar (' + selectedCount() + ') ZIP'"
+        icon="pi pi-download" size="small" severity="secondary" [outlined]="true" [loading]="isDownloadingZip()"
+        (click)="downloadImagesZip(true)" pTooltip="Descargar únicamente las fotos seleccionadas en un archivo .ZIP"
+        class="whitespace-nowrap">
+      </p-button>
+      }
+
+      @if (canDelete()) {
+      <p-button [label]="'Eliminar (' + selectedCount() + ')'" icon="pi pi-trash" size="small" severity="danger"
+        [outlined]="true" (click)="confirmBulkDelete()"
+        pTooltip="Eliminar permanentemente las fotografías seleccionadas">
+      </p-button>
+      }
+
+      <button type="button" (click)="clearSelection()"
+        class="p-1.5 text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+        pTooltip="Cancelar selección">
+        <svg lucideX size="15"></svg>
+      </button>
+      }
+    </div>
+  </div>
+  } @else if (items().length > 0) {
+  <!-- Barra de Selección Rápida cuando hay fotos pero ninguna seleccionada aún -->
+  <div
+    class="flex items-center justify-between p-2 px-3 rounded-xl bg-gray-50/90 dark:bg-gray-855 border border-gray-200/80 dark:border-gray-700/70 shadow-2xs">
+    <button type="button" (click)="toggleSelectAll()"
+      class="inline-flex items-center gap-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:text-brand-600 dark:hover:text-brand-400 cursor-pointer transition-colors group">
+      <span
+        class="w-4 h-4 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 flex items-center justify-center group-hover:border-brand-500 shadow-2xs transition-colors">
+      </span>
+      <span class="hidden sm:inline">Seleccionar todas para descargar o eliminar</span>
+      <span class="sm:hidden">Seleccionar todas</span>
+    </button>
+    <span class="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+      <span class="hidden sm:inline">{{ items().length }} {{ items().length === 1 ? 'fotografía registrada' :
+        'fotografías registradas' }}</span>
+      <span class="sm:hidden font-mono">{{ items().length }} {{ items().length === 1 ? 'foto' : 'fotos' }}</span>
+    </span>
+  </div>
+  }
+
+  <!-- Grid de Tarjetas con Reordenamiento Drag & Drop -->
+  @if (items().length > 0 || isUploading()) {
+  <div cdkDropList cdkDropListOrientation="mixed" (cdkDropListDropped)="onItemDrop($event)"
+    class="grid grid-cols-2 sm:grid-cols-3 gap-3" [class.md:grid-cols-4]="isMaximized()"
+    [class.lg:grid-cols-5]="isMaximized()" [class.xl:grid-cols-6]="isMaximized()">
+    @for (img of items(); track img.id) {
+    <div cdkDrag [cdkDragDisabled]="!canReorder() || deletingIds().has(img.id) || isUploading()"
+      class="group relative rounded-xl border overflow-hidden bg-white dark:bg-gray-900 shadow-xs transition flex flex-col"
+      [class.border-brand-500]="selectedIds().has(img.id)" [class.ring-2]="selectedIds().has(img.id)"
+      [class.ring-brand-500]="selectedIds().has(img.id)" [class.border-gray-200]="!selectedIds().has(img.id)"
+      [class.dark:border-gray-700]="!selectedIds().has(img.id)" [class.opacity-40]="deletingIds().has(img.id)"
+      [class.pointer-events-none]="deletingIds().has(img.id)">
+
+      <!-- Overlay de Eliminación en Progreso con Spinner -->
+      @if (deletingIds().has(img.id)) {
+      <div
+        class="absolute inset-0 z-30 bg-black/60 dark:bg-black/75 backdrop-blur-[2px] flex flex-col items-center justify-center gap-1.5 text-white select-none">
+        <svg lucideLoaderCircle size="24" class="animate-spin text-red-400"></svg>
+        <span class="text-[11px] font-semibold text-white tracking-wide">Eliminando...</span>
+      </div>
+      }
+
+      <!-- Preview Personalizado de Alto Rendimiento 1:1 con el Cursor -->
+      <ng-template cdkDragPreview [matchSize]="true">
+        <div
+          class="w-full h-full rounded-xl overflow-hidden bg-white dark:bg-gray-900 border-2 border-brand-500 shadow-2xl flex flex-col pointer-events-none select-none">
+          <div
+            class="relative aspect-square bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
+            <img [src]="img.url | clUrl:'card'" [alt]="img.title || 'Foto'" class="w-full h-full object-cover" />
+          </div>
+          <div
+            class="px-2.5 py-1.5 bg-white dark:bg-gray-900 flex items-center justify-between text-xs border-t border-gray-100 dark:border-gray-800">
+            <span class="font-bold text-brand-600 dark:text-brand-400">#{{ $index + 1 }}</span>
+            <span class="text-gray-500 dark:text-gray-400 text-[11px]">{{ img.width }}x{{ img.height }} px</span>
+          </div>
+        </div>
+      </ng-template>
+
+      <!-- Contenedor de la Imagen con Aspect Ratio Cuadrado -->
+      <div role="button" tabindex="0" aria-label="Ver imagen ampliada" (keydown.enter)="openPreview(img)"
+        (keydown.space)="openPreview(img); $event.preventDefault()"
+        class="relative aspect-square bg-gray-100 dark:bg-gray-800 flex items-center justify-center overflow-hidden cursor-pointer"
+        (click)="openPreview(img)">
+        <img [src]="img.url | clUrl:'card'" [alt]="img.title || 'Fotografía'"
+          class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" loading="lazy" />
+
+        <!-- Checkbox de Selección en Esquina Superior Izquierda -->
+        <button type="button" (click)="toggleSelect(img.id, $event)"
+          [attr.aria-label]="selectedIds().has(img.id) ? 'Deseleccionar fotografía' : 'Seleccionar fotografía'"
+          class="absolute top-2 left-2 z-20 w-6 h-6 rounded-md flex items-center justify-center transition-all cursor-pointer shadow-xs"
+          [class.bg-brand-600]="selectedIds().has(img.id)" [class.text-white]="selectedIds().has(img.id)"
+          [class.border-brand-600]="selectedIds().has(img.id)" [class.bg-white]="!selectedIds().has(img.id)"
+          [class.dark:bg-gray-900]="!selectedIds().has(img.id)" [class.border]="!selectedIds().has(img.id)"
+          [class.border-gray-300]="!selectedIds().has(img.id)" [class.dark:border-gray-600]="!selectedIds().has(img.id)"
+          [class.opacity-0]="!selectedIds().has(img.id) && selectedCount() === 0"
+          [class.group-hover:opacity-100]="!selectedIds().has(img.id)" pTooltip="Seleccionar foto"
+          tooltipPosition="top">
+          @if (selectedIds().has(img.id)) {
+          <svg lucideCheck size="13" class="stroke-3"></svg>
+          }
+        </button>
+
+        <!-- Slot de Badge Personalizado (por ejemplo: Portada Oficial o Privada/Pública) -->
+        @if (cardBadgeTemplate()) {
+        <div class="absolute top-2 left-10 z-10 flex items-center gap-1">
+          <ng-container *ngTemplateOutlet="cardBadgeTemplate()!; context: { $implicit: img, index: $index }">
+          </ng-container>
+        </div>
+        }
+
+        <!-- Botones de Acción en Hover (Grip Reordenar + Zoom + Eliminar) -->
+        <div
+          class="absolute top-2 right-2 flex items-center gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+          @if (canReorder()) {
+          <button type="button" cdkDragHandle aria-label="Arrastrar para reordenar fotografía"
+            class="w-7 h-7 rounded-md bg-black/60 hover:bg-black/80 text-white flex items-center justify-center cursor-grab active:cursor-grabbing transition-colors"
+            pTooltip="Arrastrar para reordenar" tooltipPosition="bottom" (click)="$event.stopPropagation()">
+            <svg lucideGripVertical size="13"></svg>
+          </button>
+          }
+          <button type="button"
+            class="w-7 h-7 rounded-md bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-colors cursor-pointer"
+            pTooltip="Ampliar imagen" tooltipPosition="bottom" (click)="$event.stopPropagation(); openPreview(img)">
+            <svg lucideEye size="13"></svg>
+          </button>
+          @if (canDelete()) {
+          <button type="button"
+            class="w-7 h-7 rounded-md bg-red-600/80 hover:bg-red-600 text-white flex items-center justify-center transition-colors cursor-pointer"
+            pTooltip="Eliminar fotografía" tooltipPosition="bottom"
+            (click)="$event.stopPropagation(); confirmDeleteSingle(img)">
+            <svg lucideTrash2 size="13"></svg>
+          </button>
+          }
+        </div>
+      </div>
+
+      <!-- Footer de la Tarjeta: Posición (#1, #2...), Dimensiones y Slot de Acción -->
+      <div
+        class="p-2 border-t border-gray-100 dark:border-gray-800 flex flex-col gap-1.5 flex-1 justify-between bg-white dark:bg-gray-900">
+        <div class="flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400 font-mono">
+          <div class="flex items-center gap-1.5 font-medium text-gray-600 dark:text-gray-300">
+            <span
+              class="px-1.5 py-0.2 rounded bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-mono text-[10px] font-bold text-gray-600 dark:text-gray-400">
+              #{{ $index + 1 }}
+            </span>
+            <span>
+              {{ img.width && img.height ? (img.width + 'x' + img.height) : (img.format ? (img.format | uppercase) :
+              'WEBP') }}
+            </span>
+          </div>
+          <span>{{ formatBytes(img.file_size_bytes) }}</span>
+        </div>
+
+        <!-- Slot de Acción Específico de Negocio -->
+        @if (cardActionTemplate()) {
+        <div class="w-full">
+          <ng-container *ngTemplateOutlet="cardActionTemplate()!; context: { $implicit: img, index: $index }">
+          </ng-container>
+        </div>
         }
       </div>
+
+    </div>
     }
+
+    <!-- Tarjetas Placeholder para Nuevas Fotografías en Subida (Fondo Plomo + Animación de Carga) -->
+    @for (temp of activePlaceholders(); track temp.id; let idx = $index) {
+    <div
+      class="group relative rounded-xl border border-dashed border-gray-300 dark:border-gray-700 overflow-hidden bg-gray-100/90 dark:bg-gray-855 shadow-xs flex flex-col select-none animate-pulse-subtle">
+
+      <!-- Contenedor Cuadrado con Preview y Overlay de Carga -->
+      <div class="relative aspect-square bg-gray-200/80 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
+        @if (temp.previewUrl) {
+        <img [src]="temp.previewUrl" [alt]="temp.fileName"
+          class="w-full h-full object-cover opacity-35 filter grayscale-30" />
+        }
+
+        <!-- Overlay con Animación de Carga -->
+        <div
+          class="absolute inset-0 z-20 bg-gray-900/50 dark:bg-black/65 backdrop-blur-[1px] flex flex-col items-center justify-center gap-2 p-2.5 text-center text-white">
+          <div class="relative flex items-center justify-center">
+            <span class="w-8 h-8 rounded-full border-2 border-brand-400/30 animate-ping absolute"></span>
+            <svg lucideLoaderCircle size="24" class="animate-spin text-brand-400"></svg>
+          </div>
+          <div class="flex flex-col items-center gap-0.5">
+            <span class="text-[11px] font-semibold text-white tracking-wide">
+              @if (uploadProgress() < 100) {
+              Subiendo...
+              } @else {
+              Optimizando...
+              }
+            </span>
+            <span class="text-[10px] text-gray-300 font-mono">
+              @if (uploadProgress() < 100) {
+              {{ uploadProgress() }}%
+              } @else {
+              WebP Cloudinary
+              }
+            </span>
+          </div>
+        </div>
+
+        <!-- Indicador de Orden en Esquina Superior Izquierda -->
+        <div class="absolute top-2 left-2 z-20">
+          <span
+            class="px-1.5 py-0.5 rounded-md font-mono text-[10px] font-bold bg-black/60 text-white backdrop-blur-xs border border-white/10">
+            #{{ items().length + idx + 1 }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Footer de la Tarjeta Placeholder -->
+      <div
+        class="p-2 border-t border-gray-200 dark:border-gray-800 flex flex-col gap-1.5 flex-1 justify-between bg-white/70 dark:bg-gray-900/70">
+        <div class="flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400 font-mono">
+          <span class="truncate max-w-[100px]" [title]="temp.fileName">{{ temp.fileName }}</span>
+          <span>{{ formatBytes(temp.fileSizeBytes) }}</span>
+        </div>
+
+        <!-- Mini Barra de Progreso Integrada -->
+        <div class="w-full h-1 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+          <div class="h-full bg-brand-500 rounded-full transition-all duration-300"
+            [class.animate-pulse]="uploadProgress() === 100"
+            [style.width.%]="uploadProgress() < 100 ? uploadProgress() : 100">
+          </div>
+        </div>
+      </div>
+
+    </div>
+    }
+
+    <!-- Fallback si se está subiendo y no hay placeholders locales registrados -->
+    @if (isUploading() && activePlaceholders().length === 0) {
+    <div
+      class="group relative rounded-xl border border-dashed border-gray-300 dark:border-gray-700 overflow-hidden bg-gray-100/90 dark:bg-gray-855 shadow-xs flex flex-col select-none animate-pulse-subtle">
+      <div class="relative aspect-square bg-gray-200/80 dark:bg-gray-800 flex items-center justify-center overflow-hidden">
+        <div
+          class="absolute inset-0 z-20 bg-gray-900/50 dark:bg-black/65 backdrop-blur-[1px] flex flex-col items-center justify-center gap-2 p-2.5 text-center text-white">
+          <div class="relative flex items-center justify-center">
+            <span class="w-8 h-8 rounded-full border-2 border-brand-400/30 animate-ping absolute"></span>
+            <svg lucideLoaderCircle size="24" class="animate-spin text-brand-400"></svg>
+          </div>
+          <div class="flex flex-col items-center gap-0.5">
+            <span class="text-[11px] font-semibold text-white tracking-wide">
+              @if (uploadProgress() < 100) { Subiendo... } @else { Optimizando... }
+            </span>
+            <span class="text-[10px] text-gray-300 font-mono">
+              @if (uploadProgress() < 100) { {{ uploadProgress() }}% } @else { WebP Cloudinary }
+            </span>
+          </div>
+        </div>
+        <div class="absolute top-2 left-2 z-20">
+          <span
+            class="px-1.5 py-0.5 rounded-md font-mono text-[10px] font-bold bg-black/60 text-white backdrop-blur-xs border border-white/10">
+            #{{ items().length + 1 }}
+          </span>
+        </div>
+      </div>
+      <div
+        class="p-2 border-t border-gray-200 dark:border-gray-800 flex flex-col gap-1.5 flex-1 justify-between bg-white/70 dark:bg-gray-900/70">
+        <div class="flex items-center justify-between text-[10px] text-gray-500 dark:text-gray-400 font-mono">
+          <span>Procesando...</span>
+          <span>WebP</span>
+        </div>
+        <div class="w-full h-1 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+          <div class="h-full bg-brand-500 rounded-full transition-all duration-300"
+            [style.width.%]="uploadProgress() < 100 ? uploadProgress() : 100">
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+  }
   }
 
 </div>
 
 <!-- Diálogo Modal de Vista Previa en Alta Resolución -->
-<p-dialog
-  appendTo="body"
-  [visible]="previewImage() !== null"
-  (visibleChange)="onPreviewVisibleChange($event)"
-  [modal]="true"
-  [dismissableMask]="true"
-  [style]="{ width: '48rem', maxWidth: '95vw' }"
+<p-dialog appendTo="body" [visible]="previewImage() !== null" (visibleChange)="onPreviewVisibleChange($event)"
+  [modal]="true" [dismissableMask]="true" [style]="{ width: '48rem', maxWidth: '95vw' }"
   header="Vista Previa de Fotografía">
 
   @if (previewImage(); as pImg) {
-    <div class="flex flex-col gap-3">
-      <!-- Contenedor con altura mínima fija para evitar saltos de maquetación (CLS) mientras carga -->
-      <div class="relative w-full min-h-[320px] sm:min-h-[420px] max-h-[70vh] bg-gray-100/90 dark:bg-gray-900/80 rounded-xl overflow-hidden flex items-center justify-center p-2 border border-gray-200/50 dark:border-gray-800">
+  <div class="flex flex-col gap-3">
+    <!-- Contenedor con altura mínima fija para evitar saltos de maquetación (CLS) mientras carga -->
+    <div
+      class="relative w-full min-h-[320px] sm:min-h-105 max-h-[70vh] bg-gray-100/90 dark:bg-gray-900/80 rounded-xl overflow-hidden flex items-center justify-center p-2 border border-gray-200/50 dark:border-gray-800">
 
-        <!-- Indicador de Carga Animado -->
-        @if (isModalImageLoading()) {
-          <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-50/85 dark:bg-gray-900/85 backdrop-blur-2xs z-10 transition-opacity">
-            <div class="relative flex items-center justify-center">
-              <span class="w-12 h-12 rounded-full border-2 border-brand-500/20 animate-ping absolute"></span>
-              <svg lucideLoaderCircle size="34" class="animate-spin text-brand-600 dark:text-brand-400"></svg>
-            </div>
-            <div class="flex flex-col items-center gap-1 text-center px-4">
-              <span class="text-xs font-semibold text-gray-700 dark:text-gray-200">
-                Cargando fotografía en alta resolución...
-              </span>
-              <span class="text-[11px] text-gray-500 dark:text-gray-400 font-mono">
-                {{ pImg.width && pImg.height ? (pImg.width + 'x' + pImg.height + ' px') : '' }}
-                {{ pImg.width && pImg.format ? '·' : '' }}
-                {{ (pImg.format || 'webp') | uppercase }}
-              </span>
-            </div>
-          </div>
-        }
-
-        <!-- Estado de Error al Cargar Imagen -->
-        @if (hasModalImageError()) {
-          <div class="absolute inset-0 flex flex-col items-center justify-center gap-2.5 p-6 text-center z-10 bg-gray-50/95 dark:bg-gray-900/95">
-            <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/60 flex items-center justify-center text-red-600 dark:text-red-400">
-              <svg lucideImageOff size="22"></svg>
-            </div>
-            <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
-              No se pudo cargar la vista previa de la fotografía
-            </span>
-            <span class="text-[11px] text-gray-500 dark:text-gray-400 max-w-sm">
-              Es posible que el recurso esté optimizándose en la nube o que la conexión sea lenta.
-            </span>
-            <a
-              [href]="pImg.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-600 text-white hover:bg-brand-700 transition-colors mt-1 shadow-2xs">
-              <svg lucideExternalLink size="13"></svg>
-              <span>Abrir archivo en pestaña nueva</span>
-            </a>
-          </div>
-        }
-
-        <!-- Fotografía con Transición Suave (Fade-In) -->
-        <img
-          [src]="pImg.url | clUrl:'modal'"
-          [alt]="pImg.title || 'Vista previa'"
-          class="max-h-[65vh] max-w-full object-contain rounded-lg transition-all duration-300"
-          [class.opacity-0]="isModalImageLoading() || hasModalImageError()"
-          [class.opacity-100]="!isModalImageLoading() && !hasModalImageError()"
-          [class.scale-95]="isModalImageLoading()"
-          [class.scale-100]="!isModalImageLoading()"
-          (load)="onModalImageLoaded()"
-          (error)="onModalImageError()" />
-      </div>
-
-      <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-xs">
-        <div class="flex items-center gap-2">
-          <span class="text-gray-500 dark:text-gray-400 font-mono">
-            {{ pImg.width }}x{{ pImg.height }} px · {{ (pImg.format || 'webp') | uppercase }} · {{ formatBytes(pImg.file_size_bytes) }}
+      <!-- Indicador de Carga Animado -->
+      @if (isModalImageLoading()) {
+      <div
+        class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gray-50/85 dark:bg-gray-900/85 backdrop-blur-2xs z-10 transition-opacity">
+        <div class="relative flex items-center justify-center">
+          <span class="w-12 h-12 rounded-full border-2 border-brand-500/20 animate-ping absolute"></span>
+          <svg lucideLoaderCircle size="34" class="animate-spin text-brand-600 dark:text-brand-400"></svg>
+        </div>
+        <div class="flex flex-col items-center gap-1 text-center px-4">
+          <span class="text-xs font-semibold text-gray-700 dark:text-gray-200">
+            Cargando fotografía en alta resolución...
+          </span>
+          <span class="text-[11px] text-gray-500 dark:text-gray-400 font-mono">
+            {{ pImg.width && pImg.height ? (pImg.width + 'x' + pImg.height + ' px') : '' }}
+            {{ pImg.width && pImg.format ? '·' : '' }}
+            {{ (pImg.format || 'webp') | uppercase }}
           </span>
         </div>
+      </div>
+      }
 
-        <div class="flex items-center gap-2">
-          <!-- Slot de Acciones adicionales en el modal -->
-          @if (previewModalActionsTemplate()) {
-            <ng-container
-              *ngTemplateOutlet="previewModalActionsTemplate()!; context: { $implicit: pImg }">
-            </ng-container>
-          }
-
-          <p-button
-            label="Descargar"
-            icon="pi pi-download"
-            size="small"
-            severity="secondary"
-            [outlined]="true"
-            [loading]="isDownloadingImage()"
-            (click)="downloadSingleImage(pImg)">
-          </p-button>
-
-          <a
-            [href]="pImg.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 flex items-center transition-colors"
-            pTooltip="Abrir original en pestaña nueva"
-            tooltipPosition="bottom">
-            <svg lucideExternalLink size="14"></svg>
-          </a>
+      <!-- Estado de Error al Cargar Imagen -->
+      @if (hasModalImageError()) {
+      <div
+        class="absolute inset-0 flex flex-col items-center justify-center gap-2.5 p-6 text-center z-10 bg-gray-50/95 dark:bg-gray-900/95">
+        <div
+          class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/60 flex items-center justify-center text-red-600 dark:text-red-400">
+          <svg lucideImageOff size="22"></svg>
         </div>
+        <span class="text-xs font-semibold text-gray-800 dark:text-gray-200">
+          No se pudo cargar la vista previa de la fotografía
+        </span>
+        <span class="text-[11px] text-gray-500 dark:text-gray-400 max-w-sm">
+          Es posible que el recurso esté optimizándose en la nube o que la conexión sea lenta.
+        </span>
+        <a [href]="pImg.url" target="_blank" rel="noopener noreferrer"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-brand-600 text-white hover:bg-brand-700 transition-colors mt-1 shadow-2xs">
+          <svg lucideExternalLink size="13"></svg>
+          <span>Abrir archivo en pestaña nueva</span>
+        </a>
+      </div>
+      }
+
+      <!-- Fotografía con Transición Suave (Fade-In) -->
+      <img [src]="pImg.url | clUrl:'modal'" [alt]="pImg.title || 'Vista previa'"
+        class="max-h-[65vh] max-w-full object-contain rounded-lg transition-all duration-300"
+        [class.opacity-0]="isModalImageLoading() || hasModalImageError()"
+        [class.opacity-100]="!isModalImageLoading() && !hasModalImageError()" [class.scale-95]="isModalImageLoading()"
+        [class.scale-100]="!isModalImageLoading()" (load)="onModalImageLoaded()" (error)="onModalImageError()" />
+    </div>
+
+    <div
+      class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-xs">
+      <div class="flex items-center gap-2">
+        <span class="text-gray-500 dark:text-gray-400 font-mono">
+          {{ pImg.width }}x{{ pImg.height }} px · {{ (pImg.format || 'webp') | uppercase }} · {{
+          formatBytes(pImg.file_size_bytes) }}
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Slot de Acciones adicionales en el modal -->
+        @if (previewModalActionsTemplate()) {
+        <ng-container *ngTemplateOutlet="previewModalActionsTemplate()!; context: { $implicit: pImg }">
+        </ng-container>
+        }
+
+        <p-button label="Descargar" icon="pi pi-download" size="small" severity="secondary" [outlined]="true"
+          [loading]="isDownloadingImage()" (click)="downloadSingleImage(pImg)">
+        </p-button>
+
+        <a [href]="pImg.url" target="_blank" rel="noopener noreferrer"
+          class="p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 flex items-center transition-colors"
+          pTooltip="Abrir original en pestaña nueva" tooltipPosition="bottom">
+          <svg lucideExternalLink size="14"></svg>
+        </a>
       </div>
     </div>
+  </div>
   }
 </p-dialog>

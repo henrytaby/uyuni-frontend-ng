@@ -158,4 +158,52 @@ describe('MediaGalleryComponent', () => {
     expect(component.selectedCount()).toBe(0);
     expect(component.selectedIds().size).toBe(0);
   });
+
+  it('debe gestionar placeholders optimistas con vista previa durante la subida de fotos', () => {
+    const file = new File(['dummy content'], 'test-image.jpg', { type: 'image/jpeg' });
+    const originalCreateObjectURL = URL.createObjectURL;
+    const originalRevokeObjectURL = URL.revokeObjectURL;
+
+    const mockCreateObjectURL = jest.fn().mockReturnValue('blob:http://localhost/test-uuid');
+    const mockRevokeObjectURL = jest.fn();
+
+    URL.createObjectURL = mockCreateObjectURL;
+    URL.revokeObjectURL = mockRevokeObjectURL;
+
+    const emitSpy = jest.spyOn(component.filesDropped, 'emit');
+
+    const fakeEvent = {
+      preventDefault: jest.fn(),
+      stopPropagation: jest.fn(),
+      dataTransfer: {
+        files: [file]
+      }
+    } as unknown as DragEvent;
+    component.onDrop(fakeEvent);
+
+    expect(emitSpy).toHaveBeenCalledWith([file]);
+    expect(component.uploadingPlaceholders().length).toBe(1);
+    expect(component.uploadingPlaceholders()[0].fileName).toBe('test-image.jpg');
+
+    // Sin isUploading=true, activePlaceholders es vacío
+    expect(component.activePlaceholders().length).toBe(0);
+
+    // Cuando el contenedor activa isUploading=true
+    fixture.componentRef.setInput('isUploading', true);
+    fixture.detectChanges();
+
+    expect(component.activePlaceholders().length).toBe(1);
+    expect(component.uploadingCount()).toBe(1);
+
+    // Cuando la subida finaliza o se cancela
+    fixture.componentRef.setInput('isUploading', false);
+    fixture.detectChanges();
+
+    expect(component.activePlaceholders().length).toBe(0);
+    expect(component.uploadingPlaceholders().length).toBe(0);
+    expect(mockRevokeObjectURL).toHaveBeenCalled();
+
+    URL.createObjectURL = originalCreateObjectURL;
+    URL.revokeObjectURL = originalRevokeObjectURL;
+  });
 });

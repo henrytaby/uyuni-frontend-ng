@@ -19,3 +19,11 @@ export interface MediaGalleryReorderEvent<T extends MediaGalleryItem = MediaGall
   currentIndex: number;
   items: T[];
 }
+
+export interface UploadingMediaPlaceholder {
+  id: string;
+  file: File;
+  previewUrl: string;
+  fileName: string;
+  fileSizeBytes: number;
+}

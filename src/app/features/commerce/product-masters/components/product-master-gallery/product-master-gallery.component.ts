@@ -60,9 +60,9 @@ export class ProductMasterGalleryComponent {
   readonly isUploadingImages = signal<boolean>(false);
   readonly uploadProgress = signal<number>(0);
 
-  loadGallery(masterId: string): void {
+  loadGallery(masterId: string, silent = false): void {
     if (!masterId) return;
-    this.isLoadingImages.set(true);
+    if (!silent) this.isLoadingImages.set(true);
     this.productMasterService.getImages(masterId, 'CATALOG').subscribe({
       next: imgs => {
         const catalogImgs = imgs.filter(
@@ -129,12 +129,17 @@ export class ProductMasterGalleryComponent {
             detail: `Se subieron ${newImages.length} fotografía(s) al catálogo exitosamente.`
           });
           if (newImages.length > 0) {
-            this.images.set(newImages);
-            const cover = newImages.find(i => i.is_cover);
-            this.coverImageChanged.emit({ masterId: prodId, coverUrl: cover ? cover.url : null });
-          } else {
-            this.loadGallery(prodId);
+            this.images.update(current => {
+              const existingIds = new Set(current.map(i => i.id));
+              const uniqueNew = newImages.filter(i => !existingIds.has(i.id));
+              return [...current, ...uniqueNew];
+            });
+            const cover = this.images().find(i => i.is_cover);
+            if (cover) {
+              this.coverImageChanged.emit({ masterId: prodId, coverUrl: cover.url });
+            }
           }
+          this.loadGallery(prodId, true);
         }
       },
       error: err => {

@@ -19,27 +19,21 @@
       <!-- Selector de Vista: Tabla / Tarjetas -->
       <div
         class="inline-flex items-center p-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shrink-0">
-        <button
-          type="button"
-          (click)="setViewMode('table')"
+        <button type="button" (click)="setViewMode('table')"
           class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md transition-all cursor-pointer font-medium"
           [class]="viewMode() === 'table'
             ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-2xs font-semibold'
             : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
-          pTooltip="Vista Tabla Administrativa (ERP)"
-          tooltipPosition="bottom">
+          pTooltip="Vista Tabla Administrativa (ERP)" tooltipPosition="bottom">
           <svg lucideTable2 size="14"></svg>
           <span class="hidden md:inline">Tabla</span>
         </button>
-        <button
-          type="button"
-          (click)="setViewMode('cards')"
+        <button type="button" (click)="setViewMode('cards')"
           class="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md transition-all cursor-pointer font-medium"
           [class]="viewMode() === 'cards'
             ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-2xs font-semibold'
             : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'"
-          pTooltip="Vista Tarjetas de Existencias"
-          tooltipPosition="bottom">
+          pTooltip="Vista Tarjetas de Existencias" tooltipPosition="bottom">
           <svg lucideLayoutGrid size="14"></svg>
           <span class="hidden md:inline">Tarjetas</span>
         </button>
@@ -48,33 +42,19 @@
       <!-- Buscador rápido -->
       <p-iconfield iconPosition="left" class="w-full sm:w-60">
         <p-inputicon class="pi pi-search"></p-inputicon>
-        <input
-          type="text"
-          pInputText
-          placeholder="Buscar por #, lote, producto..."
-          class="w-full text-xs"
+        <input type="text" pInputText placeholder="Buscar por #, lote, producto..." class="w-full text-xs"
           (input)="onSearch($event)" />
       </p-iconfield>
 
       <!-- Botón Filtros con Badge -->
-      <p-button
-        [label]="activeFilterCount() > 0 ? 'Filtros (' + activeFilterCount() + ')' : 'Filtros'"
-        icon="pi pi-filter"
-        size="small"
-        [severity]="activeFilterCount() > 0 ? 'primary' : 'secondary'"
-        [outlined]="activeFilterCount() === 0"
-        (click)="openFilterDrawer()"
-        class="shrink-0"
+      <p-button [label]="activeFilterCount() > 0 ? 'Filtros (' + activeFilterCount() + ')' : 'Filtros'"
+        icon="pi pi-filter" size="small" [severity]="activeFilterCount() > 0 ? 'primary' : 'secondary'"
+        [outlined]="activeFilterCount() === 0" (click)="openFilterDrawer()" class="shrink-0"
         pTooltip="Filtros avanzados de existencias">
       </p-button>
 
       <!-- Botón Nuevo Producto -->
-      <p-button
-        label="Nuevo Producto"
-        icon="pi pi-plus"
-        size="small"
-        severity="primary"
-        class="shrink-0"
+      <p-button label="Nuevo Producto" icon="pi pi-plus" size="small" severity="primary" class="shrink-0"
         (click)="openCreateProduct()">
       </p-button>
     </div>
@@ -94,10 +74,7 @@
     <div
       class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 font-medium">
       <span>Caja: {{ getBatchLabel(selectedBatch()) }}</span>
-      <button
-        type="button"
-        class="hover:text-red-500 cursor-pointer p-0.5"
-        (click)="clearBatchFilter()"
+      <button type="button" class="hover:text-red-500 cursor-pointer p-0.5" (click)="clearBatchFilter()"
         pTooltip="Quitar filtro de lote">
         <svg lucideX size="12"></svg>
       </button>
@@ -109,10 +86,7 @@
     <div
       class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-medium">
       <span>Ficha: {{ getMasterProductLabel(selectedMasterProduct()) }}</span>
-      <button
-        type="button"
-        class="hover:text-red-500 cursor-pointer p-0.5"
-        (click)="clearMasterFilter()"
+      <button type="button" class="hover:text-red-500 cursor-pointer p-0.5" (click)="clearMasterFilter()"
         pTooltip="Quitar filtro de ficha">
         <svg lucideX size="12"></svg>
       </button>
@@ -124,10 +98,7 @@
     <div
       class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-medium">
       <span>Estado: {{ getStatusLabel(selectedStatus()!) }}</span>
-      <button
-        type="button"
-        class="hover:text-red-500 cursor-pointer p-0.5"
-        (click)="clearStatusFilter()"
+      <button type="button" class="hover:text-red-500 cursor-pointer p-0.5" (click)="clearStatusFilter()"
         pTooltip="Quitar filtro de estado">
         <svg lucideX size="12"></svg>
       </button>
@@ -135,8 +106,7 @@
     }
 
     <!-- Botón Limpiar Todo -->
-    <button
-      type="button"
+    <button type="button"
       class="text-xs text-gray-500 hover:text-red-600 dark:hover:text-red-400 font-semibold underline ml-auto cursor-pointer"
       (click)="clearFilters()">
       Limpiar todos
@@ -146,21 +116,10 @@
 
   <!-- VISTA 1: TABLA ADMINISTRATIVA COMPUESTA (ERP DE ALTA DENSIDAD) -->
   @if (viewMode() === 'table') {
-  <p-table
-    [value]="productList()"
-    [lazy]="true"
-    (onLazyLoad)="loadData($event)"
-    [paginator]="true"
-    [rows]="rows()"
-    [rowHover]="true"
-    [first]="first()"
-    [totalRecords]="totalRecords()"
-    [loading]="isLoading()"
-    [showCurrentPageReport]="true"
-    [rowsPerPageOptions]="[15, 20, 30, 50]"
-    paginatorStyleClass="justify-content-end"
-    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} unidades"
-    class="text-sm dense-table">
+  <p-table [value]="productList()" [lazy]="true" (onLazyLoad)="loadData($event)" [paginator]="true" [rows]="rows()"
+    [rowHover]="true" [first]="first()" [totalRecords]="totalRecords()" [loading]="isLoading()"
+    [showCurrentPageReport]="true" [rowsPerPageOptions]="[15, 20, 30, 50]" paginatorStyleClass="justify-content-end"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} unidades" class="text-sm dense-table">
 
     <ng-template pTemplate="header">
       <tr>
@@ -220,37 +179,35 @@
       <tr>
         <!-- Columna 1: Producto e Identificación (Miniatura + # Ítem + Nombre multilínea + Variante/Categoría) -->
         <td class="vertical-align-middle max-w-xs md:max-w-sm xl:max-w-md">
-          <button
-            type="button"
+          <button type="button"
             class="flex items-start gap-2.5 cursor-pointer group text-left bg-transparent border-none p-0 w-full"
             (click)="openEditProduct(prod)">
-            
+
             <!-- Miniatura de Imagen en Cloudinary o Avatar con Iniciales -->
             @if (prod.image_url) {
-              <img
-                [src]="prod.image_url | clUrl:'thumb'"
-                [alt]="prod.name"
-                class="w-11 h-11 rounded-lg object-cover border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 shrink-0 shadow-2xs group-hover:scale-105 transition-transform mt-0.5"
-                loading="lazy" />
+            <img [src]="prod.image_url | clUrl:'thumb'" [alt]="prod.name"
+              class="w-15 h-15 rounded-lg object-cover border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 shrink-0 shadow-2xs group-hover:scale-105 transition-transform mt-0.5"
+              loading="lazy" />
             } @else {
-              <div
-                class="w-11 h-11 rounded-lg bg-brand-50/60 dark:bg-brand-950/40 border border-brand-200/80 dark:border-brand-800/80 flex flex-col items-center justify-center text-brand-700 dark:text-brand-300 shrink-0 font-bold text-xs mt-0.5 shadow-2xs group-hover:scale-105 transition-transform">
-                {{ getInitials(prod.name) }}
-              </div>
+            <div
+              class="w-15 h-15 rounded-lg bg-brand-50/60 dark:bg-brand-950/40 border border-brand-200/80 dark:border-brand-800/80 flex flex-col items-center justify-center text-brand-700 dark:text-brand-300 shrink-0 font-bold text-xs mt-0.5 shadow-2xs group-hover:scale-105 transition-transform">
+              {{ getInitials(prod.name) }}
+            </div>
             }
 
             <div class="flex flex-col min-w-0 flex-1">
               <!-- # Ítem y Código Maestro -->
               <div class="flex items-center gap-1.5 leading-none mb-0.5 flex-wrap">
                 @if (prod.item_number || prod.sheet_row_id) {
-                  <span class="font-mono font-bold text-xs text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">
-                    #{{ prod.item_number || prod.sheet_row_id }}
-                  </span>
+                <span
+                  class="font-mono font-bold text-xs text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">
+                  #{{ prod.item_number || prod.sheet_row_id }}
+                </span>
                 }
                 @if (prod.master_code) {
-                  <span class="font-mono text-gray-400 text-[11px] truncate" [title]="prod.master_code">
-                    {{ prod.master_code }}
-                  </span>
+                <span class="font-mono text-gray-400 text-[11px] truncate" [title]="prod.master_code">
+                  {{ prod.master_code }}
+                </span>
                 }
               </div>
 
@@ -264,16 +221,16 @@
               <!-- Detalles: Variante y Categoría -->
               <div class="text-gray-500 dark:text-gray-400 text-xs flex items-center gap-2 mt-0.5 flex-wrap">
                 @if (prod.variant_name) {
-                  <span class="text-brand-600 dark:text-brand-400 italic text-[11px] truncate flex items-center gap-0.5">
-                    <span>🏷️</span>
-                    <span>{{ prod.variant_name }}</span>
-                  </span>
+                <span class="text-brand-600 dark:text-brand-400 italic text-[11px] truncate flex items-center gap-0.5">
+                  <span>🏷️</span>
+                  <span>{{ prod.variant_name }}</span>
+                </span>
                 }
                 @if (prod.category_name) {
-                  <span class="text-gray-400 dark:text-gray-500 text-[11px] truncate flex items-center gap-0.5">
-                    <span>📁</span>
-                    <span>{{ prod.category_name }}</span>
-                  </span>
+                <span class="text-gray-400 dark:text-gray-500 text-[11px] truncate flex items-center gap-0.5">
+                  <span>📁</span>
+                  <span>{{ prod.category_name }}</span>
+                </span>
                 }
               </div>
             </div>
@@ -284,18 +241,19 @@
         <td class="vertical-align-middle">
           <div class="flex flex-col">
             @if (prod.batch_code || prod.batch_name) {
-              <span
-                class="inline-flex items-center gap-1 font-mono font-bold text-xs px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 w-fit">
-                <svg lucideBoxes size="12" class="text-amber-600 dark:text-amber-400 shrink-0"></svg>
-                <span>{{ prod.batch_code || prod.batch_name }}</span>
-              </span>
-              @if (hasDistinctBatchName(prod)) {
-                <span class="text-[11px] text-gray-500 dark:text-gray-400 truncate max-w-36 mt-0.5" [title]="prod.batch_name">
-                  {{ prod.batch_name }}
-                </span>
-              }
+            <span
+              class="inline-flex items-center gap-1 font-mono font-bold text-xs px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 w-fit">
+              <svg lucideBoxes size="12" class="text-amber-600 dark:text-amber-400 shrink-0"></svg>
+              <span>{{ prod.batch_code || prod.batch_name }}</span>
+            </span>
+            @if (hasDistinctBatchName(prod)) {
+            <span class="text-[11px] text-gray-500 dark:text-gray-400 truncate max-w-36 mt-0.5"
+              [title]="prod.batch_name">
+              {{ prod.batch_name }}
+            </span>
+            }
             } @else {
-              <span class="text-xs text-gray-400 italic">Sin lote asignado</span>
+            <span class="text-xs text-gray-400 italic">Sin lote asignado</span>
             }
           </div>
         </td>
@@ -316,21 +274,22 @@
             <!-- Margen de Rebaja Disponible -->
             <div class="text-[10px] mt-0.5">
               @if (getDiscountMargin(prod) > 0) {
-                <span class="text-amber-600 dark:text-amber-500 font-medium">
-                  (Rebaja: hasta {{ getDiscountMargin(prod) | number:'1.0-0' }} Bs)
-                </span>
+              <span class="text-amber-600 dark:text-amber-500 font-medium">
+                (Rebaja: hasta {{ getDiscountMargin(prod) | number:'1.0-0' }} Bs)
+              </span>
               } @else {
-                <span class="inline-flex px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 font-sans font-medium">
-                  Precio Fijo
-                </span>
+              <span
+                class="inline-flex px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 font-sans font-medium">
+                Precio Fijo
+              </span>
               }
             </div>
 
             <!-- Precio Referencial de Mercado -->
             @if (prod.official_price && prod.official_price !== prod.published_price) {
-              <span class="text-[10px] text-gray-400 mt-0.5">
-                P. Mercado: Bs. {{ prod.official_price | number:'1.0-0' }}
-              </span>
+            <span class="text-[10px] text-gray-400 mt-0.5">
+              P. Mercado: Bs. {{ prod.official_price | number:'1.0-0' }}
+            </span>
             }
           </div>
         </td>
@@ -340,24 +299,24 @@
           <div class="flex flex-col text-xs font-mono">
             <!-- Costo Unitario Real -->
             @if (prod.cost_price !== null && prod.cost_price !== undefined) {
-              <div class="flex items-center gap-1 text-gray-700 dark:text-gray-300">
-                <span class="text-gray-400 text-[11px]">Costo:</span>
-                <span class="font-bold">Bs. {{ prod.cost_price | number:'1.2-2' }}</span>
-              </div>
+            <div class="flex items-center gap-1 text-gray-700 dark:text-gray-300">
+              <span class="text-gray-400 text-[11px]">Costo:</span>
+              <span class="font-bold">Bs. {{ prod.cost_price | number:'1.2-2' }}</span>
+            </div>
             } @else {
-              <span class="inline-flex px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 text-[10px] font-sans w-fit">
-                Pendiente Prorrateo
-              </span>
+            <span
+              class="inline-flex px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 text-[10px] font-sans w-fit">
+              Pendiente Prorrateo
+            </span>
             }
 
             <!-- Ganancia Neta Proyectada -->
             @if (getEstimatedMargin(prod) !== null) {
-              <div
-                class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-xs mt-1"
-                [title]="'Ganancia neta proyectada por unidad vendida al precio publicado'">
-                <svg lucideTrendingUp size="13" class="shrink-0"></svg>
-                <span>+Bs. {{ getEstimatedMargin(prod)! | number:'1.2-2' }}</span>
-              </div>
+            <div class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-xs mt-1"
+              [title]="'Ganancia neta proyectada por unidad vendida al precio publicado'">
+              <svg lucideTrendingUp size="13" class="shrink-0"></svg>
+              <span>+Bs. {{ getEstimatedMargin(prod)! | number:'1.2-2' }}</span>
+            </div>
             }
           </div>
         </td>
@@ -367,13 +326,13 @@
           <div class="flex flex-col font-mono">
             <!-- Stock Disponible -->
             @if (prod.available_quantity > 0) {
-              <span class="font-bold text-emerald-600 dark:text-emerald-400 text-xs">
-                {{ prod.available_quantity }} unid. disp.
-              </span>
+            <span class="font-bold text-emerald-600 dark:text-emerald-400 text-xs">
+              {{ prod.available_quantity }} unid. disp.
+            </span>
             } @else {
-              <span class="font-medium text-rose-600 dark:text-rose-400 text-xs">
-                0 disp. (Agotado)
-              </span>
+            <span class="font-medium text-rose-600 dark:text-rose-400 text-xs">
+              0 disp. (Agotado)
+            </span>
             }
 
             <!-- Desglose Totales y Vendidos -->
@@ -383,13 +342,12 @@
 
             <!-- Merma -->
             @if (prod.merma_quantity > 0) {
-              <span
-                class="text-rose-600 dark:text-rose-400 font-medium text-[11px] flex items-center gap-1 cursor-help mt-0.5"
-                [pTooltip]="prod.defect_detail || 'Registrado con merma técnica'"
-                tooltipPosition="top">
-                <svg lucideCircleAlert size="11" class="shrink-0"></svg>
-                <span>Merma: {{ prod.merma_quantity }}</span>
-              </span>
+            <span
+              class="text-rose-600 dark:text-rose-400 font-medium text-[11px] flex items-center gap-1 cursor-help mt-0.5"
+              [pTooltip]="prod.defect_detail || 'Registrado con merma técnica'" tooltipPosition="top">
+              <svg lucideCircleAlert size="11" class="shrink-0"></svg>
+              <span>Merma: {{ prod.merma_quantity }}</span>
+            </span>
             }
           </div>
         </td>
@@ -398,60 +356,47 @@
         <td class="vertical-align-middle">
           <div class="flex flex-col gap-0.5 items-start">
             <!-- Estado Comercial Primario -->
-            <p-tag
-              [value]="getStatusLabel(prod.status)"
-              [severity]="getStatusSeverity(prod.status)"
-              [rounded]="true"
+            <p-tag [value]="getStatusLabel(prod.status)" [severity]="getStatusSeverity(prod.status)" [rounded]="true"
               class="text-[10px]">
             </p-tag>
 
             <!-- Condición Física y Revisión Técnica Sutil -->
             @if (prod.physical_condition === 'OPERATIONAL') {
-              <div class="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                @if (prod.is_reviewed) {
-                  <svg lucideCircleCheck size="13" class="text-emerald-600 dark:text-emerald-400 shrink-0"></svg>
-                  <span>Probado en mesa</span>
-                } @else {
-                  <span class="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 cursor-help" [pTooltip]="'Pendiente de prueba funcional'">
-                    <svg lucideCircleAlert size="13" class="shrink-0"></svg>
-                    <span>Sin probar</span>
-                  </span>
-                }
-              </div>
+            <div class="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+              @if (prod.is_reviewed) {
+              <svg lucideCircleCheck size="13" class="text-emerald-600 dark:text-emerald-400 shrink-0"></svg>
+              <span>Probado en mesa</span>
+              } @else {
+              <span class="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 cursor-help"
+                [pTooltip]="'Pendiente de prueba funcional'">
+                <svg lucideCircleAlert size="13" class="shrink-0"></svg>
+                <span>Sin probar</span>
+              </span>
+              }
+            </div>
             } @else {
-              <!-- Condición Especial (Incompleto / Para Repuestos / Merma) destacada -->
-              <div class="flex items-center gap-1 mt-0.5">
-                <p-tag
-                  [value]="getConditionLabel(prod.physical_condition)"
-                  [severity]="getConditionSeverity(prod.physical_condition)"
-                  [rounded]="true"
-                  class="text-[10px]">
-                </p-tag>
-                <span
-                  [pTooltip]="prod.is_reviewed ? 'Revisado y probado' : 'Pendiente de prueba'"
-                  class="cursor-help inline-flex items-center">
-                  @if (prod.is_reviewed) {
-                    <svg lucideCircleCheck size="13" class="text-emerald-600 dark:text-emerald-400"></svg>
-                  } @else {
-                    <svg lucideCircleAlert size="13" class="text-amber-500"></svg>
-                  }
-                </span>
-              </div>
+            <!-- Condición Especial (Incompleto / Para Repuestos / Merma) destacada -->
+            <div class="flex items-center gap-1 mt-0.5">
+              <p-tag [value]="getConditionLabel(prod.physical_condition)"
+                [severity]="getConditionSeverity(prod.physical_condition)" [rounded]="true" class="text-[10px]">
+              </p-tag>
+              <span [pTooltip]="prod.is_reviewed ? 'Revisado y probado' : 'Pendiente de prueba'"
+                class="cursor-help inline-flex items-center">
+                @if (prod.is_reviewed) {
+                <svg lucideCircleCheck size="13" class="text-emerald-600 dark:text-emerald-400"></svg>
+                } @else {
+                <svg lucideCircleAlert size="13" class="text-amber-500"></svg>
+                }
+              </span>
+            </div>
             }
           </div>
         </td>
 
         <!-- Columna 7: Acciones -->
         <td class="text-center vertical-align-middle">
-          <p-button
-            icon="pi pi-pencil"
-            [text]="true"
-            [rounded]="true"
-            size="small"
-            severity="secondary"
-            pTooltip="Editar Producto Físico"
-            tooltipPosition="left"
-            (click)="openEditProduct(prod)">
+          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" size="small" severity="secondary"
+            pTooltip="Editar Producto Físico" tooltipPosition="left" (click)="openEditProduct(prod)">
           </p-button>
         </td>
       </tr>
@@ -526,107 +471,125 @@
         <div class="flex gap-2.5">
           <!-- Miniatura Cloudinary o Avatar -->
           @if (prod.image_url) {
-            <img
-              [src]="prod.image_url | clUrl:'card'"
-              [alt]="prod.name"
-              class="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-700 bg-gray-50 shrink-0 shadow-2xs group-hover:scale-102 transition-transform"
-              loading="lazy" />
+          <img [src]="prod.image_url | clUrl:'card'" [alt]="prod.name"
+            class="w-20 h-20 rounded-lg object-cover border border-gray-200 dark:border-gray-700 bg-gray-50 shrink-0 shadow-2xs group-hover:scale-110 transition-transform"
+            loading="lazy" />
           } @else {
-            <div
-              class="w-16 h-16 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-brand-700 dark:text-brand-300 font-bold text-xs shrink-0 shadow-2xs">
-              {{ getInitials(prod.name) }}
-            </div>
+          <div
+            class="w-20 h-20 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-brand-700 dark:text-brand-300 font-bold text-xs shrink-0 shadow-2xs">
+            {{ getInitials(prod.name) }}
+          </div>
           }
 
           <div class="flex flex-col min-w-0 flex-1 justify-center">
-            <button
-              type="button"
-              (click)="openEditProduct(prod)"
+            <button type="button" (click)="openEditProduct(prod)"
               class="font-semibold text-xs text-gray-900 dark:text-gray-100 hover:text-brand-600 dark:hover:text-brand-400 text-left line-clamp-2 cursor-pointer transition-colors leading-snug wrap-break-word">
               {{ prod.name }}
             </button>
 
             <div class="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 flex-wrap">
               @if (prod.variant_name) {
-                <span class="font-medium text-brand-600 dark:text-brand-400">🏷️ {{ prod.variant_name }}</span>
+              <span class="font-medium text-brand-600 dark:text-brand-400">🏷️ {{ prod.variant_name }}</span>
               }
               @if (prod.category_name) {
-                <span>· 📁 {{ prod.category_name }}</span>
+              <span>· 📁 {{ prod.category_name }}</span>
               }
             </div>
           </div>
         </div>
 
         <!-- Grid de Precios y Margen Proyectado -->
-        <div class="grid grid-cols-3 gap-1.5 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 text-center font-mono">
-          <div class="flex flex-col">
-            <span class="text-[9px] uppercase tracking-wider text-gray-400 font-sans font-medium">Venta</span>
-            <span class="text-[11px] font-bold text-gray-900 dark:text-gray-100">
+        <div
+          class="grid grid-cols-3 gap-1.5 p-1.5 rounded-lg bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 text-center font-mono">
+          <div
+            class="flex flex-col p-1 rounded-md bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/50">
+            <span
+              class="text-[9px] uppercase tracking-wider font-bold text-emerald-700 dark:text-emerald-400 font-sans">Publicado</span>
+            <span class="text-xs font-extrabold text-emerald-800 dark:text-emerald-200">
               Bs. {{ prod.published_price | number:'1.0-0' }}
             </span>
           </div>
-          <div class="flex flex-col border-x border-gray-200 dark:border-gray-700 px-1">
-            <span class="text-[9px] uppercase tracking-wider text-amber-600 dark:text-amber-400 font-sans font-medium">Piso</span>
-            <span class="text-[11px] font-bold text-amber-700 dark:text-amber-300">
+          <div
+            class="flex flex-col p-1 rounded-md bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <span
+              class="text-[9px] uppercase tracking-wider font-bold text-amber-700 dark:text-amber-400 font-sans">Piso</span>
+            <span class="text-xs font-extrabold text-red-600 dark:text-red-400">
               Bs. {{ prod.minimum_price | number:'1.0-0' }}
             </span>
           </div>
-          <div class="flex flex-col">
-            <span class="text-[9px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-sans font-medium">Ganancia</span>
-            <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-              {{ getEstimatedMargin(prod) !== null ? ('+' + (getEstimatedMargin(prod)! | number:'1.0-0')) : 'S/C' }}
+          <div
+            class="flex flex-col p-1 rounded-md bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/50">
+            <span class="text-[9px] uppercase tracking-wider font-semibold text-gray-400 font-sans">Costo</span>
+            <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
+              Bs. {{ prod.cost_price | number:'1.2-2' }}
             </span>
           </div>
         </div>
 
-        <!-- Existencias desglosadas -->
-        <div class="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 px-1 font-mono">
-          <span>Tot: {{ prod.initial_quantity }} | Vend: {{ prod.sold_quantity }}</span>
-          @if (prod.merma_quantity > 0) {
+
+        <div class="grid grid-cols-3 p-1.5 items-center w-full">
+          <!-- 1. IZQUIERDA: Existencias -->
+          <div
+            class="flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400 px-1 font-mono justify-self-start">
+            <span>Total: {{ prod.initial_quantity }} | Vendido: {{ prod.sold_quantity }}</span>
+            @if (prod.merma_quantity > 0) {
             <span class="text-rose-500 font-semibold">⚠️ {{ prod.merma_quantity }} merma</span>
-          }
+            }
+          </div>
+          <!-- 2. CENTRO: Rebaja o Precio Fijo -->
+          <div class="text-[10px] justify-self-center text-center">
+            @if (getDiscountMargin(prod) > 0) {
+            <span class="text-amber-600 dark:text-amber-500 font-medium">
+              (Rebaja: hasta {{ getDiscountMargin(prod) | number:'1.0-0' }} Bs)
+            </span>
+            } @else {
+            <span
+              class="inline-flex px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 font-sans font-medium">
+              Precio Fijo
+            </span>
+            }
+          </div>
+
+          <!-- 3. DERECHA: Ganancia Neta -->
+          <div class="justify-self-center text-center">
+            @if (getEstimatedMargin(prod) !== null) {
+            <div class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-xs mt-1 ml-auto"
+              [title]="'Ganancia neta proyectada por unidad vendida al precio publicado'">
+              <svg lucideTrendingUp size="13" class="shrink-0"></svg>
+              <span>+Bs. {{ getEstimatedMargin(prod)! | number:'1.2-2' }}</span>
+            </div>
+            }
+          </div>
         </div>
       </div>
 
       <!-- Footer con Estado Comercial, Condición y Botón Editar -->
-      <div class="p-2 px-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/40 dark:bg-gray-850/50">
+      <div
+        class="p-2 px-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/40 dark:bg-gray-850/50">
         <div class="flex items-center gap-2 min-w-0">
-          <p-tag
-            [value]="getStatusLabel(prod.status)"
-            [severity]="getStatusSeverity(prod.status)"
-            [rounded]="true"
+          <p-tag [value]="getStatusLabel(prod.status)" [severity]="getStatusSeverity(prod.status)" [rounded]="true"
             class="text-[10px]">
           </p-tag>
 
           @if (prod.physical_condition === 'OPERATIONAL') {
-            <span class="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1 truncate">
-              @if (prod.is_reviewed) {
-                <svg lucideCircleCheck size="13" class="text-emerald-600 shrink-0"></svg>
-                <span>Probado</span>
-              } @else {
-                <svg lucideCircleAlert size="13" class="text-amber-500 shrink-0"></svg>
-                <span>Sin probar</span>
-              }
-            </span>
+          <span class="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1 truncate">
+            @if (prod.is_reviewed) {
+            <svg lucideCircleCheck size="13" class="text-emerald-600 shrink-0"></svg>
+            <span>Probado</span>
+            } @else {
+            <svg lucideCircleAlert size="13" class="text-amber-500 shrink-0"></svg>
+            <span>Sin probar</span>
+            }
+          </span>
           } @else {
-            <p-tag
-              [value]="getConditionLabel(prod.physical_condition)"
-              [severity]="getConditionSeverity(prod.physical_condition)"
-              [rounded]="true"
-              class="text-[10px]">
-            </p-tag>
+          <p-tag [value]="getConditionLabel(prod.physical_condition)"
+            [severity]="getConditionSeverity(prod.physical_condition)" [rounded]="true" class="text-[10px]">
+          </p-tag>
           }
         </div>
 
-        <p-button
-          icon="pi pi-pencil"
-          [text]="true"
-          [rounded]="true"
-          size="small"
-          severity="secondary"
-          pTooltip="Editar Producto Físico"
-          tooltipPosition="left"
-          (click)="openEditProduct(prod)">
+        <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" size="small" severity="secondary"
+          pTooltip="Editar Producto Físico" tooltipPosition="left" (click)="openEditProduct(prod)">
         </p-button>
       </div>
     </div>
@@ -634,40 +597,23 @@
   </div>
 
   <!-- Paginador Sincronizado para Vista Tarjetas -->
-  <p-paginator
-    [rows]="rows()"
-    [first]="first()"
-    [totalRecords]="totalRecords()"
-    [rowsPerPageOptions]="[12, 24, 36, 48]"
-    (onPageChange)="onPaginatorChange($event)"
-    [showCurrentPageReport]="true"
-    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} unidades"
-    class="my-2">
+  <p-paginator [rows]="rows()" [first]="first()" [totalRecords]="totalRecords()" [rowsPerPageOptions]="[12, 24, 36, 48]"
+    (onPageChange)="onPaginatorChange($event)" [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} unidades" class="my-2">
   </p-paginator>
   }
   }
 
   <!-- Slide-Over Drawer para Creación y Edición de Producto -->
-  <app-product-drawer
-    [(visible)]="drawerVisible"
-    [product]="selectedProduct()"
-    [mode]="drawerMode()"
-    [masterProducts]="masterProducts()"
-    [batches]="batches()"
-    [statuses]="statuses()"
-    [physicalConditions]="physicalConditions()"
-    (productSaved)="onProductSaved($event)"
+  <app-product-drawer [(visible)]="drawerVisible" [product]="selectedProduct()" [mode]="drawerMode()"
+    [masterProducts]="masterProducts()" [batches]="batches()" [statuses]="statuses()"
+    [physicalConditions]="physicalConditions()" (productSaved)="onProductSaved($event)"
     (productDeleted)="onProductDeleted($event)">
   </app-product-drawer>
 
   <!-- Slide-Over Drawer para Filtros Avanzados -->
-  <app-product-filter-drawer
-    [(visible)]="filterDrawerVisible"
-    [batches]="batches()"
-    [masterProducts]="masterProducts()"
-    [statuses]="statuses()"
-    [filterState]="currentFilterState()"
-    (filterApplied)="onFilterApplied($event)"
+  <app-product-filter-drawer [(visible)]="filterDrawerVisible" [batches]="batches()" [masterProducts]="masterProducts()"
+    [statuses]="statuses()" [filterState]="currentFilterState()" (filterApplied)="onFilterApplied($event)"
     (filterCleared)="onFilterCleared()">
   </app-product-filter-drawer>
 

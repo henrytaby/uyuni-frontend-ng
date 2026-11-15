@@ -60,9 +60,9 @@ export class ProductRealGalleryComponent {
   readonly isUploadingImages = signal<boolean>(false);
   readonly uploadProgress = signal<number>(0);
 
-  loadGallery(prodId: string): void {
+  loadGallery(prodId: string, silent = false): void {
     if (!prodId) return;
-    this.isLoadingImages.set(true);
+    if (!silent) this.isLoadingImages.set(true);
     this.productService.getImages(prodId).subscribe({
       next: imgs => {
         this.images.set(imgs);
@@ -119,11 +119,14 @@ export class ProductRealGalleryComponent {
             detail: `Se subieron ${newImages.length} fotografía(s) reales exitosamente.`
           });
           if (newImages.length > 0) {
-            this.images.set(newImages);
-            this.imagesCountChange.emit(newImages.length);
-          } else {
-            this.loadGallery(prodId);
+            this.images.update(current => {
+              const existingIds = new Set(current.map(i => i.id));
+              const uniqueNew = newImages.filter(i => !existingIds.has(i.id));
+              return [...current, ...uniqueNew];
+            });
+            this.imagesCountChange.emit(this.images().length);
           }
+          this.loadGallery(prodId, true);
         }
       },
       error: err => {
