@@ -131,7 +131,7 @@ export class BatchService {
   /**
    * Distribuye el costo relativo de la caja entre los productos según ponderación
    */
-  allocateRelativeCosts(id: string, basis = 'official_price', revalueSales = true): Observable<Batch> {
+  allocateRelativeCosts(id: string, basis = 'published_price', revalueSales = true): Observable<Batch> {
     this.logger.info('Allocating relative costs', { id, basis, revalueSales }, 'BatchService');
     const params = new HttpParams()
       .set('basis', basis)

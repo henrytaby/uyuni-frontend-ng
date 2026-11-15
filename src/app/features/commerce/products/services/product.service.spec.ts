@@ -207,5 +207,59 @@ describe('ProductService', () => {
       commerce_physical_conditions: {}
     });
   });
+
+  it('should fetch real images of a product', () => {
+    service.getImages('prod-1').subscribe(imgs => {
+      expect(imgs.length).toBe(1);
+    });
+
+    const req = httpMock.expectOne('http://localhost:8000/api/commerce/products/prod-1/images');
+    expect(req.request.method).toBe('GET');
+    req.flush([{ id: 'img-1', url: 'https://cloudinary.com/test.jpg', is_public: false, sort_order: 1 }]);
+  });
+
+  it('should upload real images with progress tracking', () => {
+    const file = new File(['dummy content'], 'photo.png', { type: 'image/png' });
+    service.uploadImagesWithProgress('prod-1', [file], true).subscribe(event => {
+      expect(event).toBeTruthy();
+    });
+
+    const req = httpMock.expectOne('http://localhost:8000/api/commerce/products/prod-1/images');
+    expect(req.request.method).toBe('POST');
+    expect(req.request.reportProgress).toBe(true);
+    req.flush([]);
+  });
+
+  it('should reorder real images', () => {
+    service.reorderImages('prod-1', [{ id: 'img-1', sort_order: 1 }]).subscribe(res => {
+      expect(res.length).toBe(1);
+    });
+
+    const req = httpMock.expectOne('http://localhost:8000/api/commerce/products/prod-1/images/reorder');
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual([{ id: 'img-1', sort_order: 1 }]);
+    req.flush([{ id: 'img-1', sort_order: 1 }]);
+  });
+
+  it('should toggle public visibility of a real image', () => {
+    service.togglePublic('prod-1', 'img-1', true).subscribe(res => {
+      expect(res.is_public).toBe(true);
+    });
+
+    const req = httpMock.expectOne('http://localhost:8000/api/commerce/products/prod-1/images/img-1');
+    expect(req.request.method).toBe('PATCH');
+    expect(req.request.body).toEqual({ is_public: true });
+    req.flush({ id: 'img-1', is_public: true });
+  });
+
+  it('should delete a real image', () => {
+    service.deleteImage('prod-1', 'img-1').subscribe(res => {
+      expect(res.message).toBe('Deleted');
+    });
+
+    const req = httpMock.expectOne('http://localhost:8000/api/commerce/products/prod-1/images/img-1');
+    expect(req.request.method).toBe('DELETE');
+    req.flush({ message: 'Deleted' });
+  });
 });
 

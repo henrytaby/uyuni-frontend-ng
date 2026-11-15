@@ -571,6 +571,32 @@
 }
 
 /* ==========================================================================
+   Product Master Select Dropdown Overlay Constraints & Density
+   ========================================================================== */
+.product-master-select-panel {
+  max-width: min(calc(100vw - 2.5rem), 38rem) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.12), 0 8px 10px -6px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 0.5rem !important;
+}
+
+.product-master-select-panel .p-select-list-container {
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+.product-master-select-panel .p-select-option {
+  padding: 0.375rem 0.625rem !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+.product-master-select-panel .p-select-option-label {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+/* ==========================================================================
    Enterprise Modal Dialogs Styling (PrimeNG Dialog Global Theme)
    ========================================================================== */
 .p-dialog {

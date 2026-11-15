@@ -1,9 +1,10 @@
-import { HttpClient, HttpEvent, HttpParams, HttpRequest } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpHeaders, HttpParams, HttpRequest, HttpResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 
 import { forkJoin, map, Observable } from 'rxjs';
 
 import { ConfigService } from '@core/config/config.service';
+import { SKIP_LOADER_HEADER } from '@core/interceptors/loading.interceptor';
 import { CatalogService } from '@core/services/catalog.service';
 import { LoggerService } from '@core/services/logger.service';
 
@@ -102,7 +103,16 @@ export class ProductMasterService {
    */
   getProductMasterById(id: string): Observable<ProductMaster> {
     this.logger.debug('Fetching product master by ID', { id }, 'ProductMasterService');
-    return this.http.get<ProductMaster>(`${this.baseUrl}/${id}`);
+    return this.http.get<ProductMaster>(`${this.baseUrl}/${id}`).pipe(
+      map(master => {
+        if (master?.images) {
+          master.images = master.images.filter(
+            img => !img.product_id && (img.image_type || '').toUpperCase() !== 'REAL'
+          );
+        }
+        return master;
+      })
+    );
   }
 
   /**
@@ -110,7 +120,16 @@ export class ProductMasterService {
    */
   getProductMasterByNumber(itemNumber: number): Observable<ProductMaster> {
     this.logger.debug('Fetching product master by item number', { itemNumber }, 'ProductMasterService');
-    return this.http.get<ProductMaster>(`${this.baseUrl}/by-number/${itemNumber}`);
+    return this.http.get<ProductMaster>(`${this.baseUrl}/by-number/${itemNumber}`).pipe(
+      map(master => {
+        if (master?.images) {
+          master.images = master.images.filter(
+            img => !img.product_id && (img.image_type || '').toUpperCase() !== 'REAL'
+          );
+        }
+        return master;
+      })
+    );
   }
 
   /**
@@ -182,10 +201,22 @@ export class ProductMasterService {
     );
 
     const req = new HttpRequest<FormData>('POST', `${this.baseUrl}/${masterId}/images`, formData, {
-      reportProgress: true
+      reportProgress: true,
+      headers: new HttpHeaders({ [SKIP_LOADER_HEADER]: 'true' })
     });
 
-    return this.http.request<ProductImage[]>(req);
+    return this.http.request<ProductImage[]>(req).pipe(
+      map(event => {
+        if (event instanceof HttpResponse && Array.isArray(event.body)) {
+          return event.clone({
+            body: event.body.filter(
+              img => !img.product_id && (img.image_type || '').toUpperCase() !== 'REAL'
+            )
+          });
+        }
+        return event;
+      })
+    );
   }
 
   /**
@@ -196,7 +227,14 @@ export class ProductMasterService {
     if (imageType) httpParams = httpParams.set('image_type', imageType);
 
     this.logger.debug('Fetching product master images', { masterId, imageType }, 'ProductMasterService');
-    return this.http.get<ProductImage[]>(`${this.baseUrl}/${masterId}/images`, { params: httpParams });
+    return this.http.get<ProductImage[]>(`${this.baseUrl}/${masterId}/images`, {
+      params: httpParams,
+      headers: { [SKIP_LOADER_HEADER]: 'true' }
+    }).pipe(
+      map(imgs => imgs.filter(
+        img => !img.product_id && (img.image_type || '').toUpperCase() !== 'REAL'
+      ))
+    );
   }
 
   /**
@@ -204,7 +242,11 @@ export class ProductMasterService {
    */
   setCoverImage(masterId: string, imageId: string): Observable<ProductImage> {
     this.logger.info('Setting cover image for product master', { masterId, imageId }, 'ProductMasterService');
-    return this.http.patch<ProductImage>(`${this.baseUrl}/${masterId}/images/${imageId}/cover`, {});
+    return this.http.patch<ProductImage>(
+      `${this.baseUrl}/${masterId}/images/${imageId}/cover`,
+      {},
+      { headers: { [SKIP_LOADER_HEADER]: 'true' } }
+    );
   }
 
   /**
@@ -212,7 +254,9 @@ export class ProductMasterService {
    */
   deleteImage(masterId: string, imageId: string): Observable<{ message: string }> {
     this.logger.info('Deleting product master image', { masterId, imageId }, 'ProductMasterService');
-    return this.http.delete<{ message: string }>(`${this.baseUrl}/${masterId}/images/${imageId}`);
+    return this.http.delete<{ message: string }>(`${this.baseUrl}/${masterId}/images/${imageId}`, {
+      headers: { [SKIP_LOADER_HEADER]: 'true' }
+    });
   }
 
   /**
@@ -220,7 +264,13 @@ export class ProductMasterService {
    */
   reorderImages(masterId: string, items: ProductImageReorderItem[]): Observable<ProductImage[]> {
     this.logger.info('Reordering product master images', { masterId, count: items.length }, 'ProductMasterService');
-    return this.http.put<ProductImage[]>(`${this.baseUrl}/${masterId}/images/reorder`, items);
+    return this.http.put<ProductImage[]>(`${this.baseUrl}/${masterId}/images/reorder`, items, {
+      headers: { [SKIP_LOADER_HEADER]: 'true' }
+    }).pipe(
+      map(imgs => imgs.filter(
+        img => !img.product_id && (img.image_type || '').toUpperCase() !== 'REAL'
+      ))
+    );
   }
 
   // ===========================================================================

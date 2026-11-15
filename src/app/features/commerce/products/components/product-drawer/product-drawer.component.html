@@ -1,194 +1,421 @@
 <p-drawer
   [visible]="visible()"
-  (visibleChange)="visible.set($event)"
+  (visibleChange)="onVisibleChange($event)"
   position="right"
   [modal]="true"
-  [style]="{ width: '44rem', maxWidth: '100vw' }">
+  [dismissible]="false"
+  [closeOnEscape]="false"
+  [closable]="false"
+  [fullScreen]="isMaximized()"
+  class="max-w-full"
+  [class.w-full]="isMaximized()"
+  [class.sm:w-135]="!isMaximized()"
+  [class.md:w-162.5]="!isMaximized()"
+  [class.lg:w-187.5]="!isMaximized()"
+  [style]="isMaximized() ? { width: '100vw', maxWidth: '100vw' } : { width: '100%', maxWidth: '750px' }">
 
-  <!-- Header del Drawer -->
+  <!-- ======================================================== -->
+  <!-- HEADER DEL DRAWER (Premium, Ergonómico e Institucional)   -->
+  <!-- ======================================================== -->
   <ng-template #header>
     <div class="flex items-center justify-between w-full pr-2">
       <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-lg bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800 flex items-center justify-center text-brand-700 dark:text-brand-300">
-          <svg lucidePackage size="18"></svg>
-        </div>
-        <div>
-          <h2 class="text-base font-bold text-gray-900 dark:text-gray-100 m-0 flex items-center gap-2">
-            <span>{{ mode() === 'create' ? 'Nuevo Producto Físico' : 'Existencia Física' }}</span>
-            @if (mode() === 'edit' && currentDisplayProduct()?.variant_name) {
-              <span class="text-xs font-mono font-normal px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-                {{ currentDisplayProduct()?.variant_name }}
+        @if (coverImageUrl()) {
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border border-brand-200 dark:border-brand-800 shrink-0 shadow-xs bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <img [src]="coverImageUrl() | clUrl:'thumb'" alt="Foto de producto" class="w-full h-full object-cover" />
+          </div>
+        } @else {
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-brand-50 dark:bg-brand-950/40 border border-brand-200 dark:border-brand-800 flex items-center justify-center text-brand-700 dark:text-brand-300 shrink-0 shadow-2xs">
+            <svg lucidePackage size="18"></svg>
+          </div>
+        }
+
+        <div class="min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <h2 class="text-sm sm:text-base font-bold text-gray-900 dark:text-gray-100 m-0">
+              {{ mode() === 'create' ? 'Nuevo Producto Físico' : ('Existencia Física #' + (currentDisplayProduct()?.item_number || currentDisplayProduct()?.sheet_row_id || '')) }}
+            </h2>
+
+            @if (mode() === 'edit' && currentDisplayProduct()?.batch_code) {
+              <span class="text-xs font-mono font-medium px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 hidden sm:inline-flex items-center gap-1">
+                <svg lucideBoxes size="11" class="text-amber-600"></svg>
+                <span>{{ currentDisplayProduct()?.batch_code }}</span>
               </span>
             }
-          </h2>
-          <span class="block text-xs text-gray-500 dark:text-gray-400 m-0">
-            {{ mode() === 'create' ? 'Ingreso de existencias físicas por caja o lote' : (currentDisplayProduct()?.name || 'Inventario por Lote') }}
+
+            <!-- Estado Comercial 100% Automático en Cabecera -->
+            <p-tag
+              [value]="calculatedProductStatus().label"
+              [severity]="calculatedProductStatus().severity"
+              [rounded]="true"
+              class="text-[10px]">
+            </p-tag>
+
+            <!-- Indicador Dirty State -->
+            @if (isDirty()) {
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 shrink-0">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                <span>Sin guardar</span>
+              </span>
+            } @else if (mode() === 'edit') {
+              <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-[10px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-800/60 shrink-0">
+                <svg lucideCheck size="11"></svg>
+                <span>Guardado</span>
+              </span>
+            }
+          </div>
+
+          <span class="block text-xs text-gray-500 dark:text-gray-400 m-0 truncate max-w-50 sm:max-w-md">
+            {{ mode() === 'create' ? 'Ingreso y trazabilidad de inventario físico por caja o lote' : (currentDisplayProduct()?.name || 'Inventario por Lote') }}
           </span>
         </div>
       </div>
 
-      @if (mode() === 'edit' && currentDisplayProduct()?.id) {
+      <div class="flex items-center gap-1.5 shrink-0">
+        @if (mode() === 'edit' && currentDisplayProduct()?.id) {
+          <button
+            type="button"
+            class="w-7.5 h-7.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
+            pTooltip="Copiar ID Universal (UUID)"
+            tooltipPosition="bottom"
+            (click)="copyToClipboard(currentDisplayProduct()!.id, 'ID de Producto')">
+            <svg lucideCopy size="14"></svg>
+          </button>
+        }
+
+        <!-- Maximizar / Restaurar Pantalla Completa -->
         <button
           type="button"
-          class="p-1.5 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          pTooltip="Copiar ID Universal (UUID)"
-          tooltipPosition="left"
-          (click)="copyToClipboard(currentDisplayProduct()!.id, 'ID de Producto')">
-          <svg lucideCopy size="15"></svg>
+          class="hidden sm:flex w-7.5 h-7.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white items-center justify-center transition-colors shadow-2xs cursor-pointer"
+          [pTooltip]="isMaximized() ? 'Restaurar tamaño normal' : 'Maximizar a pantalla completa'"
+          tooltipPosition="bottom"
+          (click)="toggleMaximize()">
+          @if (isMaximized()) {
+            <svg lucideMinimize2 size="14"></svg>
+          } @else {
+            <svg lucideMaximize2 size="14"></svg>
+          }
         </button>
-      }
+
+        <!-- Cerrar Drawer -->
+        <button
+          type="button"
+          class="w-7.5 h-7.5 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
+          pTooltip="Cerrar (Esc)"
+          tooltipPosition="bottom"
+          (click)="requestClose()">
+          <svg lucideX size="14"></svg>
+        </button>
+      </div>
     </div>
   </ng-template>
 
-  <!-- Contenido con Tabs -->
-  <div class="py-2">
-    <p-tabs [value]="activeTab()" (valueChange)="onTabChange($event)">
-      <p-tablist class="text-xs border-b border-gray-200 dark:border-gray-700">
+  <!-- ======================================================== -->
+  <!-- CONTENIDO MODULAR CON TABS (Clean Code & High Density)    -->
+  <!-- ======================================================== -->
+  <div class="flex flex-col h-full overflow-hidden">
+    <p-tabs
+      [value]="activeTab()"
+      (valueChange)="onTabChange($event)"
+      class="w-full flex-1 flex flex-col overflow-hidden">
+
+      <p-tablist>
+        <!-- Tab 0: Ficha y Procedencia -->
         <p-tab value="0">
           <div class="flex items-center gap-1.5 py-1">
             <svg lucideTag size="14"></svg>
             <span>Ficha y Procedencia</span>
           </div>
         </p-tab>
+
+        <!-- Tab 1: Precios, Costo y Stock -->
         <p-tab value="1">
           <div class="flex items-center gap-1.5 py-1">
             <svg lucideDollarSign size="14"></svg>
-            <span>Cantidades y Costo</span>
+            <span>Precios, Costo y Stock</span>
           </div>
         </p-tab>
+
+        <!-- Tab 2: Condición e Inspección -->
         <p-tab value="2">
           <div class="flex items-center gap-1.5 py-1">
             <svg lucideShieldCheck size="14"></svg>
             <span>Condición e Inspección</span>
           </div>
         </p-tab>
+
+        <!-- Tab 3: Fotos Reales de Almacén -->
+        <p-tab value="3">
+          <div class="flex items-center gap-1.5 py-1">
+            <svg lucideCamera size="14"></svg>
+            <span>Fotos Reales</span>
+            @if (realImagesCount() > 0) {
+              <span class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-brand-50 text-brand-700 dark:bg-brand-950/40 dark:text-brand-300">
+                {{ realImagesCount() }}
+              </span>
+            }
+          </div>
+        </p-tab>
       </p-tablist>
 
-      <p-tabpanels class="pt-4">
-        <!-- TAB 0: FICHA Y PROCEDENCIA -->
-        <p-tabpanel value="0">
-          <div class="flex flex-col gap-4 text-sm">
+      <p-tabpanels cdkScrollable class="flex-1 overflow-y-auto p-3.5 sm:p-5!">
+        <!-- ========================================== -->
+        <!-- TAB 0: FICHA Y PROCEDENCIA                -->
+        <!-- ========================================== -->
+        <p-tabpanel value="0" class="p-0!">
+          <div class="flex flex-col gap-3.5 text-sm">
 
-            <!-- Fila 1: Ficha Maestra Obligatoria -->
+            <!-- Ficha Maestra Obligatoria con Prellenado Inteligente -->
             <div>
-              <label for="prod_master" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Ficha Maestra de Catálogo <span class="text-red-500">*</span>
-              </label>
+              <div class="flex items-center justify-between mb-1">
+                <label for="prod_master" class="block text-xs font-semibold text-gray-700 dark:text-gray-300">
+                  Ficha Maestra de Catálogo <span class="text-red-500">*</span>
+                </label>
+                @if (masterProducts().length > 0) {
+                  <span class="text-[11px] text-gray-400 font-normal">
+                    {{ masterProducts().length }} disponibles
+                  </span>
+                }
+              </div>
               <p-select
                 inputId="prod_master"
                 [options]="masterProducts()"
                 [ngModel]="masterProductId()"
-                (ngModelChange)="masterProductId.set($event)"
+                (ngModelChange)="onMasterProductChange($event)"
                 optionLabel="label"
                 optionValue="value"
                 placeholder="Seleccione la Ficha Maestra (# Ítem, Nombre)"
                 [filter]="true"
-                filterPlaceholder="Buscar ficha..."
+                filterPlaceholder="Buscar por # o nombre..."
+                [filterFields]="['label']"
+                filterMatchMode="contains"
+                [scrollHeight]="'260px'"
+                panelStyleClass="product-master-select-panel"
+                [panelStyle]="{ 'max-width': 'min(calc(100vw - 2.5rem), 38rem)' }"
                 appendTo="body"
-                class="w-full">
+                class="w-full text-xs">
+
+                <ng-template #selectedItem let-selectedOption>
+                  @let parsed = parseMasterItem(selectedOption);
+                  @if (parsed.name || parsed.itemNumber) {
+                    <div class="flex items-center gap-2 min-w-0 max-w-full">
+                      @if (parsed.itemNumber) {
+                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[11px] font-mono font-bold bg-brand-50 text-brand-700 dark:bg-brand-950/40 dark:text-brand-300 border border-brand-200/80 dark:border-brand-800/60 shrink-0">
+                          {{ parsed.itemNumber }}
+                        </span>
+                      }
+                      <span class="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate min-w-0" [title]="parsed.name">
+                        {{ parsed.name }}
+                      </span>
+                    </div>
+                  } @else {
+                    <span class="text-xs text-gray-400">Seleccione la Ficha Maestra (# Ítem, Nombre)</span>
+                  }
+                </ng-template>
+
+                <ng-template #item let-opt>
+                  @let parsed = parseMasterItem(opt);
+                  <div class="flex items-center gap-2.5 py-1 px-0.5 w-full min-w-0 max-w-full">
+                    @if (parsed.itemNumber) {
+                      <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-brand-50 text-brand-700 dark:bg-brand-950/40 dark:text-brand-300 border border-brand-200/80 dark:border-brand-800/60 shrink-0">
+                        {{ parsed.itemNumber }}
+                      </span>
+                    }
+                    <span class="text-xs font-medium text-gray-800 dark:text-gray-200 truncate flex-1 min-w-0" [title]="parsed.name">
+                      {{ parsed.name }}
+                    </span>
+                  </div>
+                </ng-template>
+
+                <ng-template #emptyfilter>
+                  <div class="py-4 px-3 text-center text-xs text-gray-400 flex flex-col items-center justify-center">
+                    <svg lucideSearch size="18" class="text-gray-400 mb-1"></svg>
+                    <span>No se encontraron fichas coincidentes</span>
+                  </div>
+                </ng-template>
               </p-select>
               @if (!masterProductValidation().isValid) {
                 <span class="block text-xs text-red-500 mt-1 m-0">{{ masterProductValidation().error }}</span>
               }
             </div>
 
-            <!-- Fila 2: Lote / Caja y Fila Excel -->
+            <!-- Card Informativa de Ficha Maestra Vinculada -->
+            @if (selectedMasterProduct()) {
+              <div class="p-2.5 rounded-lg border border-brand-200/80 dark:border-brand-800/60 bg-brand-50/40 dark:bg-brand-950/20 flex items-start gap-2.5 shadow-2xs">
+                @if (selectedMasterProduct()?.cover_image_url) {
+                  <img
+                    [src]="selectedMasterProduct()!.cover_image_url! | clUrl:'thumb'"
+                    [alt]="selectedMasterProduct()!.name"
+                    class="w-12 h-12 rounded-md object-cover border border-brand-200 shrink-0 bg-white" />
+                }
+                <div class="min-w-0 flex-1 text-xs">
+                  <div class="font-bold text-gray-900 dark:text-gray-100 truncate">
+                    #{{ selectedMasterProduct()?.item_number }} - {{ selectedMasterProduct()?.name }}
+                  </div>
+                  <div class="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                    Precios base de ficha: Publicado Bs. {{ selectedMasterProduct()?.published_price | number:'1.2-2' }} | Piso Bs. {{ selectedMasterProduct()?.minimum_price | number:'1.2-2' }}
+                  </div>
+                  <div class="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium mt-0.5 flex items-center gap-1">
+                    <svg lucideCheck size="11"></svg>
+                    <span>Precios prellenados automáticamente en la pestaña de Precios y Costo.</span>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- Fila 2: Caja / Lote y Variante de Lote -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label for="prod_batch" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Caja o Lote de Importación
+                  Caja o Lote Asociado
                 </label>
                 <p-select
                   inputId="prod_batch"
                   [options]="batches()"
                   [ngModel]="batchId()"
-                  (ngModelChange)="batchId.set($event)"
+                  (ngModelChange)="onBatchChange($event)"
                   optionLabel="label"
                   optionValue="value"
-                  placeholder="Seleccionar Lote / Caja"
+                  placeholder="Sin lote (Compra Directa)"
                   [showClear]="true"
                   [filter]="true"
                   filterPlaceholder="Buscar caja..."
+                  panelStyleClass="product-master-select-panel"
+                  [panelStyle]="{ 'max-width': 'min(calc(100vw - 2.5rem), 38rem)' }"
                   appendTo="body"
-                  class="w-full">
+                  class="w-full text-xs">
                 </p-select>
+                @if (selectedBatch()) {
+                  <span class="block text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 m-0 font-mono">
+                    Método: {{ costingMethod() === 'WEIGHTED_RETAIL' ? 'Amazon (Ponderado)' : (costingMethod() === 'FLAT_AVERAGE' ? 'Promedio Plano' : 'Bazar / Reventa por Ítem') }}
+                  </span>
+                }
               </div>
 
               <div>
-                <label for="prod_sheet_row" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Fila en Hoja Excel (Trazabilidad)
+                <label for="prod_variant" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Variante de Lote (Opcional)
                 </label>
-                <p-inputnumber
-                  inputId="prod_sheet_row"
-                  [ngModel]="sheetRowId()"
-                  (ngModelChange)="sheetRowId.set($event)"
-                  [min]="1"
-                  [useGrouping]="false"
-                  placeholder="Ej: 53 o 165"
-                  class="w-full">
-                </p-inputnumber>
+                <input
+                  id="prod_variant"
+                  type="text"
+                  pInputText
+                  [ngModel]="variantName()"
+                  (ngModelChange)="variantName.set($event)"
+                  placeholder="Ej: Sin panel solar / Open Box, Color Blanco..."
+                  class="w-full text-sm" />
+                <span class="block text-[11px] text-gray-400 mt-0.5 m-0">
+                  Diferenciador físico de las unidades llegadas en esta caja.
+                </span>
               </div>
             </div>
 
-            <!-- Fila 3: Variante Física de Diseño -->
-            <div>
-              <label for="prod_variant" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Variante Física o de Diseño en esta Caja
-              </label>
-              <input
-                id="prod_variant"
-                type="text"
-                pInputText
-                [ngModel]="variantName()"
-                (ngModelChange)="variantName.set($event)"
-                placeholder="Ej: Luna vs Sistema Solar, Color Negro, 110V..."
-                class="w-full text-sm" />
-              <span class="block text-xs text-gray-400 mt-0.5 m-0">
-                Diferenciador físico específico de las unidades llegadas en este lote.
-              </span>
-            </div>
-
-            <!-- Banner Explicativo -->
-            <div class="p-3 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-600 dark:text-gray-300 flex items-start gap-2">
+            <!-- Banner Explicativo de Herencia de Identidad -->
+            <div class="p-3 bg-gray-50/80 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-600 dark:text-gray-300 flex items-start gap-2.5 shadow-2xs">
               <svg lucideInfo size="16" class="shrink-0 text-gray-400 mt-0.5"></svg>
               <div>
-                <span class="font-bold">Herencia de Identidad:</span>
-                Los precios de catálogo (Oficial, Publicado y Mínimo Protegido) y multimedia provienen de la Ficha Maestra seleccionada.
+                <span class="font-bold text-gray-800 dark:text-gray-200">Herencia y Flexibilidad de Lote:</span>
+                Las fotografías y especificaciones oficiales provienen de la Ficha Maestra. Si esta caja llegó con características particulares o faltantes, puede ajustar sus precios de venta y condición en las siguientes pestañas.
               </div>
             </div>
 
           </div>
         </p-tabpanel>
 
-        <!-- TAB 1: CANTIDADES Y COSTO -->
-        <p-tabpanel value="1">
+        <!-- ========================================== -->
+        <!-- TAB 1: PRECIOS, COSTO Y STOCK             -->
+        <!-- ========================================== -->
+        <p-tabpanel value="1" class="p-0!">
           <div class="flex flex-col gap-4 text-sm">
 
-            <!-- Fila 1: Cantidad Inicial y Costo Unitario -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label for="prod_initial_qty" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Cantidad Recibida Inicial <span class="text-red-500">*</span>
-                </label>
-                <p-inputnumber
-                  inputId="prod_initial_qty"
-                  [ngModel]="initialQuantity()"
-                  (ngModelChange)="initialQuantity.set($event)"
-                  [min]="1"
-                  [useGrouping]="false"
-                  placeholder="1"
-                  class="w-full">
-                </p-inputnumber>
+            <!-- BLOQUE A: ESTRATEGIA DE PRECIOS DE VENTA -->
+            <div class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/40 dark:bg-gray-850/40 flex flex-col gap-3">
+              <div class="text-xs font-bold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+                <svg lucideDollarSign size="14" class="text-brand-600 dark:text-brand-400"></svg>
+                <span>Precios de Venta al Público (Personalizables en este Lote)</span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- Precio Publicado -->
+                <div>
+                  <label for="prod_published_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    Precio Publicado (Venta) <span class="text-red-500">*</span>
+                  </label>
+                  <p-inputnumber
+                    inputId="prod_published_price"
+                    [ngModel]="publishedPrice()"
+                    (ngModelChange)="publishedPrice.set($event || 0)"
+                    mode="currency"
+                    currency="BOB"
+                    locale="es-BO"
+                    [minFractionDigits]="2"
+                    placeholder="Bs. 0.00"
+                    class="w-full">
+                  </p-inputnumber>
+                  <span class="block text-[11px] text-gray-400 mt-0.5 m-0">Precio oficial anunciado al cliente</span>
+                </div>
+
+                <!-- Piso de Regateo -->
+                <div>
+                  <label for="prod_minimum_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    Piso de Regateo <span class="text-red-500">*</span>
+                  </label>
+                  <p-inputnumber
+                    inputId="prod_minimum_price"
+                    [ngModel]="minimumPrice()"
+                    (ngModelChange)="minimumPrice.set($event || 0)"
+                    mode="currency"
+                    currency="BOB"
+                    locale="es-BO"
+                    [minFractionDigits]="2"
+                    placeholder="Bs. 0.00"
+                    class="w-full">
+                  </p-inputnumber>
+                  <span class="block text-[11px] text-gray-400 mt-0.5 m-0">Límite mínimo autorizado de descuento</span>
+                </div>
+              </div>
+
+              @if (!pricingValidation().isValid) {
+                <div class="p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded text-xs text-red-700 dark:text-red-300 flex items-center gap-1.5">
+                  <svg lucideCircleAlert size="13" class="shrink-0"></svg>
+                  <span>{{ pricingValidation().error }}</span>
+                </div>
+              }
+
+              <!-- Indicador de Margen de Rebaja -->
+              <div class="flex items-center justify-between text-xs px-2 py-1.5 rounded bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 font-mono">
+                <span class="text-gray-600 dark:text-gray-400 font-sans">Margen de Rebaja Autorizado:</span>
+                @if (discountMargin() > 0) {
+                  <span class="font-bold text-amber-700 dark:text-amber-400">
+                    Rebaja máx: hasta {{ discountMargin() | number:'1.2-2' }} Bs
+                  </span>
+                } @else {
+                  <span class="font-medium text-emerald-600 dark:text-emerald-400 font-sans">
+                    Precio Fijo (Sin descuento)
+                  </span>
+                }
+              </div>
+            </div>
+
+            <!-- BLOQUE B: PRECIO DE COSTO (DINÁMICO SEGÚN MÉTODO DE COSTEO) -->
+            <div class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-2xs flex flex-col gap-2.5">
+              <div class="text-xs font-bold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+                <svg lucideTrendingUp size="14" class="text-emerald-600"></svg>
+                <span>Precio de Costo & Margen Proyectado</span>
               </div>
 
               <div>
                 <label for="prod_cost_price" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Costo Unitario Real del Lote
+                  Precio de Costo Unitario
+                  @if (!isCostPriceDisabled()) {
+                    <span class="text-red-500">* (Obligatorio en Bazar)</span>
+                  }
                 </label>
                 <p-inputnumber
                   inputId="prod_cost_price"
                   [ngModel]="costPrice()"
                   (ngModelChange)="costPrice.set($event)"
+                  [disabled]="isCostPriceDisabled()"
                   mode="currency"
                   currency="BOB"
                   locale="es-BO"
@@ -196,114 +423,192 @@
                   placeholder="Bs. 0.00"
                   class="w-full">
                 </p-inputnumber>
-                <span class="block text-xs text-gray-400 mt-0.5 m-0">Costo prorrateado con flete y merma</span>
+
+                <!-- Mensaje explicativo según Regla Dinámica 1 -->
+                @if (isCostPriceDisabled()) {
+                  <div class="p-2 rounded bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 text-[11px] text-blue-800 dark:text-blue-300 flex items-start gap-1.5 mt-1.5">
+                    <svg lucideInfo size="14" class="shrink-0 mt-0.5 text-blue-600 dark:text-blue-400"></svg>
+                    <span>El costo de este producto se calcula automáticamente ejecutando la distribución de costos de la caja.</span>
+                  </div>
+                } @else {
+                  <span class="block text-[11px] text-amber-700 dark:text-amber-400 mt-1 m-0">
+                    Lote tipo Bazar / Compra Directa: Ingrese manualmente cuánto le costó comprar esta unidad física.
+                  </span>
+                }
+              </div>
+
+              @if (!costPriceValidation().isValid) {
+                <div class="p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded text-xs text-red-700 dark:text-red-300 flex items-center gap-1.5">
+                  <svg lucideCircleAlert size="13" class="shrink-0"></svg>
+                  <span>{{ costPriceValidation().error }}</span>
+                </div>
+              }
+
+              <!-- Tarjeta de Ganancia Neta Proyectada en Tiempo Real (Regla 4) -->
+              <div class="flex items-center justify-between text-xs px-2 py-2 rounded bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 font-mono">
+                <span class="text-gray-700 dark:text-gray-300 font-sans">Margen de Ganancia Proyectado:</span>
+                @if (estimatedMargin() !== null) {
+                  <span class="font-bold text-emerald-700 dark:text-emerald-400 text-sm flex items-center gap-1">
+                    <svg lucideTrendingUp size="14"></svg>
+                    <span>+Bs. {{ estimatedMargin()! | number:'1.2-2' }}</span>
+                  </span>
+                } @else {
+                  <span class="text-gray-400 font-sans text-[11px]">
+                    Costo pendiente de asignación
+                  </span>
+                }
               </div>
             </div>
 
-            <!-- Fila 2: Vendidas y Mermas -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label for="prod_sold_qty" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Unidades Vendidas
-                </label>
-                <p-inputnumber
-                  inputId="prod_sold_qty"
-                  [ngModel]="soldQuantity()"
-                  (ngModelChange)="soldQuantity.set($event)"
-                  [min]="0"
-                  [useGrouping]="false"
-                  class="w-full">
-                </p-inputnumber>
+            <!-- BLOQUE C: EXISTENCIAS FÍSICAS -->
+            <div class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/40 dark:bg-gray-850/40 flex flex-col gap-3">
+              <div class="text-xs font-bold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
+                <svg lucidePackage size="14" class="text-gray-700 dark:text-gray-300"></svg>
+                <span>Existencias y Control Físico de Mercadería</span>
               </div>
 
-              <div>
-                <label for="prod_merma_qty" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Unidades en Merma / Dañadas
-                </label>
-                <p-inputnumber
-                  inputId="prod_merma_qty"
-                  [ngModel]="mermaQuantity()"
-                  (ngModelChange)="mermaQuantity.set($event)"
-                  [min]="0"
-                  [useGrouping]="false"
-                  class="w-full">
-                </p-inputnumber>
-              </div>
-            </div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <!-- Cantidad Inicial -->
+                <div>
+                  <label for="prod_initial_qty" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    Cantidad Inicial <span class="text-red-500">*</span>
+                  </label>
+                  <p-inputnumber
+                    inputId="prod_initial_qty"
+                    [ngModel]="initialQuantity()"
+                    (ngModelChange)="onInitialQuantityChange($event)"
+                    [min]="1"
+                    [useGrouping]="false"
+                    placeholder="1"
+                    class="w-full">
+                  </p-inputnumber>
+                  <span class="block text-[10px] text-gray-400 mt-0.5 m-0">Recibidas físicamente</span>
+                </div>
 
-            @if (!quantityValidation().isValid) {
-              <div class="p-2.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
-                <svg lucideCircleAlert size="14" class="shrink-0"></svg>
-                <span>{{ quantityValidation().error }}</span>
-              </div>
-            }
+                <!-- Unidades Vendidas (READ-ONLY) -->
+                <div>
+                  <span class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    Unidades Vendidas
+                  </span>
+                  <div class="h-9.5 px-3 rounded-md bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-between font-mono text-sm text-gray-700 dark:text-gray-300">
+                    <span class="font-bold">{{ soldQuantity() }}</span>
+                    <span class="text-[10px] font-sans text-gray-400 uppercase">Solo lectura</span>
+                  </div>
+                  <span class="block text-[10px] text-gray-400 mt-0.5 m-0">Modificado vía ventas</span>
+                </div>
 
-            <!-- Tarjeta de Stock Disponible Calculado -->
-            <div class="p-3 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-between">
-              <div>
-                <span class="text-xs font-semibold text-gray-700 dark:text-gray-300 block">Stock Disponible Calculado:</span>
-                <span class="text-xs text-gray-500 dark:text-gray-400">Cantidad Inicial - Vendidas - Mermas</span>
+                <!-- Unidades en Merma / Dañada -->
+                <div>
+                  <label for="prod_merma_qty" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                    Cantidad Merma / Dañada
+                  </label>
+                  <p-inputnumber
+                    inputId="prod_merma_qty"
+                    [ngModel]="mermaQuantity()"
+                    (ngModelChange)="onMermaQuantityChange($event)"
+                    [min]="0"
+                    [useGrouping]="false"
+                    placeholder="0"
+                    class="w-full">
+                  </p-inputnumber>
+                  <span class="block text-[10px] text-gray-400 mt-0.5 m-0">Inutilizables / Descarte</span>
+                </div>
               </div>
-              <div class="text-right">
-                <span class="font-mono font-bold text-lg" [ngClass]="calculatedAvailableQuantity() > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-400'">
-                  {{ calculatedAvailableQuantity() }} unidades
-                </span>
+
+              @if (!quantityValidation().isValid) {
+                <div class="p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded text-xs text-red-700 dark:text-red-300 flex items-center gap-1.5">
+                  <svg lucideCircleAlert size="13" class="shrink-0"></svg>
+                  <span>{{ quantityValidation().error }}</span>
+                </div>
+              }
+
+              <!-- Tarjeta de Stock Disponible Calculado (READ-ONLY) -->
+              <div class="p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg flex items-center justify-between shadow-2xs">
+                <div>
+                  <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 block">Stock Disponible para Venta:</span>
+                  <span class="text-[11px] text-gray-500 dark:text-gray-400">
+                    Inicial ({{ initialQuantity() }}) - Vendido ({{ soldQuantity() }}) - Merma ({{ mermaQuantity() }})
+                  </span>
+                </div>
+                <div class="text-right">
+                  <span
+                    class="font-mono font-bold text-base sm:text-lg"
+                    [ngClass]="calculatedAvailableQuantity() > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-400'">
+                    {{ calculatedAvailableQuantity() }} {{ calculatedAvailableQuantity() === 1 ? 'unidad' : 'unidades' }}
+                  </span>
+                </div>
               </div>
             </div>
 
           </div>
         </p-tabpanel>
 
-        <!-- TAB 2: CONDICIÓN E INSPECCIÓN -->
-        <p-tabpanel value="2">
-          <div class="flex flex-col gap-4 text-sm">
+        <!-- ========================================== -->
+        <!-- TAB 2: CONDICIÓN E INSPECCIÓN             -->
+        <!-- ========================================== -->
+        <p-tabpanel value="2" class="p-0!">
+          <div class="flex flex-col gap-3.5 text-sm">
 
-            <!-- Fila 1: Estado y Condición Física -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Estado Comercial 100% Automático (Regla Dinámica 2) -->
+            <div class="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/60 dark:bg-gray-800/40 flex items-center justify-between">
               <div>
-                <label for="prod_status" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Estado Comercial en Almacén
-                </label>
-                <p-select
-                  inputId="prod_status"
-                  [options]="statuses()"
-                  [ngModel]="status()"
-                  (ngModelChange)="status.set($event)"
-                  optionLabel="label"
-                  optionValue="value"
-                  class="w-full">
-                </p-select>
+                <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 block">Estado Comercial en Almacén</span>
+                <span class="text-[11px] text-gray-500 dark:text-gray-400">Calculado automáticamente según existencias físicas y ventas</span>
               </div>
-
-              <div>
-                <label for="prod_condition" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                  Condición Física Real
-                </label>
-                <p-select
-                  inputId="prod_condition"
-                  [options]="physicalConditions()"
-                  [ngModel]="physicalCondition()"
-                  (ngModelChange)="physicalCondition.set($event)"
-                  optionLabel="label"
-                  optionValue="value"
-                  class="w-full">
-                </p-select>
-              </div>
+              <p-tag
+                [value]="calculatedProductStatus().label"
+                [severity]="calculatedProductStatus().severity"
+                [rounded]="true"
+                class="text-xs px-2.5 py-0.5">
+              </p-tag>
             </div>
 
-            <!-- Fila 2: Switch Inspección Probada -->
-            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700">
-              <div>
-                <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 block">Inspeccionado y Probado</span>
-                <span class="text-xs text-gray-500 dark:text-gray-400">¿Fue probado físicamente en mesa técnica que enciende y opera correctamente?</span>
+            <!-- Condición Física Real -->
+            <div>
+              <label for="prod_condition" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                Condición Física Real
+              </label>
+              <p-select
+                inputId="prod_condition"
+                [options]="physicalConditions()"
+                [ngModel]="physicalCondition()"
+                (ngModelChange)="physicalCondition.set($event)"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                class="w-full">
+              </p-select>
+              @if (mermaQuantity() >= initialQuantity() && initialQuantity() > 0) {
+                <span class="block text-[11px] text-rose-600 dark:text-rose-400 mt-0.5 m-0 font-medium">
+                  Cambiado automáticamente a Dañado / Merma por Merma Total de la caja.
+                </span>
+              }
+            </div>
+
+            <!-- Switch Inspeccionado y Probado en Mesa -->
+            <div class="flex items-center justify-between p-3 rounded-lg bg-gray-50/80 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 shadow-2xs">
+              <div class="flex items-start gap-2.5">
+                @if (isReviewed()) {
+                  <svg lucideCircleCheck size="18" class="text-emerald-600 dark:text-emerald-400 mt-0.5 shrink-0"></svg>
+                } @else {
+                  <svg lucideCircleAlert size="18" class="text-amber-500 mt-0.5 shrink-0"></svg>
+                }
+                <div>
+                  <span class="text-xs font-semibold text-gray-800 dark:text-gray-200 block">
+                    {{ isReviewed() ? 'Inspeccionado y Probado en Mesa' : 'Pendiente de Inspección Técnica' }}
+                  </span>
+                  <span class="text-[11px] text-gray-500 dark:text-gray-400">
+                    ¿Fue probado físicamente que enciende y opera correctamente?
+                  </span>
+                </div>
               </div>
               <p-toggleswitch [ngModel]="isReviewed()" (ngModelChange)="isReviewed.set($event)"></p-toggleswitch>
             </div>
 
-            <!-- Fila 3: Detalle de Falla o Faltantes -->
+            <!-- Detalle de Falla o Merma -->
             <div>
               <label for="prod_defect" class="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                Detalle de Defectos, Accesorios Faltantes o Raspón
+                Detalle de Defectos, Accesorios Faltantes o Merma
               </label>
               <textarea
                 id="prod_defect"
@@ -311,21 +616,44 @@
                 [ngModel]="defectDetail()"
                 (ngModelChange)="defectDetail.set($event)"
                 rows="3"
-                placeholder="Ej: Raspón leve en parte trasera, sin cable USB original, probado funcionando OK..."
-                class="w-full text-sm">
+                placeholder="Ej: Raspón leve en parte trasera, sin cargador original, probado funcionando OK..."
+                class="w-full text-sm"
+                [class.border-amber-400]="mermaQuantity() > 0 || physicalCondition() !== 'OPERATIONAL'">
               </textarea>
+              @if (mermaQuantity() > 0 || physicalCondition() !== 'OPERATIONAL') {
+                <span class="block text-[11px] text-amber-700 dark:text-amber-400 mt-0.5 m-0">
+                  ⚠️ Se recomienda especificar el motivo de la merma o detalle del accesorio faltante.
+                </span>
+              }
             </div>
 
           </div>
+        </p-tabpanel>
+
+        <!-- ========================================== -->
+        <!-- TAB 3: FOTOGRAFÍAS REALES DE ALMACÉN        -->
+        <!-- ========================================== -->
+        <p-tabpanel value="3" class="p-0!">
+          <app-product-real-gallery
+            [productId]="currentDisplayProduct()?.id ?? null"
+            [productName]="currentDisplayProduct()?.name ?? ''"
+            [mode]="mode()"
+            [isMaximized]="isMaximized()"
+            [(images)]="realImages"
+            (imagesCountChange)="realImagesCount.set($event)"
+            (requestNavigateToInfo)="activeTab.set('0')" />
         </p-tabpanel>
       </p-tabpanels>
     </p-tabs>
   </div>
 
-  <!-- Footer del Drawer -->
+  <!-- ======================================================== -->
+  <!-- FOOTER DEL DRAWER (Fijo al Fondo con Flujo Dual)         -->
+  <!-- ======================================================== -->
   <ng-template #footer>
     <div class="flex items-center justify-between w-full pt-2 border-t border-gray-200 dark:border-gray-700">
-      <div>
+      <!-- Lado Izquierdo: Eliminar + Indicador de Estado -->
+      <div class="flex items-center gap-2">
         @if (mode() === 'edit') {
           <p-button
             label="Eliminar"
@@ -334,33 +662,91 @@
             [outlined]="true"
             size="small"
             [disabled]="isSubmitting()"
-            (click)="confirmDelete()">
+            (click)="confirmDelete()"
+            class="hidden sm:inline-flex"
+            pTooltip="Eliminar existencia física de inventario"
+            tooltipPosition="top">
           </p-button>
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [outlined]="true"
+            size="small"
+            [disabled]="isSubmitting()"
+            (click)="confirmDelete()"
+            class="sm:hidden"
+            pTooltip="Eliminar existencia física"
+            tooltipPosition="top">
+          </p-button>
+        }
+
+        <!-- Indicador de Estado en Footer (Desktop) -->
+        @if (isDirty()) {
+          <span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+            <span>Cambios sin guardar</span>
+          </span>
+        } @else if (mode() === 'edit') {
+          <span class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] text-gray-500 dark:text-gray-400">
+            <svg lucideCheck size="12" class="text-emerald-500"></svg>
+            <span>Todo guardado</span>
+          </span>
         }
       </div>
 
-      <div class="flex items-center gap-2">
+      <!-- Lado Derecho: Cerrar + Guardar Cambios (Permanecer) + Guardar y Salir -->
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
         <p-button
-          label="Cancelar"
+          label="Cerrar"
           severity="secondary"
           [outlined]="true"
           size="small"
           [disabled]="isSubmitting()"
-          (click)="visible.set(false)">
+          (click)="requestClose()">
         </p-button>
 
+        <!-- Guardar (Permanecer en el Drawer) -->
         <p-button
-          [label]="mode() === 'create' ? 'Registrar Existencia' : 'Actualizar Producto'"
+          [label]="mode() === 'create' ? 'Guardar' : 'Guardar Cambios'"
+          icon="pi pi-save"
+          severity="primary"
+          [outlined]="true"
+          size="small"
+          [loading]="isSubmitting() && savingAction() === 'save'"
+          [disabled]="!isFormValid() || isSubmitting()"
+          (click)="saveProduct(false)"
+          [pTooltip]="mode() === 'create' ? 'Guardar y continuar en esta ficha' : 'Guardar modificaciones y permanecer'"
+          tooltipPosition="top"
+          class="hidden sm:inline-flex">
+        </p-button>
+        <p-button
+          label="Guardar"
+          icon="pi pi-save"
+          severity="primary"
+          [outlined]="true"
+          size="small"
+          [loading]="isSubmitting() && savingAction() === 'save'"
+          [disabled]="!isFormValid() || isSubmitting()"
+          (click)="saveProduct(false)"
+          [pTooltip]="'Guardar y continuar'"
+          tooltipPosition="top"
+          class="sm:hidden">
+        </p-button>
+
+        <!-- Guardar y Salir (Cierra el Drawer) -->
+        <p-button
+          [label]="mode() === 'create' ? 'Registrar y Salir' : 'Guardar y Salir'"
           icon="pi pi-check"
           severity="primary"
           size="small"
-          [loading]="isSubmitting()"
-          [disabled]="!isFormValid()"
-          (click)="saveProduct()">
+          [loading]="isSubmitting() && savingAction() === 'saveAndClose'"
+          [disabled]="!isFormValid() || isSubmitting()"
+          (click)="saveProduct(true)"
+          [pTooltip]="'Guardar modificaciones y salir'"
+          tooltipPosition="top">
         </p-button>
       </div>
     </div>
   </ng-template>
 
 </p-drawer>
-

@@ -144,7 +144,7 @@
   </div>
   }
 
-  <!-- VISTA 1: TABLA ADMINISTRATIVA DE ALTA DENSIDAD (ERP) -->
+  <!-- VISTA 1: TABLA ADMINISTRATIVA COMPUESTA (ERP DE ALTA DENSIDAD) -->
   @if (viewMode() === 'table') {
   <p-table
     [value]="productList()"
@@ -164,183 +164,292 @@
 
     <ng-template pTemplate="header">
       <tr>
-        <th pSortableColumn="name" style="min-width: 14rem; max-width: 24rem">
+        <!-- Col 1: Producto e Identificación -->
+        <th pSortableColumn="name" style="min-width: 15rem; max-width: 24rem">
           <div class="flex items-center gap-1.5 whitespace-nowrap">
-            <span>Producto Físico & Variante</span>
+            <span>Producto e Identificación</span>
             <p-sortIcon field="name"></p-sortIcon>
           </div>
         </th>
+
+        <!-- Col 2: Caja / Lote Físico -->
         <th style="width: 9.5rem">
           <div class="flex items-center gap-1.5 whitespace-nowrap">
             <span>Caja / Lote</span>
           </div>
         </th>
-        <th pSortableColumn="cost_price" style="width: 10rem">
+
+        <!-- Col 3: Precios (Venta) -->
+        <th pSortableColumn="published_price" style="width: 11rem">
           <div class="flex items-center gap-1.5 whitespace-nowrap">
-            <span>Costos & Precios (BOB)</span>
+            <span>Precios (Venta)</span>
+            <p-sortIcon field="published_price"></p-sortIcon>
+          </div>
+        </th>
+
+        <!-- Col 4: Costo & Margen -->
+        <th pSortableColumn="cost_price" style="width: 10.5rem">
+          <div class="flex items-center gap-1.5 whitespace-nowrap">
+            <span>Costo & Margen</span>
             <p-sortIcon field="cost_price"></p-sortIcon>
           </div>
         </th>
-        <th pSortableColumn="available_quantity" style="width: 8.5rem">
+
+        <!-- Col 5: Existencias Físicas -->
+        <th pSortableColumn="available_quantity" style="width: 9.5rem">
           <div class="flex items-center gap-1.5 whitespace-nowrap">
-            <span>Existencias</span>
+            <span>Stock Físico</span>
             <p-sortIcon field="available_quantity"></p-sortIcon>
           </div>
         </th>
-        <th style="width: 8rem">
+
+        <!-- Col 6: Estado e Inspección -->
+        <th pSortableColumn="status" style="width: 9.5rem">
           <div class="flex items-center gap-1.5 whitespace-nowrap">
-            <span>Condición Física</span>
-          </div>
-        </th>
-        <th style="width: 5.5rem" class="text-center">
-          <div class="flex items-center justify-center gap-1.5 whitespace-nowrap">
-            <span>Inspección</span>
-          </div>
-        </th>
-        <th pSortableColumn="status" class="text-center" style="width: 6.5rem">
-          <div class="flex items-center justify-center gap-1.5 whitespace-nowrap">
-            <span>Estado</span>
+            <span>Estado & Control</span>
             <p-sortIcon field="status"></p-sortIcon>
           </div>
         </th>
-        <th style="width: 3rem"></th>
+
+        <!-- Col 7: Acciones -->
+        <th style="width: 3.2rem"></th>
       </tr>
     </ng-template>
 
     <ng-template pTemplate="body" let-prod>
       <tr>
-        <!-- Producto & Variante (Con Avatar + Nombre Multilínea clamp-2) -->
+        <!-- Columna 1: Producto e Identificación (Miniatura + # Ítem + Nombre multilínea + Variante/Categoría) -->
         <td class="vertical-align-middle max-w-xs md:max-w-sm xl:max-w-md">
           <button
             type="button"
             class="flex items-start gap-2.5 cursor-pointer group text-left bg-transparent border-none p-0 w-full"
             (click)="openEditProduct(prod)">
-            <p-avatar
-              [label]="getInitials(prod.name)"
-              shape="circle"
-              class="shrink-0 bg-gray-100 text-brand-700 group-hover:bg-brand-100 transition-colors border border-gray-200 dark:border-gray-700 mt-0.5">
-            </p-avatar>
+            
+            <!-- Miniatura de Imagen en Cloudinary o Avatar con Iniciales -->
+            @if (prod.image_url) {
+              <img
+                [src]="prod.image_url | clUrl:'thumb'"
+                [alt]="prod.name"
+                class="w-11 h-11 rounded-lg object-cover border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-800 shrink-0 shadow-2xs group-hover:scale-105 transition-transform mt-0.5"
+                loading="lazy" />
+            } @else {
+              <div
+                class="w-11 h-11 rounded-lg bg-brand-50/60 dark:bg-brand-950/40 border border-brand-200/80 dark:border-brand-800/80 flex flex-col items-center justify-center text-brand-700 dark:text-brand-300 shrink-0 font-bold text-xs mt-0.5 shadow-2xs group-hover:scale-105 transition-transform">
+                {{ getInitials(prod.name) }}
+              </div>
+            }
+
             <div class="flex flex-col min-w-0 flex-1">
+              <!-- # Ítem y Código Maestro -->
+              <div class="flex items-center gap-1.5 leading-none mb-0.5 flex-wrap">
+                @if (prod.item_number || prod.sheet_row_id) {
+                  <span class="font-mono font-bold text-xs text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">
+                    #{{ prod.item_number || prod.sheet_row_id }}
+                  </span>
+                }
+                @if (prod.master_code) {
+                  <span class="font-mono text-gray-400 text-[11px] truncate" [title]="prod.master_code">
+                    {{ prod.master_code }}
+                  </span>
+                }
+              </div>
+
+              <!-- Nombre con Salto a 2 Líneas -->
               <span
-                class="text-gray-900 dark:text-gray-100 font-medium group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors line-clamp-2 leading-snug wrap-break-word"
+                class="text-gray-900 dark:text-gray-100 font-semibold text-xs group-hover:text-brand-600 dark:group-hover:text-brand-400 transition-colors line-clamp-2 leading-snug wrap-break-word"
                 [title]="prod.name">
                 {{ prod.name }}
               </span>
-              <div class="text-gray-500 dark:text-gray-400 text-xs flex items-center gap-1.5 mt-0.5">
+
+              <!-- Detalles: Variante y Categoría -->
+              <div class="text-gray-500 dark:text-gray-400 text-xs flex items-center gap-2 mt-0.5 flex-wrap">
                 @if (prod.variant_name) {
-                  <span class="font-medium text-brand-600 dark:text-brand-400 truncate">{{ prod.variant_name }}</span>
-                } @else {
-                  <span class="text-gray-400 italic">Estándar</span>
+                  <span class="text-brand-600 dark:text-brand-400 italic text-[11px] truncate flex items-center gap-0.5">
+                    <span>🏷️</span>
+                    <span>{{ prod.variant_name }}</span>
+                  </span>
                 }
-                @if (prod.sheet_row_id) {
-                  <span class="text-gray-300 dark:text-gray-600">·</span>
-                  <span class="text-gray-400 font-mono text-[11px] shrink-0">Fila #{{ prod.sheet_row_id }}</span>
+                @if (prod.category_name) {
+                  <span class="text-gray-400 dark:text-gray-500 text-[11px] truncate flex items-center gap-0.5">
+                    <span>📁</span>
+                    <span>{{ prod.category_name }}</span>
+                  </span>
                 }
               </div>
             </div>
           </button>
         </td>
 
-        <!-- Caja / Lote de Origen -->
+        <!-- Columna 2: Caja / Lote Físico -->
         <td class="vertical-align-middle">
-          @if (prod.batch_name) {
-            <span
-              class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-medium truncate max-w-36"
-              [title]="prod.batch_name">
-              <svg lucideBoxes size="13" class="text-amber-600 dark:text-amber-400 shrink-0"></svg>
-              <span class="truncate">{{ prod.batch_name }}</span>
-            </span>
-          } @else {
-            <span class="text-xs text-gray-400 italic">Sin lote asignado</span>
-          }
-        </td>
-
-        <!-- Costos y Precios -->
-        <td class="vertical-align-middle">
-          <div class="flex flex-col text-xs font-mono">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-gray-400">Costo Real:</span>
-              <span class="text-gray-900 dark:text-gray-100 font-bold">
-                {{ prod.cost_price !== null && prod.cost_price !== undefined ? ('Bs. ' + (prod.cost_price | number:'1.2-2')) : 'S/C' }}
+          <div class="flex flex-col">
+            @if (prod.batch_code || prod.batch_name) {
+              <span
+                class="inline-flex items-center gap-1 font-mono font-bold text-xs px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 w-fit">
+                <svg lucideBoxes size="12" class="text-amber-600 dark:text-amber-400 shrink-0"></svg>
+                <span>{{ prod.batch_code || prod.batch_name }}</span>
               </span>
-            </div>
-            <div class="flex items-center justify-between gap-2 text-gray-500 text-[11px]">
-              <span>Oficial / Piso:</span>
-              <span>Bs. {{ prod.official_price | number:'1.0-0' }} / {{ prod.minimum_price | number:'1.0-0' }}</span>
-            </div>
+              @if (hasDistinctBatchName(prod)) {
+                <span class="text-[11px] text-gray-500 dark:text-gray-400 truncate max-w-36 mt-0.5" [title]="prod.batch_name">
+                  {{ prod.batch_name }}
+                </span>
+              }
+            } @else {
+              <span class="text-xs text-gray-400 italic">Sin lote asignado</span>
+            }
           </div>
         </td>
 
-        <!-- Existencias Físicas -->
+        <!-- Columna 3: Estrategia de Precios (Tri-Precio de Venta) -->
         <td class="vertical-align-middle">
-          <div class="flex flex-col gap-0.5">
-            <div class="inline-flex items-center gap-1 text-xs">
-              <span class="font-mono font-bold" [ngClass]="prod.available_quantity > 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-400'">
-                {{ prod.available_quantity }} disp.
-              </span>
-              <span class="text-gray-400 text-[11px]">/ {{ prod.initial_quantity }} ini.</span>
+          <div class="flex flex-col text-xs font-mono">
+            <!-- Precio Publicado Principal -->
+            <span class="font-bold text-gray-900 dark:text-gray-100 text-xs">
+              Bs. {{ prod.published_price | number:'1.2-2' }}
+            </span>
+
+            <!-- Piso de Regateo -->
+            <div class="text-[11px] text-amber-700 dark:text-amber-400 font-medium mt-0.5">
+              <span>Piso: Bs. {{ prod.minimum_price | number:'1.2-2' }}</span>
             </div>
-            @if (prod.sold_quantity > 0 || prod.merma_quantity > 0) {
-              <div class="text-[11px] text-gray-400 flex items-center gap-1.5">
-                <span>{{ prod.sold_quantity }} vend.</span>
-                @if (prod.merma_quantity > 0) {
-                  <span class="text-red-500 font-medium">· {{ prod.merma_quantity }} merma</span>
-                }
+
+            <!-- Margen de Rebaja Disponible -->
+            <div class="text-[10px] mt-0.5">
+              @if (getDiscountMargin(prod) > 0) {
+                <span class="text-amber-600 dark:text-amber-500 font-medium">
+                  (Rebaja: hasta {{ getDiscountMargin(prod) | number:'1.0-0' }} Bs)
+                </span>
+              } @else {
+                <span class="inline-flex px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 font-sans font-medium">
+                  Precio Fijo
+                </span>
+              }
+            </div>
+
+            <!-- Precio Referencial de Mercado -->
+            @if (prod.official_price && prod.official_price !== prod.published_price) {
+              <span class="text-[10px] text-gray-400 mt-0.5">
+                P. Mercado: Bs. {{ prod.official_price | number:'1.0-0' }}
+              </span>
+            }
+          </div>
+        </td>
+
+        <!-- Columna 4: Costo y Rentabilidad (Margen Proyectado) -->
+        <td class="vertical-align-middle">
+          <div class="flex flex-col text-xs font-mono">
+            <!-- Costo Unitario Real -->
+            @if (prod.cost_price !== null && prod.cost_price !== undefined) {
+              <div class="flex items-center gap-1 text-gray-700 dark:text-gray-300">
+                <span class="text-gray-400 text-[11px]">Costo:</span>
+                <span class="font-bold">Bs. {{ prod.cost_price | number:'1.2-2' }}</span>
+              </div>
+            } @else {
+              <span class="inline-flex px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 text-[10px] font-sans w-fit">
+                Pendiente Prorrateo
+              </span>
+            }
+
+            <!-- Ganancia Neta Proyectada -->
+            @if (getEstimatedMargin(prod) !== null) {
+              <div
+                class="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-xs mt-1"
+                [title]="'Ganancia neta proyectada por unidad vendida al precio publicado'">
+                <svg lucideTrendingUp size="13" class="shrink-0"></svg>
+                <span>+Bs. {{ getEstimatedMargin(prod)! | number:'1.2-2' }}</span>
               </div>
             }
           </div>
         </td>
 
-        <!-- Condición Física -->
+        <!-- Columna 5: Existencias Físicas -->
         <td class="vertical-align-middle">
-          <p-tag
-            [value]="getConditionLabel(prod.physical_condition)"
-            [severity]="prod.physical_condition === 'OPERATIONAL' ? 'success' : (prod.physical_condition === 'REPAIRED' ? 'info' : 'warn')"
-            [rounded]="true"
-            class="text-xs">
-          </p-tag>
-        </td>
+          <div class="flex flex-col font-mono">
+            <!-- Stock Disponible -->
+            @if (prod.available_quantity > 0) {
+              <span class="font-bold text-emerald-600 dark:text-emerald-400 text-xs">
+                {{ prod.available_quantity }} unid. disp.
+              </span>
+            } @else {
+              <span class="font-medium text-rose-600 dark:text-rose-400 text-xs">
+                0 disp. (Agotado)
+              </span>
+            }
 
-        <!-- Inspección Técnica Probada -->
-        <td class="vertical-align-middle text-center">
-          <div class="flex items-center justify-center gap-1.5">
-            <span
-              [pTooltip]="prod.is_reviewed ? 'Inspeccionado y probado en mesa' : 'Pendiente de prueba funcional'"
-              [class.text-green-600]="prod.is_reviewed"
-              [class.dark:text-green-400]="prod.is_reviewed"
-              [class.text-gray-300]="!prod.is_reviewed"
-              [class.dark:text-gray-600]="!prod.is_reviewed">
-              <svg lucideShieldCheck size="16"></svg>
+            <!-- Desglose Totales y Vendidos -->
+            <span class="text-gray-400 text-[11px] mt-0.5">
+              Tot: {{ prod.initial_quantity }} | Vend: {{ prod.sold_quantity }}
             </span>
-            @if (prod.defect_detail) {
+
+            <!-- Merma -->
+            @if (prod.merma_quantity > 0) {
               <span
-                class="text-amber-500 cursor-help"
-                [pTooltip]="prod.defect_detail"
-                tooltipPosition="left">
-                <i class="pi pi-info-circle text-xs"></i>
+                class="text-rose-600 dark:text-rose-400 font-medium text-[11px] flex items-center gap-1 cursor-help mt-0.5"
+                [pTooltip]="prod.defect_detail || 'Registrado con merma técnica'"
+                tooltipPosition="top">
+                <svg lucideCircleAlert size="11" class="shrink-0"></svg>
+                <span>Merma: {{ prod.merma_quantity }}</span>
               </span>
             }
           </div>
         </td>
 
-        <!-- Estado Comercial -->
-        <td class="vertical-align-middle text-center">
-          <p-tag
-            [value]="getStatusLabel(prod.status)"
-            [severity]="getStatusSeverity(prod.status)"
-            [rounded]="true"
-            class="text-xs">
-          </p-tag>
+        <!-- Columna 6: Estado e Inspección -->
+        <td class="vertical-align-middle">
+          <div class="flex flex-col gap-0.5 items-start">
+            <!-- Estado Comercial Primario -->
+            <p-tag
+              [value]="getStatusLabel(prod.status)"
+              [severity]="getStatusSeverity(prod.status)"
+              [rounded]="true"
+              class="text-[10px]">
+            </p-tag>
+
+            <!-- Condición Física y Revisión Técnica Sutil -->
+            @if (prod.physical_condition === 'OPERATIONAL') {
+              <div class="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                @if (prod.is_reviewed) {
+                  <svg lucideCircleCheck size="13" class="text-emerald-600 dark:text-emerald-400 shrink-0"></svg>
+                  <span>Probado en mesa</span>
+                } @else {
+                  <span class="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 cursor-help" [pTooltip]="'Pendiente de prueba funcional'">
+                    <svg lucideCircleAlert size="13" class="shrink-0"></svg>
+                    <span>Sin probar</span>
+                  </span>
+                }
+              </div>
+            } @else {
+              <!-- Condición Especial (Incompleto / Para Repuestos / Merma) destacada -->
+              <div class="flex items-center gap-1 mt-0.5">
+                <p-tag
+                  [value]="getConditionLabel(prod.physical_condition)"
+                  [severity]="getConditionSeverity(prod.physical_condition)"
+                  [rounded]="true"
+                  class="text-[10px]">
+                </p-tag>
+                <span
+                  [pTooltip]="prod.is_reviewed ? 'Revisado y probado' : 'Pendiente de prueba'"
+                  class="cursor-help inline-flex items-center">
+                  @if (prod.is_reviewed) {
+                    <svg lucideCircleCheck size="13" class="text-emerald-600 dark:text-emerald-400"></svg>
+                  } @else {
+                    <svg lucideCircleAlert size="13" class="text-amber-500"></svg>
+                  }
+                </span>
+              </div>
+            }
+          </div>
         </td>
 
-        <!-- Acciones -->
+        <!-- Columna 7: Acciones -->
         <td class="text-center vertical-align-middle">
           <p-button
             icon="pi pi-pencil"
             [text]="true"
             [rounded]="true"
+            size="small"
             severity="secondary"
-            pTooltip="Editar Existencia"
+            pTooltip="Editar Producto Físico"
             tooltipPosition="left"
             (click)="openEditProduct(prod)">
           </p-button>
@@ -350,8 +459,8 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="8" class="text-center p-6 text-gray-500 dark:text-gray-400">
-          No se encontraron existencias físicas con los criterios de búsqueda seleccionados.
+        <td colspan="7" class="text-center p-6 text-gray-500 dark:text-gray-400">
+          No se encontraron productos físicos con los criterios de búsqueda seleccionados.
         </td>
       </tr>
     </ng-template>
@@ -381,17 +490,17 @@
       <div
         class="p-2.5 pb-2 flex items-center justify-between border-b border-gray-100 dark:border-gray-800/80 bg-gray-50/60 dark:bg-gray-850">
         <div class="flex items-center gap-1.5 min-w-0">
-          @if (prod.sheet_row_id) {
+          @if (prod.item_number || prod.sheet_row_id) {
           <span
             class="font-mono font-bold text-xs text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">
-            #{{ prod.sheet_row_id }}
+            #{{ prod.item_number || prod.sheet_row_id }}
           </span>
           }
-          @if (prod.batch_name) {
+          @if (prod.batch_code || prod.batch_name) {
           <span
-            class="inline-flex items-center gap-1 text-[11px] font-medium text-gray-600 dark:text-gray-300 bg-white dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 truncate max-w-32">
+            class="inline-flex items-center gap-1 text-[11px] font-medium text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800/60 truncate max-w-32">
             <svg lucideBoxes size="12" class="text-amber-600 dark:text-amber-400 shrink-0"></svg>
-            <span class="truncate">{{ prod.batch_name }}</span>
+            <span class="truncate">{{ prod.batch_code || prod.batch_name }}</span>
           </span>
           }
         </div>
@@ -412,108 +521,102 @@
         }
       </div>
 
-      <!-- Cuerpo Principal: Avatar/Iniciales, Título, Variante, Condición y Precios -->
+      <!-- Cuerpo Principal: Foto, Título, Variante, Precios -->
       <div class="p-3 flex-1 flex flex-col gap-2.5">
         <div class="flex gap-2.5">
-          <!-- Avatar con iniciales -->
-          <div
-            class="w-11 h-11 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-brand-700 dark:text-brand-300 font-bold text-xs shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
-            {{ getInitials(prod.name) }}
-          </div>
+          <!-- Miniatura Cloudinary o Avatar -->
+          @if (prod.image_url) {
+            <img
+              [src]="prod.image_url | clUrl:'card'"
+              [alt]="prod.name"
+              class="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-700 bg-gray-50 shrink-0 shadow-2xs group-hover:scale-102 transition-transform"
+              loading="lazy" />
+          } @else {
+            <div
+              class="w-16 h-16 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-brand-700 dark:text-brand-300 font-bold text-xs shrink-0 shadow-2xs">
+              {{ getInitials(prod.name) }}
+            </div>
+          }
 
           <div class="flex flex-col min-w-0 flex-1 justify-center">
             <button
               type="button"
               (click)="openEditProduct(prod)"
-              class="font-semibold text-xs text-gray-900 dark:text-gray-100 hover:text-brand-600 dark:hover:text-brand-400 text-left line-clamp-2 cursor-pointer transition-colors leading-snug">
+              class="font-semibold text-xs text-gray-900 dark:text-gray-100 hover:text-brand-600 dark:hover:text-brand-400 text-left line-clamp-2 cursor-pointer transition-colors leading-snug wrap-break-word">
               {{ prod.name }}
             </button>
 
             <div class="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400 mt-0.5 flex-wrap">
               @if (prod.variant_name) {
-                <span class="font-medium text-brand-600 dark:text-brand-400">{{ prod.variant_name }}</span>
-              } @else {
-                <span class="text-gray-400 italic">Estándar</span>
+                <span class="font-medium text-brand-600 dark:text-brand-400">🏷️ {{ prod.variant_name }}</span>
+              }
+              @if (prod.category_name) {
+                <span>· 📁 {{ prod.category_name }}</span>
               }
             </div>
           </div>
         </div>
 
-        <!-- Tags: Condición Física & Inspección -->
-        <div class="flex items-center justify-between gap-1.5 pt-1 border-t border-gray-100 dark:border-gray-800 text-[11px]">
-          <div class="flex items-center gap-1.5">
-            <span class="text-gray-500 dark:text-gray-400">Condición:</span>
-            <p-tag
-              [value]="getConditionLabel(prod.physical_condition)"
-              [severity]="prod.physical_condition === 'OPERATIONAL' ? 'success' : (prod.physical_condition === 'REPAIRED' ? 'info' : 'warn')"
-              [rounded]="true"
-              class="text-[10px]">
-            </p-tag>
-          </div>
-
-          <div class="flex items-center gap-1">
-            <span
-              [pTooltip]="prod.is_reviewed ? 'Inspeccionado y probado en mesa' : 'Pendiente de prueba'"
-              [class.text-green-600]="prod.is_reviewed"
-              [class.dark:text-green-400]="prod.is_reviewed"
-              [class.text-gray-300]="!prod.is_reviewed"
-              [class.dark:text-gray-600]="!prod.is_reviewed">
-              <svg lucideShieldCheck size="14"></svg>
-            </span>
-            @if (prod.defect_detail) {
-              <span class="text-amber-500 cursor-help" [pTooltip]="prod.defect_detail" tooltipPosition="top">
-                <i class="pi pi-info-circle text-[11px]"></i>
-              </span>
-            }
-          </div>
-        </div>
-
-        <!-- Grid de Precios y Costos (3 columnas) -->
+        <!-- Grid de Precios y Margen Proyectado -->
         <div class="grid grid-cols-3 gap-1.5 p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 text-center font-mono">
           <div class="flex flex-col">
-            <span class="text-[9px] uppercase tracking-wider text-gray-400 font-sans font-medium">Costo</span>
-            <span class="text-[11px] font-bold text-gray-800 dark:text-gray-200">
-              {{ prod.cost_price !== null && prod.cost_price !== undefined ? ('Bs. ' + (prod.cost_price | number:'1.0-2')) : 'S/C' }}
+            <span class="text-[9px] uppercase tracking-wider text-gray-400 font-sans font-medium">Venta</span>
+            <span class="text-[11px] font-bold text-gray-900 dark:text-gray-100">
+              Bs. {{ prod.published_price | number:'1.0-0' }}
             </span>
           </div>
           <div class="flex flex-col border-x border-gray-200 dark:border-gray-700 px-1">
-            <span class="text-[9px] uppercase tracking-wider text-gray-400 font-sans font-medium">Oficial</span>
-            <span class="text-[11px] font-bold text-gray-900 dark:text-gray-100">
-              Bs. {{ prod.official_price | number:'1.0-0' }}
-            </span>
-          </div>
-          <div class="flex flex-col">
             <span class="text-[9px] uppercase tracking-wider text-amber-600 dark:text-amber-400 font-sans font-medium">Piso</span>
             <span class="text-[11px] font-bold text-amber-700 dark:text-amber-300">
               Bs. {{ prod.minimum_price | number:'1.0-0' }}
             </span>
           </div>
+          <div class="flex flex-col">
+            <span class="text-[9px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400 font-sans font-medium">Ganancia</span>
+            <span class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+              {{ getEstimatedMargin(prod) !== null ? ('+' + (getEstimatedMargin(prod)! | number:'1.0-0')) : 'S/C' }}
+            </span>
+          </div>
         </div>
 
-        <!-- Existencias desglosadas (Iniciales, Vendidas, Mermas) -->
-        <div class="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 px-1">
-          <span class="font-mono">
-            <span class="text-gray-400">Total:</span> {{ prod.initial_quantity }} ini.
-          </span>
-          <div class="flex items-center gap-2 font-mono">
-            @if (prod.sold_quantity > 0) {
-              <span class="text-blue-600 dark:text-blue-400">{{ prod.sold_quantity }} vend.</span>
-            }
-            @if (prod.merma_quantity > 0) {
-              <span class="text-rose-500 font-semibold">{{ prod.merma_quantity }} merma</span>
-            }
-          </div>
+        <!-- Existencias desglosadas -->
+        <div class="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 px-1 font-mono">
+          <span>Tot: {{ prod.initial_quantity }} | Vend: {{ prod.sold_quantity }}</span>
+          @if (prod.merma_quantity > 0) {
+            <span class="text-rose-500 font-semibold">⚠️ {{ prod.merma_quantity }} merma</span>
+          }
         </div>
       </div>
 
-      <!-- Footer con Estado Comercial y Botón Editar -->
+      <!-- Footer con Estado Comercial, Condición y Botón Editar -->
       <div class="p-2 px-3 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/40 dark:bg-gray-850/50">
-        <p-tag
-          [value]="getStatusLabel(prod.status)"
-          [severity]="getStatusSeverity(prod.status)"
-          [rounded]="true"
-          class="text-[10px]">
-        </p-tag>
+        <div class="flex items-center gap-2 min-w-0">
+          <p-tag
+            [value]="getStatusLabel(prod.status)"
+            [severity]="getStatusSeverity(prod.status)"
+            [rounded]="true"
+            class="text-[10px]">
+          </p-tag>
+
+          @if (prod.physical_condition === 'OPERATIONAL') {
+            <span class="text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-1 truncate">
+              @if (prod.is_reviewed) {
+                <svg lucideCircleCheck size="13" class="text-emerald-600 shrink-0"></svg>
+                <span>Probado</span>
+              } @else {
+                <svg lucideCircleAlert size="13" class="text-amber-500 shrink-0"></svg>
+                <span>Sin probar</span>
+              }
+            </span>
+          } @else {
+            <p-tag
+              [value]="getConditionLabel(prod.physical_condition)"
+              [severity]="getConditionSeverity(prod.physical_condition)"
+              [rounded]="true"
+              class="text-[10px]">
+            </p-tag>
+          }
+        </div>
 
         <p-button
           icon="pi pi-pencil"
@@ -521,7 +624,7 @@
           [rounded]="true"
           size="small"
           severity="secondary"
-          pTooltip="Editar Existencia"
+          pTooltip="Editar Producto Físico"
           tooltipPosition="left"
           (click)="openEditProduct(prod)">
         </p-button>

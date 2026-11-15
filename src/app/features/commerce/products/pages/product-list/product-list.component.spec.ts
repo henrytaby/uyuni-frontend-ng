@@ -155,4 +155,61 @@ describe('ProductListComponent', () => {
     expect(component.rows()).toBe(12);
     expect(loadSpy).toHaveBeenCalledWith({ first: 12, rows: 12 });
   });
+
+  it('should calculate estimated margin and discount margin correctly', () => {
+    const testProd = {
+      ...sampleProducts[0],
+      published_price: 150,
+      cost_price: 66.22,
+      minimum_price: 120,
+      estimated_margin: null,
+      discount_margin: null
+    };
+
+    expect(component.getEstimatedMargin(testProd)).toBeCloseTo(83.78, 2);
+    expect(component.getDiscountMargin(testProd)).toBe(30);
+
+    const explicitProd = {
+      ...testProd,
+      estimated_margin: 85,
+      discount_margin: 25
+    };
+    expect(component.getEstimatedMargin(explicitProd)).toBe(85);
+    expect(component.getDiscountMargin(explicitProd)).toBe(25);
+  });
+
+  it('should return correct severity for conditions and statuses', () => {
+    expect(component.getConditionSeverity('OPERATIONAL')).toBe('success');
+    expect(component.getConditionSeverity('INCOMPLETE')).toBe('warn');
+    expect(component.getConditionSeverity('FOR_PARTS')).toBe('info');
+    expect(component.getConditionSeverity('DAMAGED_SCRAP')).toBe('danger');
+    expect(component.getConditionSeverity('UNKNOWN')).toBe('secondary');
+
+    expect(component.getStatusSeverity('AVAILABLE')).toBe('success');
+    expect(component.getStatusSeverity('SOLD_OUT')).toBe('secondary');
+    expect(component.getStatusSeverity('SCRAPPED')).toBe('danger');
+  });
+
+  it('should detect distinct batch name correctly and avoid duplicates', () => {
+    const duplicateProd = {
+      ...sampleProducts[0],
+      batch_code: 'ATAUD-1',
+      batch_name: 'Ataud 1'
+    };
+    expect(component.hasDistinctBatchName(duplicateProd)).toBe(false);
+
+    const identicalProd = {
+      ...sampleProducts[0],
+      batch_code: 'DIGITAL',
+      batch_name: 'Digital'
+    };
+    expect(component.hasDistinctBatchName(identicalProd)).toBe(false);
+
+    const distinctProd = {
+      ...sampleProducts[0],
+      batch_code: 'ATAUD-1',
+      batch_name: 'Liquidación Amazon Electrónicos'
+    };
+    expect(component.hasDistinctBatchName(distinctProd)).toBe(true);
+  });
 });

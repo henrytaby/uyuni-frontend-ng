@@ -725,7 +725,7 @@ export class BatchDrawerComponent {
       },
       accept: () => {
         this.isAllocatingCosts.set(true);
-        this.batchService.allocateRelativeCosts(current.id, 'official_price', true).subscribe({
+        this.batchService.allocateRelativeCosts(current.id, 'published_price', true).subscribe({
           next: updated => {
             this.isAllocatingCosts.set(false);
             this.freshBatch.set(updated);

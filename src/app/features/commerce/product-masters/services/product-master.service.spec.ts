@@ -258,6 +258,27 @@ describe('ProductMasterService', () => {
       req.flush([sampleImage]);
     });
 
+    it('should filter out REAL warehouse images and images with product_id from getImages', () => {
+      const realImage: ProductImage = {
+        id: 'real-1',
+        product_master_id: '01a1c785-02b3-7641-bb12-9988aa112233',
+        product_id: 'prod-uuid-123',
+        url: 'https://cdn.example.com/real.jpg',
+        public_id: 'real_public_id',
+        image_type: 'REAL',
+        is_cover: false,
+        sort_order: 2
+      };
+
+      service.getImages('01a1c785-02b3-7641-bb12-9988aa112233', 'CATALOG').subscribe(images => {
+        expect(images.length).toBe(1);
+        expect(images[0].id).toBe(sampleImage.id);
+      });
+
+      const req = httpMock.expectOne('http://localhost:8000/api/commerce/product-masters/01a1c785-02b3-7641-bb12-9988aa112233/images?image_type=CATALOG');
+      req.flush([sampleImage, realImage]);
+    });
+
     it('should set cover image', () => {
       service.setCoverImage('01a1c785-02b3-7641-bb12-9988aa112233', 'img-1').subscribe(res => {
         expect(res.is_cover).toBe(true);

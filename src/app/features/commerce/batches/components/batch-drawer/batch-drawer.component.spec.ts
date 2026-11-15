@@ -245,7 +245,7 @@ describe('BatchDrawerComponent', () => {
 
       expect(batchService.allocateRelativeCosts).toHaveBeenCalledWith(
         sampleBatch.id,
-        'official_price',
+        'published_price',
         true
       );
       expect(messageSpy).toHaveBeenCalledWith(

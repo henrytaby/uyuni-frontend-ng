@@ -633,7 +633,7 @@
                           Bs. {{ (prod.cost_price ?? 0) | number:'1.2-2' }}
                         </td>
                         <td class="text-right font-mono font-semibold text-emerald-700 dark:text-emerald-400">
-                          Bs. {{ (prod.official_price ?? 0) | number:'1.2-2' }}
+                          Bs. {{ (prod.published_price ?? prod.official_price ?? 0) | number:'1.2-2' }}
                         </td>
                         <td class="text-center">
                           <span class="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">

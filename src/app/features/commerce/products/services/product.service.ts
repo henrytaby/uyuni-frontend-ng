@@ -1,17 +1,20 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpHeaders, HttpParams, HttpRequest } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 
 import { forkJoin, map, Observable } from 'rxjs';
 
 import { ConfigService } from '@core/config/config.service';
+import { SKIP_LOADER_HEADER } from '@core/interceptors/loading.interceptor';
 import { CatalogService } from '@core/services/catalog.service';
 import { LoggerService } from '@core/services/logger.service';
 
 import {
+  ImageReorderItem,
   Product,
   ProductCatalogs,
   ProductCreatePayload,
   ProductParams,
+  ProductRealImage,
   ProductUpdatePayload
 } from '../models/product.model';
 
@@ -150,6 +153,80 @@ export class ProductService {
           physicalConditions: res['commerce_physical_conditions'] || []
         }))
       );
+  }
+
+  // ===========================================================================
+  // FOTOGRAFÍAS REALES DE ALMACÉN (/images)
+  // ===========================================================================
+
+  /**
+   * Obtiene la lista de fotografías reales de un producto físico
+   */
+  getImages(productId: string): Observable<ProductRealImage[]> {
+    this.logger.debug('Fetching product real images', { productId }, 'ProductService');
+    return this.http.get<ProductRealImage[]>(`${this.baseUrl}/${productId}/images`, {
+      headers: { [SKIP_LOADER_HEADER]: 'true' }
+    });
+  }
+
+  /**
+   * Sube una o múltiples fotografías reales al servidor reportando progreso HTTP
+   */
+  uploadImagesWithProgress(
+    productId: string,
+    files: File[],
+    isPublic = false
+  ): Observable<HttpEvent<ProductRealImage[]>> {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file, file.name);
+    });
+    formData.append('is_public', String(isPublic));
+
+    this.logger.info(
+      'Uploading physical product real images with progress tracking',
+      { productId, count: files.length, isPublic },
+      'ProductService'
+    );
+
+    const req = new HttpRequest<FormData>('POST', `${this.baseUrl}/${productId}/images`, formData, {
+      reportProgress: true,
+      headers: new HttpHeaders({ [SKIP_LOADER_HEADER]: 'true' })
+    });
+
+    return this.http.request<ProductRealImage[]>(req);
+  }
+
+  /**
+   * Reordena la secuencia sort_order de las fotografías reales
+   */
+  reorderImages(productId: string, items: ImageReorderItem[]): Observable<ProductRealImage[]> {
+    this.logger.info('Reordering product real images', { productId, count: items.length }, 'ProductService');
+    return this.http.put<ProductRealImage[]>(`${this.baseUrl}/${productId}/images/reorder`, items, {
+      headers: { [SKIP_LOADER_HEADER]: 'true' }
+    });
+  }
+
+  /**
+   * Alterna la visibilidad pública o actualiza metadatos de una fotografía real
+   */
+  togglePublic(productId: string, imageId: string, isPublic: boolean): Observable<ProductRealImage> {
+    this.logger.info('Toggling public visibility for product real image', { productId, imageId, isPublic }, 'ProductService');
+    return this.http.patch<ProductRealImage>(
+      `${this.baseUrl}/${productId}/images/${imageId}`,
+      { is_public: isPublic },
+      { headers: { [SKIP_LOADER_HEADER]: 'true' } }
+    );
+  }
+
+  /**
+   * Elimina permanentemente una fotografía real del producto
+   */
+  deleteImage(productId: string, imageId: string): Observable<{ message: string }> {
+    this.logger.info('Deleting product real image', { productId, imageId }, 'ProductService');
+    return this.http.delete<{ message: string }>(`${this.baseUrl}/${productId}/images/${imageId}`, {
+      headers: { [SKIP_LOADER_HEADER]: 'true' }
+    });
   }
 }
 

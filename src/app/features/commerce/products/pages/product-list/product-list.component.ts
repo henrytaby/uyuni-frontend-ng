@@ -10,7 +10,6 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 
-import { Avatar } from 'primeng/avatar';
 import { Button } from 'primeng/button';
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
@@ -23,15 +22,19 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {
   LucideBoxes,
+  LucideCircleAlert,
+  LucideCircleCheck,
   LucideLayoutGrid,
   LucideListFilter,
-  LucideShieldCheck,
   LucideTable2,
+  LucideTrendingUp,
   LucideX
 } from '@lucide/angular';
 
 import { CatalogItem } from '@core/models/catalog.model';
 import { LoggerService } from '@core/services/logger.service';
+
+import { CloudinaryUrlPipe } from '@shared/pipe/cloudinary-url.pipe';
 
 import { ProductDrawerComponent } from '../../components/product-drawer/product-drawer.component';
 import { ProductFilterDrawerComponent } from '../../components/product-filter-drawer/product-filter-drawer.component';
@@ -48,18 +51,20 @@ import { ProductFilterService, ProductFilterState } from '../../services/product
     TableModule,
     Paginator,
     Tag,
-    Avatar,
     Button,
     InputText,
     IconField,
     InputIcon,
     Tooltip,
     LucideBoxes,
-    LucideShieldCheck,
+    LucideCircleAlert,
+    LucideCircleCheck,
+    LucideTrendingUp,
     LucideTable2,
     LucideLayoutGrid,
     LucideListFilter,
     LucideX,
+    CloudinaryUrlPipe,
     ProductDrawerComponent,
     ProductFilterDrawerComponent
   ],
@@ -319,6 +324,13 @@ export class ProductListComponent implements OnInit {
     this.searchSubject.next(value);
   }
 
+  hasDistinctBatchName(prod: Product): boolean {
+    if (!prod.batch_name) return false;
+    const code = (prod.batch_code || '').trim().toLowerCase().replace(/[\s\-_]/g, '');
+    const name = prod.batch_name.trim().toLowerCase().replace(/[\s\-_]/g, '');
+    return code !== name && name.length > 0;
+  }
+
   getBatchLabel(id?: string | null): string {
     if (!id) return '';
     return this.batchesMap().get(id) || id;
@@ -329,27 +341,94 @@ export class ProductListComponent implements OnInit {
     return this.masterProductsMap().get(id) || id;
   }
 
-  getStatusLabel(status: string): string {
-    return this.statusesMap().get(status) || status;
+  getStatusLabel(status?: string | null): string {
+    if (!status) return '';
+    switch (status) {
+      case 'AVAILABLE':
+        return 'Disponible';
+      case 'SOLD_OUT':
+        return 'Agotado';
+      case 'SCRAPPED':
+        return 'Merma / Baja';
+      default:
+        return this.statusesMap().get(status) || status;
+    }
   }
 
-  getConditionLabel(condition: string): string {
-    return this.conditionsMap().get(condition) || condition;
+  getConditionLabel(condition?: string | null): string {
+    if (!condition) return '';
+    switch (condition) {
+      case 'OPERATIONAL':
+        return 'Operativo';
+      case 'INCOMPLETE':
+        return 'Incompleto';
+      case 'FOR_PARTS':
+        return 'Para Repuestos';
+      case 'DAMAGED_SCRAP':
+        return 'Dañado / Merma';
+      default:
+        return this.conditionsMap().get(condition) || condition;
+    }
   }
 
-  getStatusSeverity(status: string): 'success' | 'warn' | 'danger' | 'secondary' | 'info' {
+  getStatusSeverity(status?: string | null): 'success' | 'warn' | 'danger' | 'secondary' | 'info' {
     switch (status) {
       case 'AVAILABLE':
         return 'success';
+      case 'SOLD_OUT':
+        return 'secondary';
+      case 'SCRAPPED':
+        return 'danger';
       case 'RESERVED':
         return 'warn';
-      case 'SOLD_OUT':
+      default:
+        return 'secondary';
+    }
+  }
+
+  getConditionSeverity(condition?: string | null): 'success' | 'warn' | 'danger' | 'info' | 'secondary' {
+    switch (condition) {
+      case 'OPERATIONAL':
+        return 'success';
+      case 'INCOMPLETE':
+        return 'warn';
+      case 'FOR_PARTS':
         return 'info';
-      case 'SCRAPPED':
+      case 'DAMAGED_SCRAP':
         return 'danger';
       default:
         return 'secondary';
     }
+  }
+
+  getEstimatedMargin(prod: Product): number | null {
+    if (prod.estimated_margin !== null && prod.estimated_margin !== undefined) {
+      return prod.estimated_margin;
+    }
+    if (
+      prod.published_price !== null &&
+      prod.published_price !== undefined &&
+      prod.cost_price !== null &&
+      prod.cost_price !== undefined
+    ) {
+      return prod.published_price - prod.cost_price;
+    }
+    return null;
+  }
+
+  getDiscountMargin(prod: Product): number {
+    if (prod.discount_margin !== null && prod.discount_margin !== undefined) {
+      return prod.discount_margin;
+    }
+    if (
+      prod.published_price !== null &&
+      prod.published_price !== undefined &&
+      prod.minimum_price !== null &&
+      prod.minimum_price !== undefined
+    ) {
+      return Math.max(0, prod.published_price - prod.minimum_price);
+    }
+    return 0;
   }
 
   getInitials(name?: string | null): string {

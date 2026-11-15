@@ -206,7 +206,12 @@ export class ProductMasterFormStore {
       this.isWhatsappPublished.set(prod.is_whatsapp_published ?? false);
       this.isActive.set(prod.is_active ?? true);
 
-      this.images.set(prod.images && prod.images.length > 0 ? prod.images : []);
+      // Filtrar para que la ficha maestra únicamente contenga fotografías de catálogo (CATALOG),
+      // excluyendo fotos reales de almacén vinculadas a productos físicos específicos
+      const catalogImages = (prod.images || []).filter(
+        img => img.image_type !== 'REAL' && !img.product_id
+      );
+      this.images.set(catalogImages);
       this.referenceLinks.set(prod.reference_links || []);
       this.marketplaceLinks.set(prod.marketplace_links || []);
     } else {

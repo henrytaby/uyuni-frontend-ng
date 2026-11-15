@@ -1,0 +1,99 @@
+<app-media-gallery
+  [items]="images()"
+  [title]="'Fotografías Reales de Almacén'"
+  [badgeText]="'REAL'"
+  [subtitle]="'Fotografías de recepción e inspección física para trazabilidad y catálogo público.'"
+  [emptyTitle]="'Sin fotografías reales registradas'"
+  [emptySubtitle]="'Arrastra las fotos tomadas en almacén o recepción para el control de calidad.'"
+  [entityName]="productName() || 'producto_fisico'"
+  [zipBaseName]="'fotos_reales'"
+  [mode]="mode()"
+  [createModeTitle]="'Registro de Fotos Habilitado tras Guardar'"
+  [createModeDescription]="'Para subir fotografías reales del producto físico, primero debe registrar sus datos iniciales.'"
+  [createModeActionLabel]="'Completar Datos del Producto'"
+  [isMaximized]="isMaximized()"
+  [isLoading]="isLoadingImages()"
+  [isUploading]="isUploadingImages()"
+  [uploadProgress]="uploadProgress()"
+  [cardBadgeTemplate]="cardBadge"
+  [cardActionTemplate]="cardAction"
+  [previewModalActionsTemplate]="modalActions"
+  (filesDropped)="uploadSelectedFiles($event)"
+  (reordered)="onReordered($event)"
+  (deleteSingle)="onDeleteSingle($event)"
+  (deleteMultiple)="onDeleteMultiple($event)"
+  (refresh)="onRefresh()"
+  (requestCreateAction)="requestNavigateToInfo.emit()">
+
+  <!-- Slot de Badge: Pública / Privada -->
+  <ng-template #cardBadge let-img>
+    @if (img.is_public) {
+      <div class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-600 text-white shadow-xs flex items-center gap-1">
+        <svg lucideGlobe size="11"></svg>
+        <span>Pública</span>
+      </div>
+    } @else {
+      <div class="px-2 py-0.5 rounded-md text-[10px] font-medium bg-gray-900/80 text-gray-200 shadow-xs flex items-center gap-1 backdrop-blur-xs">
+        <svg lucideLock size="10"></svg>
+        <span>Privada</span>
+      </div>
+    }
+  </ng-template>
+
+  <!-- Slot de Acción en Tarjeta: ToggleSwitch + Botón Copiar URL WhatsApp -->
+  <ng-template #cardAction let-img>
+    <div class="flex items-center justify-between p-1 border-t border-gray-100 dark:border-gray-800">
+      <div class="flex items-center gap-2">
+        <p-toggleswitch
+          [ngModel]="img.is_public"
+          (ngModelChange)="onToggleVisibility(img, $event)" />
+        <span
+          class="text-xs font-medium select-none"
+          [class.text-emerald-600]="img.is_public"
+          [class.dark:text-emerald-400]="img.is_public"
+          [class.text-gray-500]="!img.is_public"
+          [class.dark:text-gray-400]="!img.is_public">
+          {{ img.is_public ? '🌐 Pública' : '🔒 Privada' }}
+        </span>
+      </div>
+
+      <button
+        type="button"
+        class="w-7 h-7 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
+        pTooltip="Copiar URL para cliente (WhatsApp)"
+        tooltipPosition="top"
+        (click)="copyImageUrl(img.url)">
+        <svg lucideCopy size="13"></svg>
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- Slot de Acción en Modal Preview: Copiar URL + Estado -->
+  <ng-template #modalActions let-pImg>
+    <div class="flex items-center gap-2">
+      <span
+        class="px-2 py-0.5 rounded text-[11px] font-bold"
+        [class.bg-emerald-100]="pImg.is_public"
+        [class.text-emerald-800]="pImg.is_public"
+        [class.dark:bg-emerald-950]="pImg.is_public"
+        [class.dark:text-emerald-300]="pImg.is_public"
+        [class.bg-gray-100]="!pImg.is_public"
+        [class.text-gray-700]="!pImg.is_public"
+        [class.dark:bg-gray-800]="!pImg.is_public"
+        [class.dark:text-gray-300]="!pImg.is_public">
+        {{ pImg.is_public ? '🌐 Visible en Catálogo' : '🔒 Uso Interno (Almacén)' }}
+      </span>
+
+      <button
+        type="button"
+        class="p-2 rounded-md border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 flex items-center gap-1.5 transition-colors cursor-pointer text-xs"
+        pTooltip="Copiar enlace para WhatsApp"
+        tooltipPosition="bottom"
+        (click)="copyImageUrl(pImg.url)">
+        <svg lucideCopy size="13"></svg>
+        <span>Copiar Enlace</span>
+      </button>
+    </div>
+  </ng-template>
+
+</app-media-gallery>

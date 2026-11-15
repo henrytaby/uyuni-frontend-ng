@@ -184,12 +184,12 @@ describe('BatchService', () => {
   });
 
   it('should allocate relative costs', () => {
-    service.allocateRelativeCosts('01a1b8dc-ddb0-71f4-bbec-6966db6633ef', 'official_price', true).subscribe(res => {
+    service.allocateRelativeCosts('01a1b8dc-ddb0-71f4-bbec-6966db6633ef', 'published_price', true).subscribe(res => {
       expect(res).toEqual(sampleBatch);
     });
 
     const req = httpMock.expectOne(
-      'http://localhost:8000/api/commerce/batches/01a1b8dc-ddb0-71f4-bbec-6966db6633ef/allocate-relative-costs?basis=official_price&revalue_sales=true'
+      'http://localhost:8000/api/commerce/batches/01a1b8dc-ddb0-71f4-bbec-6966db6633ef/allocate-relative-costs?basis=published_price&revalue_sales=true'
     );
     expect(req.request.method).toBe('POST');
     req.flush(sampleBatch);
